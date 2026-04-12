@@ -828,6 +828,7 @@ const QF = {
           addLog('🏆 Získal jsi NEJVYŠŠÍ POCHVALU ŘEDITELKY!', 'lr');
           fnotif('🏆 MATURITA!', 'rep');
           fnotif('🏆 POCHVALA!', 'rep');
+          showMaturita();
           // Artefakt + achievement
           if(activeProfile){
             activeProfile.artifacts.maturita = true;

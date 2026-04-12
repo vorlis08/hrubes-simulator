@@ -458,3 +458,6 @@ function closeFotoKubatova(){ document.getElementById('foto-kubatova-ov').classL
 
 function showC2Cert(){ document.getElementById('c2-cert-ov').classList.add('on'); }
 function closeC2Cert(){ document.getElementById('c2-cert-ov').classList.remove('on'); }
+
+function showMaturita(){ document.getElementById('maturita-ov').classList.add('on'); }
+function closeMaturita(){ document.getElementById('maturita-ov').classList.remove('on'); }
