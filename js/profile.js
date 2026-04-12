@@ -50,6 +50,8 @@ function createBlankProfile(username){
       klice_fabie:      false,
       saman_hlava:      false,
       maturita:         false,
+      cibule:           false,
+      membership_vaza:  false,
     },
 
     endings: {
@@ -61,6 +63,7 @@ function createBlankProfile(username){
       death_stab:                 false,
       death_saman_throat:         false,
       death_figurova_shootout:    false,
+      death_johnny_shot:          false,
     },
 
     questsCompleted: {
@@ -303,6 +306,7 @@ function _computeStats(){
     c2_cert:'c2_cert', voodoo:'voodoo', fig_nuz:'fig_nuz', fig_gun:'fig_gun',
     milan_phone:'milan_phone', zelizka:'zelizka', podprsenka:'podprsenka',
     klice_vila:'klice_vila', klice_fabie:'klice_fabie', saman_hlava:'saman_hlava',
+    membership_vaza:'membership_vaza', cibule:'cibule',
   };
   for(const [invKey, artKey] of Object.entries(artMap)){
     if(gs.inv[invKey] > 0) activeProfile.artifacts[artKey] = true;

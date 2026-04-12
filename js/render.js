@@ -1511,6 +1511,29 @@ function drawJohnnyVila(W,H,t){
     ctx.fillText('🚿',bdr+W*0.04,bdy-4); ctx.textAlign='left';
   }
 
+  // ── Dveře do ložnice (vždy viditelné, fiktivní místnost) ──
+  {
+    const ldx=W*0.02, ldy=H*0.22, ldw=W*0.07, ldh=H*0.26;
+    ctx.fillStyle='#3a2838'; rrect(ldx,ldy,ldw,ldh,3); ctx.fill();
+    ctx.strokeStyle='rgba(160,110,90,0.5)'; ctx.lineWidth=1.5; rrect(ldx,ldy,ldw,ldh,3); ctx.stroke();
+    // Klika
+    ctx.fillStyle='rgba(200,160,60,0.6)'; ctx.beginPath();
+    ctx.arc(ldx+ldw-8,ldy+ldh*0.52,3.5,0,Math.PI*2); ctx.fill();
+    // Nápis
+    ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.font='bold 8px Outfit,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('LOŽNICE',ldx+ldw/2,ldy-4);
+    // Pokud Johnny+Jana v ložnici, světlo pod dveřmi + zvuk
+    if(gs.story.johnny_bedroom){
+      const glowA=0.15+0.08*Math.sin(ft*2);
+      ctx.fillStyle=`rgba(255,200,100,${glowA})`; ctx.fillRect(ldx+2,ldy+ldh-3,ldw-4,4);
+      // Zvuková vlna ikona
+      const waveA=0.3+0.2*Math.sin(ft*4);
+      ctx.fillStyle=`rgba(255,100,100,${waveA})`; ctx.font='14px serif'; ctx.textAlign='center';
+      ctx.fillText('♪',ldx+ldw/2,ldy+ldh/2);
+    }
+    ctx.textAlign='left';
+  }
+
   // ── Nápis ──
   ctx.fillStyle='rgba(120,80,160,0.20)'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
   ctx.fillText('JOHNNYHO VILA', W*0.5, H*0.44);
@@ -2831,14 +2854,31 @@ function render(){
       ctx.restore(); return;
     }
 
+    // Breathing animation – subtle scale pulse
+    const breathe = 1.0 + Math.sin(t*0.002 + n.x*0.005) * 0.018;
+    const bodySz = sz * breathe;
+
+    // Proximity glow – brighter when player is near
+    const npcDist = dist2(p, {x:n.x, y:n.y});
+    const proxGlow = npcDist < PROX_R ? 0.25 + (1 - npcDist/PROX_R) * 0.35 : 0.22;
+
     const ag=ctx.createRadialGradient(n.x,bY,0,n.x,bY,55*sz);
-    ag.addColorStop(0,n.color+'3a'); ag.addColorStop(1,'transparent');
+    ag.addColorStop(0,n.color + (npcDist < PROX_R ? '5a' : '3a')); ag.addColorStop(1,'transparent');
     ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(n.x,bY,55*sz,0,Math.PI*2); ctx.fill();
 
+    // Body
     ctx.fillStyle=n.color;
-    if(sz>1){ ctx.beginPath(); ctx.ellipse(n.x,bY,30*sz,26*sz,0,0,Math.PI*2); ctx.fill(); }
-    else { ctx.beginPath(); ctx.arc(n.x,bY,27,0,Math.PI*2); ctx.fill(); }
+    if(sz>1){ ctx.beginPath(); ctx.ellipse(n.x,bY,30*bodySz,26*bodySz,0,0,Math.PI*2); ctx.fill(); }
+    else { ctx.beginPath(); ctx.arc(n.x,bY,27*breathe,0,Math.PI*2); ctx.fill(); }
 
+    // Arms – subtle sway
+    const armSway = Math.sin(t*0.0015 + n.x*0.01) * 4;
+    const armLen = 18 * sz;
+    ctx.strokeStyle = n.color; ctx.lineWidth = 6*sz; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(n.x - 20*sz, bY - 4*sz); ctx.lineTo(n.x - 20*sz - armLen, bY + armSway); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(n.x + 20*sz, bY - 4*sz); ctx.lineTo(n.x + 20*sz + armLen, bY - armSway); ctx.stroke();
+
+    // Head
     ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(n.x,bY-22*sz,20*sz,0,Math.PI*2); ctx.fill();
     drawPixelFace(n.x, bY-22*sz, sz);
 
@@ -2867,29 +2907,53 @@ function render(){
 
   // Hráč
   const px=p.x,py=p.y,pc=gs.kratom_on?'#10b981':'#7c6ff7';
-  ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(px,py+29,17,7,0,0,Math.PI*2); ctx.fill();
+  // Stín – mění se při pohybu
+  const shadowStretch = p.mv ? 1.15 : 1.0;
+  ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(px,py+29,17*shadowStretch,7,0,0,Math.PI*2); ctx.fill();
+  // Aura glow
   const pg=ctx.createRadialGradient(px,py,0,px,py,42);
   pg.addColorStop(0,pc+'4a'); pg.addColorStop(1,'transparent');
   ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(px,py,42,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=pc; ctx.beginPath(); ctx.arc(px,py,23,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(px,py-17,18,0,Math.PI*2); ctx.fill();
+  // Body – subtle tilt when walking
+  const walkTilt = p.mv ? Math.sin(t*0.008)*0.06 : 0;
+  const walkBob = p.mv ? Math.sin(t*0.01)*2.5 : 0;
+  ctx.save(); ctx.translate(px, py+walkBob); ctx.rotate(walkTilt);
+  ctx.fillStyle=pc; ctx.beginPath(); ctx.arc(0,0,23,0,Math.PI*2); ctx.fill();
+  // Arms
+  const pArmSway = p.mv ? Math.sin(t*0.008)*8 : Math.sin(t*0.002)*2;
+  ctx.strokeStyle=pc; ctx.lineWidth=5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-18,-4); ctx.lineTo(-28,pArmSway); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(18,-4); ctx.lineTo(28,-pArmSway); ctx.stroke();
+  // Head
+  ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(0,-17,18,0,Math.PI*2); ctx.fill();
   const ef=p.face==='l'?-1:1;
+  // Eyes
   ctx.fillStyle='#1e293b';
-  ctx.beginPath(); ctx.arc(px+ef*5,    py-19,4,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(px+ef*5+11, py-19,4,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(ef*5,-19,4,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(ef*5+11,-19,4,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#fff';
-  ctx.beginPath(); ctx.arc(px+ef*5.5,    py-20,1.8,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(px+ef*5.5+11, py-20,1.8,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(ef*5.5,-20,1.8,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(ef*5.5+11,-20,1.8,0,Math.PI*2); ctx.fill();
+  // Mouth – subtle expression
+  ctx.strokeStyle='rgba(80,40,40,0.4)'; ctx.lineWidth=1.5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(ef*8,-12,3,0.1,Math.PI-0.1); ctx.stroke();
+  ctx.restore();
 
   if(gs.kratom_on&&gs.kratom_t>0){
     const kpct=gs.kratom_t/gs.kratom_max;
     ctx.strokeStyle='#10b981'; ctx.lineWidth=3; ctx.lineCap='round';
-    ctx.beginPath(); ctx.arc(px,py,32,-Math.PI/2,-Math.PI/2+kpct*Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(px,py+walkBob,32,-Math.PI/2,-Math.PI/2+kpct*Math.PI*2); ctx.stroke();
   }
   if(p.mv){
-    for(let i=0;i<3;i++){
-      ctx.fillStyle=`rgba(255,255,255,${.04+Math.random()*.07})`;
-      ctx.beginPath(); ctx.arc(px+(Math.random()-.5)*30,py+23+Math.random()*10,2+Math.random()*3.5,0,Math.PI*2); ctx.fill();
+    // Dust particles when walking – more detailed
+    for(let i=0;i<4;i++){
+      const dustAge = ((t*0.003+i*0.7)%1);
+      const dustAlpha = (1-dustAge)*0.12;
+      const dustX = px + (p.face==='l'?1:-1)*10 + (Math.random()-.5)*20;
+      const dustY = py + 25 - dustAge*15;
+      const dustR = 1.5 + dustAge*3;
+      ctx.fillStyle=`rgba(200,200,200,${dustAlpha})`;
+      ctx.beginPath(); ctx.arc(dustX,dustY,dustR,0,Math.PI*2); ctx.fill();
     }
   }
 

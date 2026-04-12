@@ -22,6 +22,7 @@ function dist2(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
 function initRoom(spawnX, spawnY){
   const rm = ROOMS[gs.room];
   gs.visited.add(gs.room);
+  gs.roomFadeAlpha = 1;  // fade-in při vstupu do místnosti
 
   // Minimalistický název místnosti místo banner
   const rname = document.getElementById('room-name');
@@ -87,7 +88,7 @@ function initRoom(spawnX, spawnY){
       currentNPCs.push({...bNPC, id:'balonek', x:bNPC.rx*canvas.width, y:bNPC.ry*canvas.height, bob:0, bobDir:1});
   }
   // Číhalová mrtvá / v pytli / spálená / po skolabování – nezobrazuj ji
-  if(gs.cihalova_collapsed || gs.cihalova_in_bag || gs.story.cihalova_burned || gs.story.cihalova >= 2)
+  if(gs.cihalova_in_bag || gs.story.cihalova_burned)
     currentNPCs = currentNPCs.filter(n => n.id !== 'cihalova');
   // Milan mrtvý, utekl nebo čeká v hospodě – nezobrazuj ho v Křemži
   if(gs.story.milan_voodoo_dead || gs.story.milan_fled || gs.story.milan_going_to_sklep || gs.story.milan_waiting_mates || gs.story.milan_shot)
@@ -112,11 +113,14 @@ function initRoom(spawnX, spawnY){
   // Jana – skrýt v Bille pokud je v hospodě/vile (ale ne po záchraně – vrací se do Billy)
   if(gs.story.jana_in_hospoda || (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa) || gs.story.jana_drugged_villa)
     currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova');
-  // Jana z vily – po spoutání Johnnyho se neobjevuje ve vile
-  if(gs.room === 'johnny_vila' && gs.story.johnny_cuffed)
+  // Jana z vily – po spoutání Johnnyho nebo v ložnici se neobjevuje ve vile
+  if(gs.room === 'johnny_vila' && (gs.story.johnny_cuffed || gs.story.johnny_bedroom))
     currentNPCs = currentNPCs.filter(n => n.id !== 'jana_vila');
+  // Johnny vila – schovat v ložnici
+  if(gs.room === 'johnny_vila' && gs.story.johnny_bedroom)
+    currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
   // Johnny – schovat v hospodě pokud je spoutaný nebo je vila hotová
-  if(gs.story.johnny_cuffed || gs.story.johnny_villa_done)
+  if(gs.story.johnny_cuffed || gs.story.johnny_villa_rewards)
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny');
   // Jana v hospodě na rande
   if(gs.room === 'hospoda' && gs.story.jana_in_hospoda && !gs.story.johnny_took_jana){
@@ -190,7 +194,7 @@ function checkProx(){
   // Johnnyho vila v Křemži (přístupná během questu nebo po dokončení s klíči)
   if(gs.room === 'kremze'){
     const villaAccessible = (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa && !gs.story.jana_drugged_villa) || gs.inv.klice_vila;
-    if(villaAccessible){
+    if(villaAccessible && !gs.story.johnny_bedroom){
       const vx = canvas.width * 0.50, vy = canvas.height * 0.50;
       if(dist2(p, {x:vx, y:vy}) < PROX_R){ best = {isVilla:true}; }
     }
@@ -210,6 +214,17 @@ function checkProx(){
   if(gs.room === 'johnny_vila' && gs.story.jana_hint_given && !gs.story.johnny_cuffed){
     const bx = canvas.width * 0.92, by = canvas.height * 0.35;
     if(dist2(p, {x:bx, y:by}) < PROX_R){ best = {isVillaBathroom:true}; }
+  }
+  // Ložnice – dveře (pouze vizuální, ne skutečná místnost)
+  if(gs.room === 'johnny_vila'){
+    const lx = canvas.width * 0.08, ly = canvas.height * 0.35;
+    if(dist2(p, {x:lx, y:ly}) < PROX_R){
+      if(gs.story.johnny_bedroom){
+        best = {isLozniceListen:true};
+      } else {
+        best = {isLoznice:true};
+      }
+    }
   }
   // Koupelna – šuplík (želízka)
   if(gs.room === 'koupelna' && !gs.story.koupelna_drawer_opened){
@@ -256,7 +271,7 @@ function checkProx(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita'];
+    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){
@@ -286,6 +301,10 @@ function checkProx(){
     ph.classList.add('show');
     if(best.isVilla){
       document.getElementById('ptxt').textContent = 'Vstoupit do Johnnyho vily';
+    } else if(best.isLozniceListen){
+      document.getElementById('ptxt').textContent = 'Naslouchat u dveří';
+    } else if(best.isLoznice){
+      document.getElementById('ptxt').textContent = 'Ložnice (zamčeno)';
     } else if(best.isVillaDrawer){
       document.getElementById('ptxt').textContent = 'Prohledat šuplík';
     } else if(best.isVillaKitchen){
@@ -309,7 +328,7 @@ function checkProx(){
     } else if(best.isDoor){
       document.getElementById('ptxt').textContent = 'Otevřít dveře – jít ven';
     } else if(best.isArtifact){
-      const artNames = {screenshot:'Screenshot',hlasovka:'Hlasovka',foto_kubatova:'Fotka',c2_cert:'C2 Cert.',voodoo:'Voodoo',fig_nuz:'Nůž†',fig_gun:'Pistole',milan_phone:'Tel. Milan',zelizka:'Želízka',podprsenka:'Artefakt',klice_vila:'Klíče',pytel_cihalova:'Číhalová',klice_fabie:'Fábie',saman_hlava:'Šam. hlava',maturita:'Maturita'};
+      const artNames = {screenshot:'Screenshot',hlasovka:'Hlasovka',foto_kubatova:'Fotka',c2_cert:'C2 Cert.',voodoo:'Voodoo',fig_nuz:'Nůž†',fig_gun:'Pistole',milan_phone:'Tel. Milan',zelizka:'Želízka',podprsenka:'Artefakt',klice_vila:'Klíče',pytel_cihalova:'Číhalová',klice_fabie:'Fábie',saman_hlava:'Šam. hlava',maturita:'Maturita',cibule:'Cibule',membership_vaza:'Vaza Systems'};
       document.getElementById('ptxt').textContent = 'Vzít ' + (artNames[best.artKey] || best.artKey);
     } else if(best.isSamanBody){
       document.getElementById('ptxt').textContent = 'Vzít šamanovu hlavu';
@@ -326,13 +345,43 @@ function checkProx(){
 // ─── Interakce (klávesa E) ────────────────────────────────────────────────
 
 function interact(){
+  // Ložnice dveře – naslouchání
+  if(gs.room === 'johnny_vila'){
+    const lx = canvas.width * 0.08, ly = canvas.height * 0.35;
+    if(dist2(gs.player, {x:lx, y:ly}) < PROX_R){
+      if(gs.story.johnny_bedroom){
+        addLog('*Přiložíš ucho ke dveřím...*', 'ls');
+        setTimeout(() => addLog('"Ahhh... AHHH..." *hlasité vzdychání Johnnyho za dveřmi*', 'lw'), 800);
+        setTimeout(() => addLog('*Bylo ti jasné, že tam nemáš co dělat.*', 'ls'), 2000);
+        return;
+      } else {
+        addLog('Dveře do ložnice. Zamčeno.', 'ls');
+        return;
+      }
+    }
+  }
   // Johnnyho vila – vstup v Křemži (quest nebo klíče)
   if(gs.room === 'kremze'){
     const villaAccessible = (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa && !gs.story.jana_drugged_villa) || gs.inv.klice_vila;
-    if(villaAccessible){
+    if(villaAccessible && !gs.story.johnny_bedroom){
       const vx = canvas.width * 0.50, vy = canvas.height * 0.50;
       if(dist2(gs.player, {x:vx, y:vy}) < PROX_R){
-        gs.room = 'johnny_vila'; initRoom(canvas.width * 0.5, canvas.height * 0.7); return;
+        // Návrat po získání odměn – return visit
+        if(gs.story.johnny_villa_rewards && gs.story.johnny_return_left && !gs.story.johnny_return_visit){
+          gs.story.johnny_return_visit = true;
+          gs.johnny_stay_deadline = gs.ts + 20000; // 20s timer
+        }
+        // Návrat po varování – Johnny a Jana v ložnici
+        if(gs.story.johnny_return_visit && gs.story.johnny_return_left && gs.johnny_stay_deadline === 0){
+          gs.story.johnny_bedroom = true;
+          addLog('Johnnyho vila je tichá. Johnny s Janou nejsou v obýváku.', 'ls');
+        }
+        gs.room = 'johnny_vila'; initRoom(canvas.width * 0.5, canvas.height * 0.7);
+        // Při návratu start 20s timer
+        if(gs.story.johnny_return_visit && !gs.story.johnny_bedroom && gs.johnny_stay_deadline === 0){
+          gs.johnny_stay_deadline = gs.ts + 20000;
+        }
+        return;
       }
     }
   }
@@ -426,7 +475,7 @@ function interact(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita'];
+    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){
@@ -534,7 +583,16 @@ function update(dt){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
-    if(p.y > H2){ gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.60); return; }
+    if(p.y > H2){
+      // Odchod z vily – zastavit stay timer a nastavit flag
+      if(gs.story.johnny_villa_rewards && !gs.story.johnny_return_left){
+        gs.story.johnny_return_left = true;
+      }
+      if(gs.johnny_stay_deadline > 0){
+        gs.johnny_stay_deadline = 0; // zrušit timer při odchodu
+      }
+      gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.60); return;
+    }
   } else if(gs.room === 'koupelna'){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
@@ -572,6 +630,21 @@ function update(dt){
     currentNPCs = currentNPCs.filter(n => n.id !== 'milan');
     addLog('Mates přijel. Milan nasedl do Fabie a odjeli směrem na Planou.', 'lm');
     fnotif('Milan odjel ✈️','pos');
+  }
+
+  // Johnny return visit – 20s timer, pak zastřelí hráče
+  if(gs.johnny_stay_deadline > 0 && gs.ts >= gs.johnny_stay_deadline && !gs.dead){
+    gs.johnny_stay_deadline = 0;
+    addLog('*Johnny vstane z gauče. Oči mu planou vztekem.*', 'lw');
+    addLog('"ŘIKAL JSEM TI, ABY SES VYPAŘIL!" *vytáhne pistoli*', 'lw');
+    screenShake(500);
+    setTimeout(() => triggerDeath(
+      'Johnny stiskl spoušť. Jednou stačilo.\n"Říkal jsem ti, ať jdeš." *odloží zbraň a vrátí se na gauč*',
+      'ZASTŘELEN JOHNNYM',
+      'KONEC HRY · NEMĚL JSI ZŮSTÁVAT',
+      'death_johnny_shot'
+    ), 800);
+    return;
   }
 
   // Villa časovač – pokud hráč nepomohl Janě včas, Johnny ji odvede
