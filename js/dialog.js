@@ -273,6 +273,23 @@ function getStage(id){
   }
 }
 
+// ─── Typing efekt ────────────────────────────────────────────────────────
+let _typeTimer = null;
+function typeText(el, text, speed = 18){
+  if(_typeTimer) clearInterval(_typeTimer);
+  el.textContent = '';
+  let i = 0;
+  _typeTimer = setInterval(() => {
+    if(i < text.length){
+      el.textContent += text[i];
+      i++;
+    } else {
+      clearInterval(_typeTimer);
+      _typeTimer = null;
+    }
+  }, speed);
+}
+
 // ─── showDialog ───────────────────────────────────────────────────────────
 
 function showDialog(npc){
@@ -283,7 +300,7 @@ function showDialog(npc){
   document.getElementById('dav').textContent   = npc.emoji;
   document.getElementById('dname').textContent = npc.name.toUpperCase();
   document.getElementById('drole').textContent = npc.role;
-  document.getElementById('dtxt').textContent  = d.text;
+  typeText(document.getElementById('dtxt'), d.text, 16);
 
   let choices = [...d.choices];
 
@@ -403,7 +420,7 @@ function showNPCLine(npcId, text, callback){
   document.getElementById('dav').textContent   = npc.emoji;
   document.getElementById('dname').textContent = npc.name.toUpperCase();
   document.getElementById('drole').textContent = npc.role;
-  document.getElementById('dtxt').textContent  = text;
+  typeText(document.getElementById('dtxt'), text, 16);
   document.getElementById('dchoices').innerHTML =
     `<button class="db prim" onclick="closeNPCLine()">Pokračovat</button>`;
   gs._npcLineCallback = callback || null;
