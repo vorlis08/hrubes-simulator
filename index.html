@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>František Hrubeš Simulator 2026 – Naprostý Frajer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── HESLO ──────────────────────────────────────────────────────────── -->
+<div id="pw-ov">
+  <div id="pw-box">
+    <div id="pw-title">🔒 PŘÍSTUPOVÉ HESLO</div>
+    <input id="pw-in" type="password" placeholder="Zadej heslo..." autocomplete="off"/>
+    <div id="pw-err"></div>
+    <button id="pw-btn">VSTOUPIT</button>
+  </div>
+</div>
+
+<!-- ── LOGIN / REGISTER ──────────────────────────────────────────────── -->
+<div id="login-ov">
+  <div class="login-particles" aria-hidden="true">
+    <span class="lp"></span><span class="lp"></span><span class="lp"></span>
+    <span class="lp"></span><span class="lp"></span><span class="lp"></span>
+    <span class="lp"></span><span class="lp"></span><span class="lp"></span>
+    <span class="lp"></span><span class="lp"></span><span class="lp"></span>
+  </div>
+  <div class="login-wrap">
+    <div class="login-left">
+      <div class="login-art">
+        <div class="login-logo">🏠</div>
+        <div class="login-city">K Ř E M Ž E</div>
+        <div class="login-tagline">Simulator 2026</div>
+        <div class="login-silhouette">
+          <span>🏫</span><span>🛒</span><span>🍺</span><span>🌆</span><span>🏠</span>
+        </div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="login-card">
+        <div class="login-tabs">
+          <button class="ltab active" data-tab="login">Přihlášení</button>
+          <button class="ltab" data-tab="register">Registrace</button>
+          <button class="ltab" data-tab="import">Import</button>
+        </div>
+
+        <!-- Tab: Login -->
+        <div class="ltab-body active" id="ltab-login">
+          <div class="login-field">
+            <label>Uživatelské jméno</label>
+            <input id="li-user" type="text" placeholder="Fanda" autocomplete="off" maxlength="20"/>
+          </div>
+          <div class="login-field">
+            <label>Heslo</label>
+            <input id="li-pass" type="password" placeholder="••••" autocomplete="off"/>
+          </div>
+          <div class="login-err" id="li-err"></div>
+          <button class="login-btn gold" id="li-btn">PŘIHLÁSIT SE</button>
+        </div>
+
+        <!-- Tab: Register -->
+        <div class="ltab-body" id="ltab-register">
+          <div class="login-field">
+            <label>Nové uživatelské jméno</label>
+            <input id="reg-user" type="text" placeholder="Tvůj nick..." autocomplete="off" maxlength="20"/>
+          </div>
+          <div class="login-field">
+            <label>Heslo</label>
+            <input id="reg-pass" type="password" placeholder="Min. 3 znaky" autocomplete="off"/>
+          </div>
+          <div class="login-field">
+            <label>Heslo znovu</label>
+            <input id="reg-pass2" type="password" placeholder="Potvrdit heslo" autocomplete="off"/>
+          </div>
+          <div class="login-err" id="reg-err"></div>
+          <button class="login-btn gold" id="reg-btn">VYTVOŘIT PROFIL</button>
+        </div>
+
+        <!-- Tab: Import -->
+        <div class="ltab-body" id="ltab-import">
+          <div class="import-drop" id="import-drop">
+            <div class="import-icon">📂</div>
+            <div class="import-text">Přetáhni sem soubor profilu<br><small>nebo klikni pro výběr</small></div>
+            <input type="file" id="import-file" accept=".json" style="display:none"/>
+          </div>
+          <div class="login-err" id="import-err"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CRT LOADING ───────────────────────────────────────────────────── -->
+<div id="loading-ov">
+  <div class="load-crt">
+    <div class="load-scanline"></div>
+    <div class="load-text" id="load-text">LOADING PROFILE</div>
+    <div class="load-bar-wrap">
+      <div class="load-bar" id="load-bar"></div>
+    </div>
+    <div class="load-sub" id="load-sub">Načítám data...</div>
+  </div>
+</div>
+
+<!-- ── HOMESCREEN / PROFIL ───────────────────────────────────────────── -->
+<div id="home-ov">
+  <div class="home-particles" aria-hidden="true">
+    <span class="hp"></span><span class="hp"></span><span class="hp"></span>
+    <span class="hp"></span><span class="hp"></span><span class="hp"></span>
+    <span class="hp"></span><span class="hp"></span><span class="hp"></span>
+  </div>
+
+  <div class="home-scroll">
+    <!-- Hero -->
+    <div class="home-hero">
+      <div class="home-avatar" id="hs-avatar">🤙</div>
+      <div class="home-hero-info">
+        <div class="home-welcome">Vítej zpátky,</div>
+        <div class="home-username" id="hs-username">Fanda</div>
+        <div class="home-title" id="hs-title">Křemžský outsider</div>
+        <div class="hs-online-badge" id="hs-online-badge" style="display:none">🌐 Online – data synchronizována</div>
+      </div>
+    </div>
+
+    <!-- Stat karty -->
+    <div class="home-section-label">Statistiky</div>
+    <div class="home-stats">
+      <div class="hstat gold"  ><div class="hstat-icon">🎮</div><div class="hstat-val" id="hs-games" data-target="0">0</div><div class="hstat-lbl">Her celkem</div></div>
+      <div class="hstat green" ><div class="hstat-icon">👑</div><div class="hstat-val" id="hs-wins" data-target="0">0</div><div class="hstat-lbl">Výher</div></div>
+      <div class="hstat red"   ><div class="hstat-icon">💀</div><div class="hstat-val" id="hs-deaths" data-target="0">0</div><div class="hstat-lbl">Smrtí</div></div>
+      <div class="hstat teal"  ><div class="hstat-icon">⏱️</div><div class="hstat-val" id="hs-playtime">0m</div><div class="hstat-lbl">Herní čas</div></div>
+      <div class="hstat purple"><div class="hstat-icon">🔥</div><div class="hstat-val" id="hs-best-rep" data-target="0">0</div><div class="hstat-lbl">Nejlepší rep</div></div>
+      <div class="hstat gold"  ><div class="hstat-icon">💰</div><div class="hstat-val" id="hs-money">0 Kč</div><div class="hstat-lbl">Max peníze</div></div>
+      <div class="hstat green" ><div class="hstat-icon">🌿</div><div class="hstat-val" id="hs-kratom">0g</div><div class="hstat-lbl">Kratom celkem</div></div>
+      <div class="hstat red"   ><div class="hstat-icon">🗡️</div><div class="hstat-val" id="hs-kills" data-target="0">0</div><div class="hstat-lbl">Zabití</div></div>
+      <div class="hstat teal"  ><div class="hstat-icon">⚡</div><div class="hstat-val" id="hs-fastest">—</div><div class="hstat-lbl">Nejrychlejší výhra</div></div>
+    </div>
+
+    <!-- Taby -->
+    <div class="home-tabs">
+      <button class="htab active" data-htab="artifacts">🏆 Artefakty</button>
+      <button class="htab" data-htab="endings">🎬 Endingy</button>
+      <button class="htab" data-htab="quests">📋 Questy</button>
+      <button class="htab" data-htab="leaderboard">🌐 Žebříček</button>
+    </div>
+
+    <!-- Tab: Artefakty -->
+    <div class="htab-body active" id="htab-artifacts">
+      <div class="hs-art-row" id="hs-artifacts"></div>
+    </div>
+
+    <!-- Tab: Endingy -->
+    <div class="htab-body" id="htab-endings">
+      <div class="hs-ending-header">
+        <svg class="hs-ring" viewBox="0 0 80 80" width="80" height="80">
+          <circle class="hs-ring-bg" cx="40" cy="40" r="34" />
+          <circle class="hs-ring-fg" id="hs-ring-fg" cx="40" cy="40" r="34" />
+        </svg>
+        <div class="hs-ring-text" id="hs-ending-count">0 / 6</div>
+      </div>
+      <div class="hs-ending-grid" id="hs-endings"></div>
+    </div>
+
+
+    <!-- Tab: Questy -->
+    <div class="htab-body" id="htab-quests">
+      <div class="hs-quest-list" id="hs-quests"></div>
+    </div>
+
+    <!-- Tab: Žebříček -->
+    <div class="htab-body" id="htab-leaderboard">
+      <div class="lb-filters" id="lb-filters"></div>
+      <div class="lb-list" id="lb-list">
+        <div class="lb-loading">Načítám žebříček...</div>
+      </div>
+    </div>
+
+    <!-- Akce -->
+    <div class="home-actions">
+      <button class="ha-play" id="hs-play">▶ HRÁT</button>
+      <div class="ha-row">
+        <button class="ha-btn" id="hs-export">📦 Exportovat profil</button>
+        <button class="ha-btn" id="hs-logout">🚪 Odhlásit se</button>
+        <button class="ha-btn danger" id="hs-delete">🗑️ Smazat profil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="gc">
+  <canvas id="canvas"></canvas>
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+
+  <!-- Minimalistický název místnosti -->
+  <div id="room-name"></div>
+
+  <!-- Hudba -->
+  <button id="music-btn" onclick="toggleMusic()">🔇</button>
+
+  <div id="cL" class="carr">◀<span class="cn" id="cLn">—</span></div>
+  <div id="cR" class="carr">▶<span class="cn" id="cRn">—</span></div>
+  <div id="cU" class="carr">▲<span class="cn" id="cUn">—</span></div>
+  <div id="cD" class="carr">▼<span class="cn" id="cDn">—</span></div>
+
+  <!-- Levý panel – log -->
+  <div id="lpanel">
+    <div class="pcard" id="logcard">
+      <div class="plabel">Deník událostí <span style="margin-left:auto; font-size: 8px; color:var(--muted2);">Úkoly [Q]</span></div>
+      <div id="logc"></div>
+    </div>
+  </div>
+
+  <!-- Quest overlay -->
+  <div id="quest-ov">
+    <div class="plabel">Aktivní cíle <span style="margin-left:auto; font-size: 8px; color:var(--muted2);">Zavřít [Q]</span></div>
+    <div id="objlist"></div>
+  </div>
+
+  <!-- Pravý panel – HUD -->
+  <div id="rpanel">
+    <div class="pcard">
+      <div id="hud-head">
+        <div><div id="hud-name">FANDA</div><div id="hud-title">Křemžský outsider</div></div>
+        <div id="hud-av">🤙</div>
+      </div>
+      <div class="srow"><span class="sl">💰 Peníze</span><span class="sv" id="sm">500 Kč</span></div>
+      <div class="brow">
+        <div class="bhead"><span class="sl">⚡ Energie</span><span class="sl" id="set">100%</span></div>
+        <div class="btrack"><div class="bfill" id="se" style="width:100%;background:var(--green)"></div></div>
+      </div>
+      <div class="brow">
+        <div class="bhead"><span class="sl">🔥 Reputace</span><span class="sl" id="rept">0</span></div>
+        <div id="rep-bar-track"><div id="rep-fill" style="width:0%"></div></div>
+        <div class="sl" id="rep-rank" style="font-size:9px;color:var(--muted2);margin-top:2px">🎒 Trapná nula</div>
+      </div>
+      <div id="kh"><div id="kh-lbl">🌿 KRATOM TRIP</div><div id="kh-bar"><div id="kh-fill" style="width:100%"></div></div></div>
+      <div id="piko-badge" onclick="usePikoSelf()">💊 PIKO – použít? (SMRT)</div>
+    </div>
+  </div>
+
+  <!-- Mapa lokací – pravý dolní roh -->
+  <div id="map-card">
+    <div class="plabel">Mapa lokací</div>
+    <div id="rm-grid">
+      <div class="rmpip" data-r="ucebna">✏️<span class="rn">Učebna</span></div>
+      <div class="rmpip" data-r="billa">🛒<span class="rn">Billa</span></div>
+      <div class="rmpip" data-r="hospoda">🍺<span class="rn">Hospoda</span></div>
+      <div class="rmpip" data-r="ulice">🌆<span class="rn">Ulice</span></div>
+      <div class="rmpip" data-r="kremze">🏠<span class="rn">Křemže</span></div>
+    </div>
+  </div>
+
+  <!-- Inventář -->
+  <div id="inv"><div id="inv-bar">
+    <div class="isl" id="sl-kratom" onclick="useKratom()" style="display:none">
+      <span class="ik">1</span><span class="ii">🌿</span><span class="ic" id="ic-kratom">0g</span><span class="ilbl">Kratom</span>
+    </div>
+    <div class="isl" id="sl-blend" title="🌿 Speciální blend – intenzivní" style="display:none">
+      <span class="ii">🍃</span><span class="ic" id="ic-blend">0</span><span class="ilbl">Blend</span>
+    </div>
+    <div class="isl" id="sl-zemle" onclick="useZemle()" style="display:none">
+      <span class="ik">2</span><span class="ii">🍕</span><span class="ic" id="ic-zemle">0</span><span class="ilbl">Žemle</span>
+    </div>
+    <div class="isep" style="display:none"></div>
+    <div class="isl" id="sl-piko" onclick="usePikoSelf()" title="💊 Nebezpečné!" style="display:none">
+      <span class="ii">💊</span><span class="ic" id="ic-piko">0</span><span class="ilbl">Piko</span>
+    </div>
+    <div class="isl" id="sl-fake" title="🎭 Fejkový kratom" style="display:none">
+      <span class="ii">🎭</span><span class="ic" id="ic-fake">0g</span><span class="ilbl">Fejk</span>
+    </div>
+    <div class="isl" id="sl-pytel" title="🗑️ Pytel na odpadky" style="display:none">
+      <span class="ii">🗑️</span><span class="ic" id="ic-pytel">0</span><span class="ilbl">Pytel</span>
+    </div>
+    <div class="isep" style="display:none"></div>
+    <div class="isl" id="sl-pivo" title="🍺 Pivo Démon" style="display:none">
+      <span class="ii">🍺</span><span class="ic" id="ic-pivo">0</span><span class="ilbl">Démon</span>
+    </div>
+    <div class="isl" id="sl-cibule" title="🧅 Cibule" style="display:none">
+      <span class="ii">🧅</span><span class="ic" id="ic-cibule">0</span><span class="ilbl">Cibule</span>
+    </div>
+    <div class="isl" id="sl-kava" title="☕ Kratom v kafe" style="display:none">
+      <span class="ii">☕</span><span class="ic" id="ic-kava">0</span><span class="ilbl">Kava</span>
+    </div>
+    <div class="isl" id="sl-cert" title="📋 Certifikát" style="display:none">
+      <span class="ii">📋</span><span class="ic" id="ic-cert">0</span><span class="ilbl">Cert.</span>
+    </div>
+    <div class="isl" id="sl-voodoo" title="🪆 Voodoo panenka" style="display:none">
+      <span class="ii">🪆</span><span class="ic" id="ic-voodoo">0</span><span class="ilbl">Voodoo</span>
+    </div>
+    <div class="isl" id="sl-nuz" title="🔪 Kliknout = použít v Křemži" onclick="useNuz()" style="display:none">
+      <span class="ik">E</span><span class="ii">🔪</span><span class="ic" id="ic-nuz">0</span><span class="ilbl">Nůž</span>
+    </div>
+    <div class="isl" id="sl-screenshot" title="📱 Screenshot – Figurová a Mates" onclick="showScreenshot()" style="display:none">
+      <span class="ik">👁</span><span class="ii">📱</span><span class="ic" id="ic-screenshot">1</span><span class="ilbl">Screenshot</span>
+    </div>
+    <div class="isl" id="sl-hlasovka" title="🎙️ Hlasovka Figurové – přehrát" onclick="playHlasovka()" style="display:none">
+      <span class="ik">▶</span><span class="ii">🎙️</span><span class="ic" id="ic-hlasovka">1</span><span class="ilbl">Hlasovka</span>
+    </div>
+    <div class="isl" id="sl-foto_kubatova" title="📸 Fotka Milan + Kubátová" onclick="showFotoKubatova()" style="display:none">
+      <span class="ik">👁</span><span class="ii">📸</span><span class="ic" id="ic-foto_kubatova">1</span><span class="ilbl">Fotka</span>
+    </div>
+    <div class="isl" id="sl-c2_cert" title="📜 Certifikát AJ C2 (zfalšovaný)" onclick="showC2Cert()" style="display:none">
+      <span class="ik">👁</span><span class="ii">📜</span><span class="ic" id="ic-c2_cert">1</span><span class="ilbl">C2 Cert.</span>
+    </div>
+    <div class="isl" id="sl-fig_nuz" title="🗡️ Nůž od Figurové" style="display:none">
+      <span class="ii">🗡️</span><span class="ic" id="ic-fig_nuz">1</span><span class="ilbl">Nůž†</span>
+    </div>
+    <div class="isl" id="sl-fig_gun" title="🔫 Zbraň od Figurové" style="display:none">
+      <span class="ii">🔫</span><span class="ic" id="ic-fig_gun">1</span><span class="ilbl">Pistole</span>
+    </div>
+    <div class="isl" id="sl-milan_phone" title="📲 Milanův telefon – důkazy" style="display:none">
+      <span class="ii">📲</span><span class="ic" id="ic-milan_phone">1</span><span class="ilbl">Tel. Milan</span>
+    </div>
+    <div class="isl" id="sl-zelizka" title="⛓️ Želízka" style="display:none">
+      <span class="ii">⛓️</span><span class="ic" id="ic-zelizka">1</span><span class="ilbl">Želízka</span>
+    </div>
+    <div class="isl" id="sl-prasek" title="💊 Podezřelý prášek" style="display:none">
+      <span class="ii">💊</span><span class="ic" id="ic-prasek">1</span><span class="ilbl">Prášek</span>
+    </div>
+    <div class="isl" id="sl-klice_vila" title="🔑 Klíče od Johnnyho vily" style="display:none">
+      <span class="ii">🔑</span><span class="ic" id="ic-klice_vila">1</span><span class="ilbl">Klíče</span>
+    </div>
+    <div class="isl" id="sl-podprsenka" title="👙 Podprsenka od Jany" style="display:none">
+      <span class="ii">👙</span><span class="ic" id="ic-podprsenka">1</span><span class="ilbl">Artefakt</span>
+    </div>
+    <div class="isl" id="sl-klice_fabie" title="🔑 Klíčky od Fábie" style="display:none">
+      <span class="ik">🚗</span><span class="ii">🔑</span><span class="ic" id="ic-klice_fabie">1</span><span class="ilbl">Fábie</span>
+    </div>
+    <div class="isl" id="sl-saman_hlava" title="🩸 Šamanova hlava" style="display:none">
+      <span class="ii">🩸</span><span class="ic" id="ic-saman_hlava">1</span><span class="ilbl">Hlava</span>
+    </div>
+  </div></div>
+
+  <div id="prox"><kbd>E</kbd> <span id="ptxt">Interagovat</span></div>
+
+  <!-- Šamanovo heslo -->
+  <div id="riddle-ov">
+    <div class="riddle-top">🔮 POSVÁTNÉ HESLO</div>
+    <div id="riddle-q"></div>
+    <input id="riddle-in" type="text" placeholder="Zadej tajné heslo..." autocomplete="off"/>
+    <div id="riddle-hint"></div>
+    <div class="rbtn-row">
+      <button class="rbtn ok" onclick="submitPassword()">Šeptat heslo</button>
+      <button class="rbtn cancel" onclick="closeRiddle()">Odejít</button>
+    </div>
+  </div>
+
+  <!-- Bodbodnutí – smrt -->
+  <div id="stab-death">
+    <div id="sd-icon">🔪</div>
+    <div id="sd-title">PIKO ZASÁHLO</div>
+    <div id="sd-sub">Jano nevěděla, že je fejkový. Nebo věděla.</div>
+    <div id="sd-msg">Čepel vstoupila mezi žebra. Rychle. Bez varování.<br>Fejkový kratom byl tvůj poslední obchod.</div>
+    <button class="death-btn" onclick="location.reload()">ZKUSIT ZNOVU</button>
+  </div>
+
+
+</div>
+
+<!-- Note overlay -->
+<div id="note-ov" onclick="closeNote()">
+  <img id="note-img" src="img/note.png" alt="Výhružný vzkaz"/>
+  <div id="note-hint">klikni pro zavření</div>
+</div>
+
+<!-- Screenshot overlay -->
+<div id="screenshot-ov" onclick="closeScreenshot()">
+  <img id="screenshot-img" src="img/screenshot.png" alt="Screenshot zprávy"/>
+  <div id="screenshot-audio-wrap" onclick="event.stopPropagation()">
+    <button id="screenshot-play-btn" onclick="playHlasovka()">▶ Přehrát hlasovku</button>
+    <audio id="hlasovka-audio" src="audio/hlasovka.mp3"></audio>
+  </div>
+  <div id="note-hint">klikni pro zavření</div>
+</div>
+
+<!-- Fotka Kubátová overlay -->
+<div id="foto-kubatova-ov" onclick="closeFotoKubatova()">
+  <img id="foto-kubatova-img" src="img/foto_kubatova.png" alt="Fotka Milan + Kubátová"/>
+  <div id="note-hint">klikni pro zavření</div>
+</div>
+
+<!-- C2 certifikát overlay -->
+<div id="c2-cert-ov" onclick="closeC2Cert()">
+  <img id="c2-cert-img" src="img/cert_c2.png" alt="Certifikát C2"/>
+  <div id="note-hint">klikni pro zavření</div>
+</div>
+
+<!-- Dialog overlay -->
+<div id="dov"><div id="dbox">
+  <div id="dmeta"><div id="dav">👤</div><div><div id="dname">NPC</div><div id="drole">neznámý</div></div></div>
+  <div id="dtxt"></div>
+  <div id="dchoices"></div>
+</div></div>
+
+<!-- Smrt -->
+<div id="death">
+  <div id="death-skull">💀</div>
+  <div id="death-title">SMRT</div>
+  <div id="death-sub">KONEC HRY · KŘEMŽE PLÁČE</div>
+  <div id="death-msg"></div>
+  <button class="death-btn" onclick="location.reload()">ZKUSIT ZNOVU</button>
+</div>
+
+<!-- Výhra -->
+<div id="win">
+  <div id="win-crown">👑</div>
+  <div id="win-title">NAPROSTÝ<br>FRAJER!</div>
+  <div id="win-sub">Křemžská legenda · Simulator 2026</div>
+  <div id="win-body"></div>
+  <div id="win-stats"></div>
+  <button class="wbtn" onclick="location.reload()">HRÁT ZNOVU</button>
+</div>
+
+<!-- KGB Minihra overlay -->
+<div id="kgb-ov">
+  <div id="kgb-head">
+    <span id="kgb-title">⚠️ KGB / GRU ÚTOK ⚠️</span>
+    <span id="kgb-sub">Zastav agenty KGB a GRU od infiltrace do Česka</span>
+  </div>
+  <canvas id="kgb-canvas"></canvas>
+</div>
+
+<!-- Pre-game artifact room -->
+<div id="start">
+  <div class="pregame-room">
+    <div class="pregame-title">
+      <span class="rainbow-text">František Hrubeš simulátor</span>
+    </div>
+    <div class="pregame-subtitle">Tvoje sbírka artefaktů</div>
+
+    <div class="pregame-vitrines" id="pregame-vitrines"></div>
+
+    <div class="pregame-controls">
+      <div class="cgrid">
+        <div class="crow"><span class="ck">WASD</span> Pohyb</div>
+        <div class="crow"><span class="ck">E</span> Interagovat</div>
+        <div class="crow"><span class="ck">Q</span> Úkoly</div>
+        <div class="crow"><span class="ck">1</span> Kratom</div>
+        <div class="crow"><span class="ck">2</span> Žemle</div>
+      </div>
+    </div>
+
+    <button class="sbtn" id="start-btn">☀️ ZAČÍT NOVÝ DEN</button>
+  </div>
+</div>
+
+<!-- Firebase SDK (compat verze – funguje jako klasické scripty) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+
+<!-- JS – pořadí načítání je důležité -->
+<script src="js/profile.js"></script>
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/objectives.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/items.js"></script>
+<script src="js/quests.js"></script>
+<script src="js/dialog.js"></script>
+<script src="js/render.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
