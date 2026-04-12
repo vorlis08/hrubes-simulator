@@ -497,6 +497,19 @@ const NPCS = {
         text:'"CO DĚLÁŠ?! PUSŤ MĚ! JÁ TĚ... JÁ TĚ ZNIČÍM!" *řve, škube sebou, ale želízka drží*',
         choices:[{label:'(Ignorovat ho)', fn:'close'}]
       },
+      {
+        // stage 2 – po zdrogování Jany, dává odměny
+        text:'"Tys to zvládnul, Fando." *poklepe ti na rameno* "Tady máš – membership kartičku od Vaza Systems. Ultimátní členství. Neomezený počet webů, design, cokoliv budeš chtít." *hodí ti klíčky* "A tady máš klíče od baráku. Klidně se stav, kdykoli."',
+        choices:[{label:'💳 Vzít kartičku a klíče', cls:'prim', fn:'q_johnny_villa_rewards'}]
+      },
+      {
+        // stage 3 – návrat, Johnny s Janou na gauči
+        text:'"Fando..." *sedí na gauči vedle Jany, ruka kolem ní* "Hele, teď není nejlepší čas. Mám tu něco rozpracovanýho, víš jak to myslím." *mrkne* "Běž. Vrať se jindy."',
+        choices:[
+          {label:'(Odejít)', cls:'prim', fn:'q_johnny_return_leave'},
+          {label:'🤔 (Zůstat)', cls:'danger', fn:'close'},
+        ]
+      },
     ]
   },
 
@@ -516,6 +529,11 @@ const NPCS = {
         // stage 1 – Johnny spoutaný, Jana vděčná
         text:'"Díky, Fando." *vydechne s úlevou* "Pojďme odtud, prosím. Hned."',
         choices:[{label:'Odejít z vily', cls:'prim', fn:'q_villa_leave'}]
+      },
+      {
+        // stage 2 – při návratu, zdrogovaná, na gauči s Johnnym
+        text:'"Hmm... Fando..." *oči přivřené, mluví pomalu* "...asi budu blinkat..."',
+        choices:[{label:'(Nechat ji)', fn:'close'}]
       },
     ]
   },
@@ -640,6 +658,7 @@ const ITEM_DESCS = {
   podprsenka:   'Janina podprsenka. Vzácný artefakt.',
   klice_fabie:  'Klíčky od Fábie. Nastartuj a jeď domů!',
   saman_hlava:  'Šamanova hlava. Celá od krve. Proč ji máš?!',
+  membership_vaza: 'Vaza Systems membership kartička. Ultimátní členství – neomezený počet webů.',
 };
 
 // ─── Definice úkolů ──────────────────────────────────────────────────────────

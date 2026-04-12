@@ -267,8 +267,15 @@ function getStage(id){
       if(s.mraz_explain_line === 1) return 2;
       if(s.mraz_explain_line === 0) return 1;
       return 0;
-    case 'johnny_vila': return gs.story.johnny_cuffed ? 1 : 0;
-    case 'jana_vila':   return gs.story.johnny_cuffed ? 1 : 0;
+    case 'johnny_vila':
+      if(s.johnny_return_visit) return 3;
+      if(s.jana_drugged_villa && !s.johnny_villa_rewards) return 2;
+      if(s.johnny_cuffed) return 1;
+      return 0;
+    case 'jana_vila':
+      if(s.johnny_return_visit) return 2;
+      if(s.johnny_cuffed) return 1;
+      return 0;
     default: return 0;
   }
 }
