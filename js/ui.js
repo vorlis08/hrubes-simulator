@@ -15,8 +15,31 @@ const REP_TIERS = [
 ];
 function getRepTier(rep){ return REP_TIERS.find(t => rep >= t.min) || REP_TIERS[REP_TIERS.length-1]; }
 
+let _prevMoney = null;
+function animateValue(el, start, end, suffix){
+  if(start === end) return;
+  const dur = 400;
+  const t0 = performance.now();
+  const diff = end - start;
+  function step(now){
+    const p = Math.min((now - t0) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + diff * ease) + suffix;
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function updateHUD(){
-  document.getElementById('sm').textContent = gs.money + ' Kč';
+  const moneyEl = document.getElementById('sm');
+  if(_prevMoney !== null && _prevMoney !== gs.money){
+    animateValue(moneyEl, _prevMoney, gs.money, ' Kč');
+    moneyEl.style.transform = 'scale(1.1)';
+    setTimeout(() => moneyEl.style.transform = '', 300);
+  } else {
+    moneyEl.textContent = gs.money + ' Kč';
+  }
+  _prevMoney = gs.money;
 
   if(gs.money >= 2000) doneObj('main_money');
 
@@ -104,3 +127,15 @@ function screenShake(ms){
     if(t >= ms){ clearInterval(iv); gc.style.transform = ''; }
   }, 50);
 }
+
+// ── Dialog button mouse-follow glow ──────────────────────────────────────
+document.addEventListener('mousemove', e => {
+  const btns = document.querySelectorAll('.db:not(.prim)');
+  btns.forEach(btn => {
+    const r = btn.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * 100;
+    const y = ((e.clientY - r.top) / r.height) * 100;
+    btn.style.setProperty('--mx', x + '%');
+    btn.style.setProperty('--my', y + '%');
+  });
+});
