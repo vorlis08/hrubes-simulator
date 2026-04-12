@@ -191,6 +191,10 @@ canvas.kratom-on,#kgb-canvas.kratom-on{animation:tripCanvas 1.8s infinite}
 .isl .ic{position:absolute;bottom:1px;right:4px;font-family:var(--fd);font-size:13px;color:var(--gold);line-height:1;
   text-shadow:0 0 6px rgba(240,192,64,.3)}
 .isl .ilbl{font-size:6.5px;color:var(--muted);letter-spacing:.8px;margin-top:2px;font-family:var(--fm);text-transform:uppercase}
+.isl.new-item{animation:itemPop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes itemPop{0%{transform:scale(0.4) translateY(10px);opacity:0;box-shadow:0 0 20px rgba(240,192,64,.6)}
+  60%{transform:scale(1.1) translateY(-3px);opacity:1;box-shadow:0 0 15px rgba(240,192,64,.4)}
+  100%{transform:scale(1) translateY(0);opacity:1;box-shadow:none}}
 .isep{width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.08),transparent);margin:0 3px;align-self:center}
 
 #prox{position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(8px);
@@ -227,12 +231,12 @@ canvas.kratom-on,#kgb-canvas.kratom-on{animation:tripCanvas 1.8s infinite}
 #note-hint{color:rgba(255,255,255,.3);font-size:11px;margin-top:16px;font-family:var(--fm);letter-spacing:2px}
 
 /* ── Screenshot / Foto / C2 overlaye ────────────────────────────────── */
-#screenshot-ov,#foto-kubatova-ov,#c2-cert-ov{
+#screenshot-ov,#foto-kubatova-ov,#c2-cert-ov,#maturita-ov{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);
   align-items:center;justify-content:center;flex-direction:column;z-index:600;cursor:pointer;
   backdrop-filter:blur(6px)}
-#screenshot-ov.on,#foto-kubatova-ov.on,#c2-cert-ov.on{display:flex;animation:fdin .3s ease}
-#screenshot-img,#foto-kubatova-img,#c2-cert-img{
+#screenshot-ov.on,#foto-kubatova-ov.on,#c2-cert-ov.on,#maturita-ov.on{display:flex;animation:fdin .3s ease}
+#screenshot-img,#foto-kubatova-img,#c2-cert-img,#maturita-img{
   max-width:82vw;max-height:72vh;border-radius:var(--r);
   box-shadow:0 12px 80px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.05);
   transition:transform .3s}

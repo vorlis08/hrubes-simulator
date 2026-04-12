@@ -510,9 +510,11 @@ function interact(){
       if(it.type === 'kratom'){
         gs.inv.kratom += 10; updateInv();
         addLog('Sebral jsi kratom! (+10g) 🌿', 'ls'); fnotif('+10g 🌿', 'itm');
+        triggerPickupFlash(it.x, it.y, [16,185,129]);
       } else {
         gs.inv.zemle++; updateInv();
         addLog('Sebral jsi pizza žemli! 🍕', 'ls'); fnotif('+1 🍕', 'itm');
+        triggerPickupFlash(it.x, it.y, [249,115,22]);
       }
       currentItems.splice(i, 1); updateHUD(); return;
     }
@@ -534,6 +536,9 @@ function interact(){
 function update(dt){
   gs.ts += dt;
   const p = gs.player;
+
+  // Room transition fade decay
+  if(gs.roomFadeAlpha > 0) gs.roomFadeAlpha = Math.max(0, gs.roomFadeAlpha - dt * 0.003);
 
   // Animace posouváni regálu mléka
   if(gs.shelf_sliding){
