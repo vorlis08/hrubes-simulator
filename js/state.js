@@ -76,9 +76,15 @@ const gs = {
   // (nastaveno přes gs.story.figurova_sanitka)
 };
 
+function triggerPickupFlash(x, y, color){
+  const c = color || [16,185,129];
+  gs._pickupFlash = { x, y, r:c[0], g:c[1], b:c[2], t:gs.ts };
+}
+
 function gainRep(amount, reason){
   if(amount <= 0) return;
   gs.rep += amount;
+  gs._repShimmer = { t: gs.ts };
   updateHUD();
   if(reason) addLog(`+${amount} REP: ${reason}`, 'lr');
   fnotif(`+${amount} REP`, 'rep');

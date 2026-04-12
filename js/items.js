@@ -98,11 +98,16 @@ function burnCihalova(){
 
 function triggerDeath(msg, title = 'SMRT', sub = 'KONEC HRY · KŘEMŽE PLÁČE', deathType = null){
   gs.running = false; gs.dead = true;
-  document.getElementById('death-title').textContent = title;
-  document.getElementById('death-sub').textContent   = sub;
-  document.getElementById('death-msg').textContent   = msg;
-  document.getElementById('death').classList.add('on');
-  profileSaveDeath(deathType);
+  screenShake(400);
+  // Red flash on canvas before death screen
+  gs._deathFlash = { t: gs.ts };
+  setTimeout(()=>{
+    document.getElementById('death-title').textContent = title;
+    document.getElementById('death-sub').textContent   = sub;
+    document.getElementById('death-msg').textContent   = msg;
+    document.getElementById('death').classList.add('on');
+    profileSaveDeath(deathType);
+  }, 350);
 }
 
 function triggerStabDeath(){

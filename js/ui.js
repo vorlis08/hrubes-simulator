@@ -61,7 +61,17 @@ function updateInv(){
     const visible = cnt > 0 || pytelSpec;
     if(el) el.textContent = (k === 'kratom' || k === 'fake_kratom') ? cnt + 'g' : (pytelSpec ? '👩‍🏫' : cnt);
     const sl = document.getElementById('sl-' + k);
-    if(sl) sl.style.display = visible ? '' : 'none';
+    if(sl){
+      const wasHidden = sl.style.display === 'none';
+      sl.style.display = visible ? '' : 'none';
+      // Pop animation when item first appears
+      if(wasHidden && visible){
+        sl.classList.remove('new-item');
+        void sl.offsetWidth; // force reflow
+        sl.classList.add('new-item');
+        setTimeout(()=> sl.classList.remove('new-item'), 550);
+      }
+    }
   }
 
   // Oddělovače – schovat pokud jsou obě sousední skupiny prázdné

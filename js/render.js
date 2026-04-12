@@ -110,12 +110,21 @@ function drawDeathBody(anim, t, bodyColor, type){
 // ─── Sdílený helper: kreslení očí na hlavě ────────────────────────────────
 function drawPixelFace(cx, cy, sz){
   const er=3.6*sz;
+  // Blink cycle: every ~4s, blink lasts ~150ms
+  const blinkPhase = ((gs.ts * 0.001 + cx*0.1) % 4.0);
+  const isBlinking = blinkPhase > 3.85;
   ctx.fillStyle='#1e1a2e';
-  ctx.beginPath(); ctx.arc(cx-6*sz,cy,er,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx+6*sz,cy,er,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#fff';
-  ctx.beginPath(); ctx.arc(cx-4.5*sz,cy-1.6*sz,er*0.42,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx+7.5*sz,cy-1.6*sz,er*0.42,0,Math.PI*2); ctx.fill();
+  if(isBlinking){
+    // Closed eyes – horizontal lines
+    ctx.fillRect(cx-8.5*sz,cy-1*sz,5*sz,2*sz);
+    ctx.fillRect(cx+3.5*sz,cy-1*sz,5*sz,2*sz);
+  } else {
+    ctx.beginPath(); ctx.arc(cx-6*sz,cy,er,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+6*sz,cy,er,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(cx-4.5*sz,cy-1.6*sz,er*0.42,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+7.5*sz,cy-1.6*sz,er*0.42,0,Math.PI*2); ctx.fill();
+  }
 }
 function drawAngryFace(cx, cy, sz){
   drawPixelFace(cx,cy,sz);
@@ -615,11 +624,28 @@ function drawBilla(W,H,t){
     ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.fillRect(bx+2,by+2,W*0.008,H*0.010);
   }
 
-  // BILLA logo na zdi
-  ctx.font=`bold ${Math.floor(W*0.032)}px Impact,Arial Black,sans-serif`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.strokeStyle='#800'; ctx.lineWidth=4; ctx.strokeText('BILLA',W*0.38,H*0.052);
-  ctx.fillStyle='#ee1111'; ctx.fillText('BILLA',W*0.38,H*0.052);
+  // BILLA neonový logo na zdi – s flickerem
+  {
+    const neonFlk = Math.sin(t*0.015)*Math.sin(t*0.0043);
+    const isNeonFlicker = neonFlk > 0.88;
+    const neonAlpha = isNeonFlicker ? 0.4+Math.random()*0.3 : 1.0;
+    ctx.save();
+    ctx.globalAlpha = neonAlpha;
+    ctx.font=`bold ${Math.floor(W*0.032)}px Impact,Arial Black,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    // neon glow
+    ctx.shadowColor='rgba(255,20,20,0.7)'; ctx.shadowBlur=isNeonFlicker?2:15;
+    ctx.strokeStyle='#800'; ctx.lineWidth=4; ctx.strokeText('BILLA',W*0.38,H*0.052);
+    ctx.fillStyle='#ee1111'; ctx.fillText('BILLA',W*0.38,H*0.052);
+    ctx.shadowBlur=0;
+    ctx.restore();
+    // neon ambient glow on wall
+    if(!isNeonFlicker){
+      const nG=ctx.createRadialGradient(W*0.38,H*0.052,0,W*0.38,H*0.052,W*0.15);
+      nG.addColorStop(0,'rgba(255,30,30,0.08)'); nG.addColorStop(1,'transparent');
+      ctx.fillStyle=nG; ctx.fillRect(W*0.2,0,W*0.36,H*0.15);
+    }
+  }
 
   // ── Podlahové odlesky — lesklé skvrny pod zářivkami ──
   ctx.save();
@@ -1250,6 +1276,21 @@ function drawKremze(W,H,t){
   }
   ctx.restore();
 
+  // ── Poryvy větru – šikmé pruhy ──
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1;
+  const windPhase = Math.sin(t*0.0004)*0.5+0.5; // 0-1 pulzace intenzity
+  if(windPhase > 0.6){
+    const windA = (windPhase-0.6)*0.15;
+    for(let wi=0;wi<12;wi++){
+      const wx = ((t*0.08+wi*W*0.12)%(W*1.4))-W*0.2;
+      const wy = H*0.2+Math.sin(wi*3.7)*H*0.4;
+      ctx.strokeStyle=`rgba(255,255,255,${windA*(0.5+Math.sin(wi)*0.5)})`;
+      ctx.beginPath(); ctx.moveTo(wx,wy); ctx.lineTo(wx+W*0.08,wy-H*0.02); ctx.stroke();
+    }
+  }
+  ctx.restore();
+
   // ── Padající listí – hodně, výraznější ──
   ctx.save();
   const leafCols=['rgba(200,110,15,','rgba(220,70,20,','rgba(150,170,40,','rgba(230,150,20,','rgba(180,60,30,'];
@@ -1839,6 +1880,35 @@ function drawKoupelna(W,H,t){
   ctx.strokeStyle='rgba(100,120,160,0.20)'; ctx.lineWidth=4;
   ctx.beginPath(); ctx.moveTo(mx2+W*0.03,my2+H*0.06); ctx.quadraticCurveTo(mx2+W*0.09,my2+H*0.10,mx2+W*0.15,my2+H*0.08); ctx.stroke();
   ctx.restore();
+
+  // ── Kapající kohoutek ──
+  ctx.save();
+  const faucX=W*0.48, faucY=H*0.32;
+  const dripPhase = ((t*0.0012)%1);
+  if(dripPhase < 0.7){
+    // Growing drop
+    const dropSize = dripPhase/0.7 * 4;
+    ctx.fillStyle=`rgba(140,180,220,${0.5+dripPhase*0.3})`;
+    ctx.beginPath(); ctx.arc(faucX, faucY+dropSize*2, dropSize, 0, Math.PI*2); ctx.fill();
+    // Water highlight
+    ctx.fillStyle='rgba(255,255,255,0.4)';
+    ctx.beginPath(); ctx.arc(faucX-1, faucY+dropSize*2-1, dropSize*0.3, 0, Math.PI*2); ctx.fill();
+  } else {
+    // Falling drop
+    const fallProg = (dripPhase-0.7)/0.3;
+    const fallY = faucY + 8 + fallProg * H*0.15;
+    const fallAlpha = (1-fallProg)*0.6;
+    ctx.fillStyle=`rgba(140,180,220,${fallAlpha})`;
+    ctx.beginPath(); ctx.ellipse(faucX, fallY, 2, 3+fallProg*2, 0, 0, Math.PI*2); ctx.fill();
+    // Splash at bottom
+    if(fallProg > 0.8){
+      const splProg = (fallProg-0.8)/0.2;
+      ctx.strokeStyle=`rgba(140,180,220,${(1-splProg)*0.4})`;
+      ctx.lineWidth=1;
+      ctx.beginPath(); ctx.ellipse(faucX, faucY+H*0.15+8, 3+splProg*8, 1+splProg*2, 0, 0, Math.PI*2); ctx.stroke();
+    }
+  }
+  ctx.restore();
 }
 
 // ─── Sklep ────────────────────────────────────────────────────────────────────
@@ -2195,6 +2265,25 @@ function drawSklep(W,H,t){
     ctx.strokeStyle=`rgba(255,120,20,${skA*0.5})`;
     ctx.lineWidth=0.8;
     ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx,sy+4); ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Plovoucí runové symboly kolem pentagramu ──
+  ctx.save();
+  const runeSyms = ['ᛟ','ᚠ','ᛗ','ᛉ','ᚨ','ᛊ','ᚦ','ᛃ'];
+  ctx.font='bold 14px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let ri=0;ri<runeSyms.length;ri++){
+    const rAng = ft*0.3 + ri*Math.PI*2/runeSyms.length;
+    const rOrbit = pr*1.25 + Math.sin(ft*0.5+ri)*10;
+    const rx = pcx + Math.cos(rAng)*rOrbit;
+    const ry = pcy + Math.sin(rAng)*rOrbit*0.5;
+    const rAlpha = 0.3 + 0.2*Math.sin(ft+ri*1.3);
+    // glow behind rune
+    const rG=ctx.createRadialGradient(rx,ry,0,rx,ry,14);
+    rG.addColorStop(0,`rgba(255,50,0,${rAlpha*0.5})`); rG.addColorStop(1,'transparent');
+    ctx.fillStyle=rG; ctx.beginPath(); ctx.arc(rx,ry,14,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=`rgba(255,${80+Math.floor(Math.sin(ft*0.8+ri)*40)},20,${rAlpha})`;
+    ctx.fillText(runeSyms[ri],rx,ry);
   }
   ctx.restore();
 
@@ -2657,6 +2746,29 @@ function drawDoma(W,H,t){
   ctx.beginPath(); ctx.ellipse(cx, cy + 20, rugRx, rugRy, 0, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = 'rgba(100,60,120,0.15)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.ellipse(cx, cy + 20, rugRx - 8, rugRy - 6, 0, 0, Math.PI * 2); ctx.stroke();
+
+  // ── Měsíční paprsek z okna ──
+  ctx.save();
+  const mwx = W*0.78, mwy = H*0.08, mww = W*0.16, mwh = H*0.28;
+  const moonG = ctx.createLinearGradient(mwx, mwy+mwh, mwx-W*0.15, H);
+  moonG.addColorStop(0,'rgba(180,200,255,0.06)');
+  moonG.addColorStop(0.5,'rgba(160,180,240,0.03)');
+  moonG.addColorStop(1,'transparent');
+  ctx.fillStyle = moonG;
+  ctx.beginPath();
+  ctx.moveTo(mwx,mwy+mwh); ctx.lineTo(mwx+mww,mwy+mwh);
+  ctx.lineTo(mwx+mww-W*0.10,H); ctx.lineTo(mwx-W*0.20,H);
+  ctx.closePath(); ctx.fill();
+  // Dust motes in moonlight
+  for(let di=0;di<12;di++){
+    const dlife = ((t*0.00008+di*0.16)%1);
+    const ddx = mwx+mww*0.3 + Math.sin(di*4.7+t*0.0004)*W*0.08 - dlife*W*0.12;
+    const ddy = mwy+mwh + dlife*(H-mwy-mwh)*0.8;
+    const dda = 0.15+0.12*Math.sin(t*0.002+di*1.3);
+    ctx.fillStyle=`rgba(200,210,255,${dda})`;
+    ctx.beginPath(); ctx.arc(ddx,ddy,0.7+Math.sin(di*2.3)*0.4,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
 }
 
 // ─── Hlavní render ─────────────────────────────────────────────────────────
@@ -2851,6 +2963,16 @@ function render(){
       ctx.fillStyle=n.color; ctx.beginPath(); ctx.arc(0,-14,26*sz,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(0,-32,20*sz,0,Math.PI*2); ctx.fill();
       drawDazedFace(0,-32,sz);
+      // Dazed spirals above head
+      for(let sp=0;sp<3;sp++){
+        const spAng = t*0.004 + sp*Math.PI*2/3;
+        const spR = 12 + Math.sin(t*0.003+sp)*4;
+        const spx = Math.cos(spAng)*spR;
+        const spy = -42 + Math.sin(spAng)*spR*0.3 - sp*5;
+        ctx.fillStyle=`rgba(255,255,100,${0.4+Math.sin(t*0.005+sp)*0.2})`;
+        ctx.font='8px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('⭐',spx,spy);
+      }
       ctx.restore(); return;
     }
 
@@ -2878,6 +3000,58 @@ function render(){
     ctx.beginPath(); ctx.moveTo(n.x - 20*sz, bY - 4*sz); ctx.lineTo(n.x - 20*sz - armLen, bY + armSway); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(n.x + 20*sz, bY - 4*sz); ctx.lineTo(n.x + 20*sz + armLen, bY - armSway); ctx.stroke();
 
+    // ── NPC-specific effects ──
+    // Šaman – mystická aura s rotujícími symboly
+    if(n.id==='saman' && !gs.saman_dead){
+      ctx.save();
+      const auraR = 40*sz;
+      const auraG = ctx.createRadialGradient(n.x,bY,0,n.x,bY,auraR);
+      auraG.addColorStop(0,`rgba(139,92,246,${0.12+0.06*Math.sin(t*0.002)})`);
+      auraG.addColorStop(1,'transparent');
+      ctx.fillStyle=auraG; ctx.beginPath(); ctx.arc(n.x,bY,auraR,0,Math.PI*2); ctx.fill();
+      // rotating rune symbols
+      const runes = ['☽','✦','◈','⚶'];
+      ctx.font='9px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      for(let ri=0;ri<runes.length;ri++){
+        const rAng = t*0.0015 + ri*Math.PI/2;
+        const rr = 35*sz;
+        const rx = n.x + Math.cos(rAng)*rr;
+        const ry = bY + Math.sin(rAng)*rr*0.5;
+        ctx.fillStyle=`rgba(180,140,255,${0.3+0.15*Math.sin(t*0.003+ri)})`;
+        ctx.fillText(runes[ri],rx,ry);
+      }
+      ctx.restore();
+    }
+    // Johnny vila – cigaretový dým
+    if(n.id==='johnny_vila'){
+      ctx.save();
+      for(let si=0;si<5;si++){
+        const sLife=((t*0.00015+si*0.25)%1);
+        const smX=n.x+15*sz+Math.sin(sLife*Math.PI+si)*8;
+        const smY=bY-18*sz-sLife*40*sz;
+        const smR=2+sLife*6;
+        const smA=0.15*(1-sLife);
+        ctx.fillStyle=`rgba(180,180,180,${smA})`;
+        ctx.beginPath(); ctx.arc(smX,smY,smR,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+    // Figurová – nervous fidget (hand shake)
+    if(n.id==='figurova' && !gs.story.figurova_sanitka){
+      const fidget = Math.sin(t*0.012+n.x)*1.5;
+      ctx.strokeStyle='rgba(236,72,153,0.25)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(n.x,bY-22*sz,24*sz,0,Math.PI*2); ctx.stroke();
+    }
+    // Pláteníková – books floating
+    if(n.id==='platenikova'){
+      ctx.save();
+      ctx.font='10px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      const bookY = bY-55*sz + Math.sin(t*0.003)*4;
+      ctx.fillStyle=`rgba(255,255,255,${0.3+0.1*Math.sin(t*0.004)})`;
+      ctx.fillText('📚',n.x-10*sz,bookY);
+      ctx.restore();
+    }
+
     // Head
     ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(n.x,bY-22*sz,20*sz,0,Math.PI*2); ctx.fill();
     drawPixelFace(n.x, bY-22*sz, sz);
@@ -2886,9 +3060,20 @@ function render(){
     const qBaseY=bY-(68+20*(sz-1));
     if(!done){
       const qy=qBaseY+Math.sin(t*0.004)*3.5;
+      // Quest marker glow
+      const qGlowA = 0.15 + 0.10*Math.sin(t*0.005);
+      const qG=ctx.createRadialGradient(n.x,qy+4,0,n.x,qy+4,16);
+      qG.addColorStop(0,`rgba(240,192,64,${qGlowA})`); qG.addColorStop(1,'transparent');
+      ctx.fillStyle=qG; ctx.beginPath(); ctx.arc(n.x,qy+4,16,0,Math.PI*2); ctx.fill();
+      // Marker triangle
       ctx.fillStyle='#f0c040'; ctx.beginPath(); ctx.moveTo(n.x,qy+9); ctx.lineTo(n.x-7,qy); ctx.lineTo(n.x+7,qy); ctx.fill();
       ctx.fillStyle='#000'; ctx.font='bold 8.5px Outfit,sans-serif'; ctx.textBaseline='middle'; ctx.fillText('!',n.x,qy+4);
     } else {
+      // Done marker glow
+      const dGlowA = 0.12 + 0.06*Math.sin(t*0.003);
+      const dG=ctx.createRadialGradient(n.x,qBaseY,0,n.x,qBaseY,14);
+      dG.addColorStop(0,`rgba(34,197,94,${dGlowA})`); dG.addColorStop(1,'transparent');
+      ctx.fillStyle=dG; ctx.beginPath(); ctx.arc(n.x,qBaseY,14,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(n.x,qBaseY,6,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#fff'; ctx.font='8px sans-serif'; ctx.textBaseline='middle'; ctx.fillText('✓',n.x,qBaseY);
     }
@@ -2927,22 +3112,59 @@ function render(){
   // Head
   ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(0,-17,18,0,Math.PI*2); ctx.fill();
   const ef=p.face==='l'?-1:1;
+  // Eye blinking
+  const pBlinkPhase = ((t * 0.001) % 3.5);
+  const pIsBlinking = pBlinkPhase > 3.35;
   // Eyes
-  ctx.fillStyle='#1e293b';
-  ctx.beginPath(); ctx.arc(ef*5,-19,4,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(ef*5+11,-19,4,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#fff';
-  ctx.beginPath(); ctx.arc(ef*5.5,-20,1.8,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(ef*5.5+11,-20,1.8,0,Math.PI*2); ctx.fill();
-  // Mouth – subtle expression
+  if(pIsBlinking){
+    ctx.fillStyle='#1e293b';
+    ctx.fillRect(ef*5-4,-20,8,2);
+    ctx.fillRect(ef*5+7,-20,8,2);
+  } else {
+    ctx.fillStyle='#1e293b';
+    ctx.beginPath(); ctx.arc(ef*5,-19,4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(ef*5+11,-19,4,0,Math.PI*2); ctx.fill();
+    // Pupil follows movement direction
+    const pupilOff = p.mv ? ef*1.2 : 0;
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(ef*5.5+pupilOff,-20,1.8,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(ef*5.5+11+pupilOff,-20,1.8,0,Math.PI*2); ctx.fill();
+  }
+  // Mouth – expression changes with energy
   ctx.strokeStyle='rgba(80,40,40,0.4)'; ctx.lineWidth=1.5; ctx.lineCap='round';
-  ctx.beginPath(); ctx.arc(ef*8,-12,3,0.1,Math.PI-0.1); ctx.stroke();
+  if(gs.energy > 50){
+    // Slight smile
+    ctx.beginPath(); ctx.arc(ef*8,-12,3,0.1,Math.PI-0.1); ctx.stroke();
+  } else if(gs.energy > 20){
+    // Neutral line
+    ctx.beginPath(); ctx.moveTo(ef*5,-11); ctx.lineTo(ef*11,-11); ctx.stroke();
+  } else {
+    // Frown
+    ctx.beginPath(); ctx.arc(ef*8,-9,3,Math.PI+0.1,Math.PI*2-0.1); ctx.stroke();
+  }
   ctx.restore();
 
   if(gs.kratom_on&&gs.kratom_t>0){
     const kpct=gs.kratom_t/gs.kratom_max;
-    ctx.strokeStyle='#10b981'; ctx.lineWidth=3; ctx.lineCap='round';
+    // Outer glow
+    const kGlow=ctx.createRadialGradient(px,py+walkBob,28,px,py+walkBob,45);
+    kGlow.addColorStop(0,`rgba(16,185,129,${0.08+0.04*Math.sin(t*0.004)})`);
+    kGlow.addColorStop(1,'transparent');
+    ctx.fillStyle=kGlow; ctx.beginPath(); ctx.arc(px,py+walkBob,45,0,Math.PI*2); ctx.fill();
+    // Progress ring
+    ctx.strokeStyle='rgba(16,185,129,0.25)'; ctx.lineWidth=3; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(px,py+walkBob,32,0,Math.PI*2); ctx.stroke();
+    ctx.strokeStyle='#10b981'; ctx.lineWidth=3;
     ctx.beginPath(); ctx.arc(px,py+walkBob,32,-Math.PI/2,-Math.PI/2+kpct*Math.PI*2); ctx.stroke();
+    // Floating green particles
+    for(let ki=0;ki<5;ki++){
+      const kAng = t*0.003 + ki*Math.PI*2/5;
+      const kR = 35 + Math.sin(t*0.004+ki)*8;
+      const kx = px + Math.cos(kAng)*kR;
+      const ky = py + walkBob + Math.sin(kAng)*kR*0.5 - Math.sin(t*0.005+ki)*5;
+      ctx.fillStyle=`rgba(16,185,129,${0.3+0.15*Math.sin(t*0.006+ki)})`;
+      ctx.beginPath(); ctx.arc(kx,ky,1.5,0,Math.PI*2); ctx.fill();
+    }
   }
   if(p.mv){
     // Dust particles when walking – more detailed
@@ -3037,6 +3259,91 @@ function render(){
     vigR.addColorStop(0.6,'rgba(0,0,0,0.08)');
     vigR.addColorStop(1,`rgba(0,0,0,${fx.vigA})`);
     ctx.fillStyle=vigR; ctx.fillRect(0,0,W,H);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  ROOM TRANSITION FADE
+  // ══════════════════════════════════════════════════════════════════════════
+  if(gs.roomFadeAlpha > 0){
+    ctx.fillStyle=`rgba(0,0,0,${gs.roomFadeAlpha})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  DEATH RED FLASH
+  // ══════════════════════════════════════════════════════════════════════════
+  if(gs._deathFlash){
+    const elapsed = t - gs._deathFlash.t;
+    const dur = 500;
+    if(elapsed < dur){
+      const prog = elapsed / dur;
+      const alpha = (1 - prog) * 0.7;
+      ctx.fillStyle=`rgba(200,0,0,${alpha})`;
+      ctx.fillRect(0,0,W,H);
+      // desaturate/darken
+      ctx.fillStyle=`rgba(0,0,0,${prog * 0.6})`;
+      ctx.fillRect(0,0,W,H);
+    } else {
+      gs._deathFlash = null;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  ITEM PICKUP FLASH RING
+  // ══════════════════════════════════════════════════════════════════════════
+  if(gs._pickupFlash){
+    const pf = gs._pickupFlash;
+    const elapsed = t - pf.t;
+    const dur = 400;
+    if(elapsed < dur){
+      const prog = elapsed / dur;
+      const radius = 15 + prog * 50;
+      const alpha = (1 - prog) * 0.6;
+      ctx.strokeStyle = `rgba(${pf.r},${pf.g},${pf.b},${alpha})`;
+      ctx.lineWidth = 3 * (1 - prog);
+      ctx.beginPath(); ctx.arc(pf.x, pf.y, radius, 0, Math.PI*2); ctx.stroke();
+      // rising particles
+      for(let i = 0; i < 6; i++){
+        const angle = (i / 6) * Math.PI * 2 + prog * 2;
+        const pr = radius * 0.6;
+        const px = pf.x + Math.cos(angle) * pr;
+        const py = pf.y + Math.sin(angle) * pr - prog * 20;
+        ctx.fillStyle = `rgba(${pf.r},${pf.g},${pf.b},${alpha * 0.7})`;
+        ctx.beginPath(); ctx.arc(px, py, 2 * (1-prog), 0, Math.PI*2); ctx.fill();
+      }
+    } else {
+      gs._pickupFlash = null;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  REP GAIN SHIMMER
+  // ══════════════════════════════════════════════════════════════════════════
+  if(gs._repShimmer){
+    const rs = gs._repShimmer;
+    const elapsed = t - rs.t;
+    const dur = 600;
+    if(elapsed < dur){
+      const prog = elapsed / dur;
+      const alpha = (1 - prog) * 0.4;
+      const radius = 30 + prog * 25;
+      // golden ring around player
+      ctx.strokeStyle = `rgba(255,200,50,${alpha})`;
+      ctx.lineWidth = 2.5 * (1 - prog);
+      ctx.beginPath(); ctx.arc(p.x, p.y, radius, 0, Math.PI*2); ctx.stroke();
+      // sparkles
+      for(let i = 0; i < 8; i++){
+        const ang = (i / 8) * Math.PI * 2 + prog * 3;
+        const sr = radius * (0.8 + Math.sin(i*2.1)*0.3);
+        const sx = p.x + Math.cos(ang) * sr;
+        const sy = p.y + Math.sin(ang) * sr - prog * 15;
+        const sa = alpha * (0.5 + Math.sin(i*3)*0.5);
+        ctx.fillStyle = `rgba(255,215,0,${sa})`;
+        ctx.beginPath(); ctx.arc(sx, sy, 1.5*(1-prog*0.5), 0, Math.PI*2); ctx.fill();
+      }
+    } else {
+      gs._repShimmer = null;
+    }
   }
 
 }
