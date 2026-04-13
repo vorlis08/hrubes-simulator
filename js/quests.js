@@ -472,16 +472,37 @@ const QF = {
   q_villa_drug_drink(){
     // Volá se z interact() po nasypání prášku do drinku
     gs.story.jana_drugged_villa = true;
-    gs.story.johnny_villa_done = true;
     addLog('Nasypals prášek do Janina drinku. Za chvíli zmlkla.', 'lw');
     addLog('Johnny se otočil a kývl. "Díky, brácho."', 'ls');
     setTimeout(() => {
       gs.money += 500; updateHUD();
       gainRep(3, 'Pomohl Johnnymu');
-      addLog('Johnny ti strčil 500 Kč do kapsy. "Nikdy jsme se neviděli, okay?"', 'lm');
+      addLog('Johnny ti strčil 500 Kč do kapsy. Promluv s ním – má pro tebe víc.', 'lm');
       fnotif('+500 Kč 💰','pos'); fnotif('+3 REP','rep');
       doneObj('side_johnny');
     }, 2000);
+  },
+  q_johnny_villa_rewards(){
+    gs.story.johnny_villa_rewards = true;
+    gs.inv.membership_vaza = 1;
+    gs.inv.klice_vila = 1;
+    updateInv();
+    addLog('Johnny ti dal Vaza Systems membership kartičku – ultimátní členství. 💳', 'lm');
+    addLog('A klíče od baráku. "Klidně se stav, kdykoli, Fando."', 'ls');
+    fnotif('💳 Vaza Systems Membership!','itm');
+    fnotif('🔑 Klíče od vily','itm');
+    if(activeProfile){
+      activeProfile.artifacts.membership_vaza = true;
+      profileSaveProgress();
+    }
+    closeDialog();
+    // Po odchodu z vily se nastaví johnny_villa_done
+  },
+  q_johnny_return_leave(){
+    gs.story.johnny_return_left = true;
+    gs.room = 'kremze'; initRoom();
+    closeDialog();
+    addLog('Odešel jsi z Johnnyho vily.', 'ls');
   },
   // Koupelna – šuplík se želízky
   q_koupelna_drawer(){
@@ -551,6 +572,10 @@ const QF = {
     gs.inv.cibule = 1; updateInv();
     gainRep(5, 'Honza se dozvěděl o Číhalové');
     fnotif('🧅 +1 Cibule','itm');
+    if(activeProfile){
+      activeProfile.artifacts.cibule = true;
+      profileSaveProgress();
+    }
     addObj('side_bezdak_cibule');
     doneObj('quest_honza_cibule');
     updateHUD();
@@ -803,6 +828,7 @@ const QF = {
           addLog('🏆 Získal jsi NEJVYŠŠÍ POCHVALU ŘEDITELKY!', 'lr');
           fnotif('🏆 MATURITA!', 'rep');
           fnotif('🏆 POCHVALA!', 'rep');
+          showMaturita();
           // Artefakt + achievement
           if(activeProfile){
             activeProfile.artifacts.maturita = true;

@@ -267,8 +267,15 @@ function getStage(id){
       if(s.mraz_explain_line === 1) return 2;
       if(s.mraz_explain_line === 0) return 1;
       return 0;
-    case 'johnny_vila': return gs.story.johnny_cuffed ? 1 : 0;
-    case 'jana_vila':   return gs.story.johnny_cuffed ? 1 : 0;
+    case 'johnny_vila':
+      if(s.johnny_return_visit) return 3;
+      if(s.jana_drugged_villa && !s.johnny_villa_rewards) return 2;
+      if(s.johnny_cuffed) return 1;
+      return 0;
+    case 'jana_vila':
+      if(s.johnny_return_visit) return 2;
+      if(s.johnny_cuffed) return 1;
+      return 0;
     default: return 0;
   }
 }
@@ -451,3 +458,6 @@ function closeFotoKubatova(){ document.getElementById('foto-kubatova-ov').classL
 
 function showC2Cert(){ document.getElementById('c2-cert-ov').classList.add('on'); }
 function closeC2Cert(){ document.getElementById('c2-cert-ov').classList.remove('on'); }
+
+function showMaturita(){ document.getElementById('maturita-ov').classList.add('on'); }
+function closeMaturita(){ document.getElementById('maturita-ov').classList.remove('on'); }

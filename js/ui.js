@@ -75,6 +75,7 @@ function updateInv(){
     fig_nuz:'ic-fig_nuz', fig_gun:'ic-fig_gun', milan_phone:'ic-milan_phone',
     zelizka:'ic-zelizka', prasek:'ic-prasek', klice_vila:'ic-klice_vila', podprsenka:'ic-podprsenka',
     klice_fabie:'ic-klice_fabie', saman_hlava:'ic-saman_hlava',
+    membership_vaza:'ic-membership_vaza',
   };
   for(const [k, id] of Object.entries(map)){
     const cnt = gs.inv[k] || 0;
@@ -83,13 +84,23 @@ function updateInv(){
     const visible = cnt > 0 || pytelSpec;
     if(el) el.textContent = (k === 'kratom' || k === 'fake_kratom') ? cnt + 'g' : (pytelSpec ? '👩‍🏫' : cnt);
     const sl = document.getElementById('sl-' + k);
-    if(sl) sl.style.display = visible ? '' : 'none';
+    if(sl){
+      const wasHidden = sl.style.display === 'none';
+      sl.style.display = visible ? '' : 'none';
+      // Pop animation when item first appears
+      if(wasHidden && visible){
+        sl.classList.remove('new-item');
+        void sl.offsetWidth; // force reflow
+        sl.classList.add('new-item');
+        setTimeout(()=> sl.classList.remove('new-item'), 550);
+      }
+    }
   }
 
   // Oddělovače – schovat pokud jsou obě sousední skupiny prázdné
   const g1 = ['kratom','blend','zemle'];
   const g2 = ['piko','fake_kratom','pytel'];
-  const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','foto_kubatova','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','podprsenka'];
+  const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','foto_kubatova','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','podprsenka','membership_vaza'];
   function grpVisible(keys){ return keys.some(k => (gs.inv[k]||0) > 0 || (k==='pytel' && gs.cihalova_in_bag)); }
   const seps = document.querySelectorAll('.isep');
   if(seps[0]) seps[0].style.display = (grpVisible(g1) && grpVisible(g2)) ? '' : 'none';
@@ -109,13 +120,9 @@ function addLog(txt, cls = ''){
 }
 
 function fnotif(txt, type = 'pos'){
-  const el = document.createElement('div');
-  el.className   = 'fn ' + type;
-  el.textContent = txt;
-  el.style.left  = (22 + Math.random() * 56) + '%';
-  el.style.top   = (36 + Math.random() * 22) + '%';
-  document.getElementById('gc').appendChild(el);
-  setTimeout(() => el.remove(), 2200);
+  // Zápis do deníku místo levitujících notifikací
+  const clsMap = {pos:'lr', neg:'lw', itm:'lm', rep:'lp', lw:'lw'};
+  addLog(txt, clsMap[type] || 'ls');
 }
 
 function screenShake(ms){

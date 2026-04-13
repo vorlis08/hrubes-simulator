@@ -9,7 +9,7 @@ const gs = {
   money: 150,
   energy: 100,
   rep: 0,
-  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, fake_kratom:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, foto_kubatova:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, saman_hlava:0 },
+  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, fake_kratom:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, foto_kubatova:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, saman_hlava:0, membership_vaza:0 },
 
   kratom_on:      false,
   kratom_t:       0,
@@ -64,6 +64,10 @@ const gs = {
   won: false,
   villa_deadline: 0,
   milan_leave_deadline: 0,
+  johnny_stay_deadline: 0,
+
+  // Room transition fade
+  roomFadeAlpha: 0,   // 1 = plně černé, klesá k 0
 
   // Smrti NPC – animace
   mates_death_anim: null,   // { x, y, startTime }
@@ -72,9 +76,15 @@ const gs = {
   // (nastaveno přes gs.story.figurova_sanitka)
 };
 
+function triggerPickupFlash(x, y, color){
+  const c = color || [16,185,129];
+  gs._pickupFlash = { x, y, r:c[0], g:c[1], b:c[2], t:gs.ts };
+}
+
 function gainRep(amount, reason){
   if(amount <= 0) return;
   gs.rep += amount;
+  gs._repShimmer = { t: gs.ts };
   updateHUD();
   if(reason) addLog(`+${amount} REP: ${reason}`, 'lr');
   fnotif(`+${amount} REP`, 'rep');

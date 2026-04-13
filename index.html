@@ -275,7 +275,7 @@
     <div class="isl" id="sl-piko" onclick="usePikoSelf()" title="💊 Nebezpečné!" style="display:none">
       <span class="ii">💊</span><span class="ic" id="ic-piko">0</span><span class="ilbl">Piko</span>
     </div>
-    <div class="isl" id="sl-fake" title="🎭 Fejkový kratom" style="display:none">
+    <div class="isl" id="sl-fake_kratom" title="🎭 Fejkový kratom" style="display:none">
       <span class="ii">🎭</span><span class="ic" id="ic-fake">0g</span><span class="ilbl">Fejk</span>
     </div>
     <div class="isl" id="sl-pytel" title="🗑️ Pytel na odpadky" style="display:none">
@@ -288,7 +288,7 @@
     <div class="isl" id="sl-cibule" title="🧅 Cibule" style="display:none">
       <span class="ii">🧅</span><span class="ic" id="ic-cibule">0</span><span class="ilbl">Cibule</span>
     </div>
-    <div class="isl" id="sl-kava" title="☕ Kratom v kafe" style="display:none">
+    <div class="isl" id="sl-kratom_kava" title="☕ Kratom v kafe" style="display:none">
       <span class="ii">☕</span><span class="ic" id="ic-kava">0</span><span class="ilbl">Kava</span>
     </div>
     <div class="isl" id="sl-cert" title="📋 Certifikát" style="display:none">
@@ -338,6 +338,9 @@
     </div>
     <div class="isl" id="sl-saman_hlava" title="🩸 Šamanova hlava" style="display:none">
       <span class="ii">🩸</span><span class="ic" id="ic-saman_hlava">1</span><span class="ilbl">Hlava</span>
+    </div>
+    <div class="isl" id="sl-membership_vaza" title="💳 Vaza Systems Membership" style="display:none">
+      <span class="ii">💳</span><span class="ic" id="ic-membership_vaza">1</span><span class="ilbl">Vaza</span>
     </div>
   </div></div>
 
@@ -392,6 +395,12 @@
 <!-- C2 certifikát overlay -->
 <div id="c2-cert-ov" onclick="closeC2Cert()">
   <img id="c2-cert-img" src="img/cert_c2.png" alt="Certifikát C2"/>
+  <div id="note-hint">klikni pro zavření</div>
+</div>
+
+<!-- Maturita overlay -->
+<div id="maturita-ov" onclick="closeMaturita()">
+  <img id="maturita-img" src="img/maturita.png" alt="Maturitní vysvědčení"/>
   <div id="note-hint">klikni pro zavření</div>
 </div>
 
