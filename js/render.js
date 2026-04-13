@@ -3,6 +3,31 @@
 //  VYKRESLOVACÍ ENGINE
 // ═══════════════════════════════════════════
 
+// ─── Performance cache ───────────────────────────────────────────────────
+const _cache = { W:0, H:0, scanPat:null, vig:null, roomGrads:{}, frame:0, PI2:Math.PI*2 };
+const _sin = Math.sin, _cos = Math.cos;
+function _initCache(W, H){
+  if(_cache.W === W && _cache.H === H) return;
+  _cache.W = W; _cache.H = H; _cache.roomGrads = {};
+  // Pre-render scanlines as a repeating pattern
+  const sc = document.createElement('canvas');
+  sc.width = 1; sc.height = 6;
+  const sx = sc.getContext('2d');
+  sx.fillStyle = 'rgba(0,0,0,0.04)';
+  sx.fillRect(0, 0, 1, 1);
+  _cache.scanPat = ctx.createPattern(sc, 'repeat');
+  // Pre-render vignette
+  const vig = ctx.createRadialGradient(W/2, H/2, H*0.25, W/2, H/2, Math.max(W,H)*0.78);
+  vig.addColorStop(0, 'transparent'); vig.addColorStop(1, 'rgba(0,0,0,0.38)');
+  _cache.vig = vig;
+}
+function _grad(key, fn){
+  if(_cache.roomGrads[key]) return _cache.roomGrads[key];
+  const g = fn();
+  _cache.roomGrads[key] = g;
+  return g;
+}
+
 function shadeColor(hex, pct){
   const n=parseInt(hex.replace('#',''),16), f=pct/100;
   const r=Math.min(255,Math.max(0,(n>>16)+Math.round(255*f)));
@@ -155,6 +180,7 @@ function perspGrid(vpX, hor, W, H, cols, rows, col, lw){
 }
 
 function drawRoom(rm,W,H,t){
+  if(_cache._lastRoom !== gs.room){ _cache._lastRoom = gs.room; _cache.roomGrads = {}; }
   switch(gs.room){
     case 'ucebna':  drawUcebna(W,H,t);  break;
     case 'billa':   drawBilla(W,H,t);   break;
@@ -176,9 +202,7 @@ function drawUcebna(W,H,t){
   const hor=H*0.50, vpX=W*0.50;
 
   // Strop
-  const cg=ctx.createLinearGradient(0,0,0,hor*0.55);
-  cg.addColorStop(0,'#141c2c'); cg.addColorStop(1,'#1c2438');
-  ctx.fillStyle=cg; ctx.fillRect(0,0,W,hor);
+  ctx.fillStyle=_grad('ucebna_ceil',()=>{const g=ctx.createLinearGradient(0,0,0,hor*0.55);g.addColorStop(0,'#141c2c');g.addColorStop(1,'#1c2438');return g;}); ctx.fillRect(0,0,W,hor);
 
   // Stropní lampy (3 fluorescenty) — s občasným blikáním
   [W*0.22,W*0.50,W*0.78].forEach((lx,li)=>{
@@ -944,13 +968,15 @@ function drawHospoda(W,H,t){
     flG.addColorStop(0,'rgba(255,60,0,0.95)'); flG.addColorStop(0.25,'rgba(255,120,0,0.85)'); flG.addColorStop(0.5,'rgba(255,180,30,0.60)'); flG.addColorStop(0.8,'rgba(255,220,60,0.30)'); flG.addColorStop(1,'rgba(255,240,100,0)');
     ctx.fillStyle=flG; ctx.beginPath(); ctx.ellipse(flx,fy+fbh-flh/2,fbw/12,flh/2,0,0,Math.PI*2); ctx.fill();
   }
-  // záře krbu na celou scénu – silnější amber glow
-  const glowG=ctx.createRadialGradient(fx,fy+fbh*0.6,0,fx,fy+fbh*0.6,W*0.45);
-  glowG.addColorStop(0,`rgba(255,120,20,${0.24+0.10*Math.sin(ft*1.3)})`);
-  glowG.addColorStop(0.3,`rgba(255,80,0,${0.10+0.05*Math.sin(ft)})`);
-  glowG.addColorStop(0.6,`rgba(200,60,0,${0.04+0.02*Math.sin(ft*0.8)})`);
-  glowG.addColorStop(1,'transparent');
-  ctx.fillStyle=glowG; ctx.fillRect(0,0,W,H);
+  // záře krbu na celou scénu – silnější amber glow (skip on non-detail frames)
+  if(_cache.detail){
+    const glowG=ctx.createRadialGradient(fx,fy+fbh*0.6,0,fx,fy+fbh*0.6,W*0.45);
+    glowG.addColorStop(0,`rgba(255,120,20,${0.24+0.10*Math.sin(ft*1.3)})`);
+    glowG.addColorStop(0.3,`rgba(255,80,0,${0.10+0.05*Math.sin(ft)})`);
+    glowG.addColorStop(0.6,`rgba(200,60,0,${0.04+0.02*Math.sin(ft*0.8)})`);
+    glowG.addColorStop(1,'transparent');
+    ctx.fillStyle=glowG; ctx.fillRect(0,0,W,H);
+  }
   // polička + svíčky
   ctx.fillStyle='#5a3010'; ctx.fillRect(fx-fbw/2-26,fy-30,fbw+52,10);
   [fx-fbw/2-10,fx+fbw/2+8].forEach(cx=>{
@@ -1007,11 +1033,13 @@ function drawHospoda(W,H,t){
     ctx.strokeRect(sx,fy2,sw,sh);
   });
   // teplý odraz ohně na podlaze – silnější
-  const fireRef=ctx.createRadialGradient(fx,H*0.72,0,fx,H*0.72,W*0.40);
-  fireRef.addColorStop(0,`rgba(255,100,10,${0.12+0.06*Math.sin(ft*1.2)})`);
-  fireRef.addColorStop(0.5,`rgba(255,60,0,${0.04+0.02*Math.sin(ft)})`);
-  fireRef.addColorStop(1,'transparent');
-  ctx.fillStyle=fireRef; ctx.fillRect(0,hor,W,H-hor);
+  if(_cache.detail){
+    const fireRef=ctx.createRadialGradient(fx,H*0.72,0,fx,H*0.72,W*0.40);
+    fireRef.addColorStop(0,`rgba(255,100,10,${0.12+0.06*Math.sin(ft*1.2)})`);
+    fireRef.addColorStop(0.5,`rgba(255,60,0,${0.04+0.02*Math.sin(ft)})`);
+    fireRef.addColorStop(1,'transparent');
+    ctx.fillStyle=fireRef; ctx.fillRect(0,hor,W,H-hor);
+  }
 
   // ── JUKEBOX v rohu (vpravo dole) ──
   {
@@ -1194,9 +1222,10 @@ function drawHospoda(W,H,t){
   ctx.restore();
 
   // ── Celková teplá ambientní záře ──
-  const ambG=ctx.createRadialGradient(W*0.5,H*0.45,0,W*0.5,H*0.45,W*0.6);
-  ambG.addColorStop(0,'rgba(255,180,80,0.06)'); ambG.addColorStop(1,'transparent');
-  ctx.fillStyle=ambG; ctx.fillRect(0,0,W,H);
+  if(_cache.detail){
+    const ambG=_grad('hosp_amb',()=>{const g=ctx.createRadialGradient(W*0.5,H*0.45,0,W*0.5,H*0.45,W*0.6);g.addColorStop(0,'rgba(255,180,80,0.06)');g.addColorStop(1,'transparent');return g;});
+    ctx.fillStyle=ambG; ctx.fillRect(0,0,W,H);
+  }
 
   // ── Prachové částice ve světle ──
   ctx.save();
@@ -2162,17 +2191,18 @@ function drawJohnnyVila(W,H,t){
   ctx.fillStyle=lmpG; ctx.fillRect(0,H*0.30,W*0.30,H*0.50);
   ctx.restore();
 
-  // ── TV ambient — modravý odlesk, mnohem silnější a blikavý ──
-  ctx.save();
-  const tvFlk=0.22+0.12*Math.sin(ft*3.2)+0.08*Math.sin(ft*7.7)+0.06*Math.sin(ft*13.1);
-  const tvG=ctx.createRadialGradient(W*0.74,H*0.14,0,W*0.74,H*0.14,W*0.45);
-  tvG.addColorStop(0,`rgba(80,140,220,${tvFlk})`); tvG.addColorStop(0.3,`rgba(50,90,180,${tvFlk*0.55})`); tvG.addColorStop(0.7,`rgba(30,60,140,${tvFlk*0.18})`); tvG.addColorStop(1,'transparent');
-  ctx.fillStyle=tvG; ctx.fillRect(W*0.35,0,W*0.65,H*0.7);
-  // TV odlesk na podlaze
-  const tvFloorG=ctx.createRadialGradient(W*0.74,H*0.55,0,W*0.74,H*0.55,W*0.28);
-  tvFloorG.addColorStop(0,`rgba(60,110,200,${tvFlk*0.5})`); tvFloorG.addColorStop(1,'transparent');
-  ctx.fillStyle=tvFloorG; ctx.beginPath(); ctx.ellipse(W*0.74,H*0.58,W*0.28,H*0.10,0,0,Math.PI*2); ctx.fill();
-  ctx.restore();
+  // ── TV ambient — modravý odlesk (skip every other frame)
+  if(_cache.detail){
+    ctx.save();
+    const tvFlk=0.22+0.12*Math.sin(ft*3.2)+0.08*Math.sin(ft*7.7)+0.06*Math.sin(ft*13.1);
+    const tvG=ctx.createRadialGradient(W*0.74,H*0.14,0,W*0.74,H*0.14,W*0.45);
+    tvG.addColorStop(0,`rgba(80,140,220,${tvFlk})`); tvG.addColorStop(0.3,`rgba(50,90,180,${tvFlk*0.55})`); tvG.addColorStop(0.7,`rgba(30,60,140,${tvFlk*0.18})`); tvG.addColorStop(1,'transparent');
+    ctx.fillStyle=tvG; ctx.fillRect(W*0.35,0,W*0.65,H*0.7);
+    const tvFloorG=ctx.createRadialGradient(W*0.74,H*0.55,0,W*0.74,H*0.55,W*0.28);
+    tvFloorG.addColorStop(0,`rgba(60,110,200,${tvFlk*0.5})`); tvFloorG.addColorStop(1,'transparent');
+    ctx.fillStyle=tvFloorG; ctx.beginPath(); ctx.ellipse(W*0.74,H*0.58,W*0.28,H*0.10,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
 
   // ── Kouř ze svíčky ──
   ctx.save();
@@ -2637,9 +2667,11 @@ function drawSklep(W,H,t){
   const fl1=Math.sin(t*0.018)*Math.sin(t*0.047)*Math.sin(t*0.031);
   const flkI=Math.sin(t*0.008)*0.5+0.5;
   const ba=Math.max(0.04,flkI*(0.55+fl1*0.35));
-  const blG=ctx.createRadialGradient(bx,byb,0,bx,byb,W*0.32);
-  blG.addColorStop(0,`rgba(255,230,150,${ba})`); blG.addColorStop(0.18,`rgba(255,190,60,${ba*0.45})`); blG.addColorStop(0.5,`rgba(200,120,0,${ba*0.12})`); blG.addColorStop(1,'transparent');
-  ctx.fillStyle=blG; ctx.fillRect(0,0,W,H);
+  if(_cache.detail){
+    const blG=ctx.createRadialGradient(bx,byb,0,bx,byb,W*0.32);
+    blG.addColorStop(0,`rgba(255,230,150,${ba})`); blG.addColorStop(0.18,`rgba(255,190,60,${ba*0.45})`); blG.addColorStop(0.5,`rgba(200,120,0,${ba*0.12})`); blG.addColorStop(1,'transparent');
+    ctx.fillStyle=blG; ctx.fillRect(0,0,W,H);
+  }
   ctx.fillStyle=`rgba(255,235,160,${ba})`; ctx.beginPath(); ctx.arc(bx,byb,W*0.013,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='rgba(255,245,190,0.9)'; ctx.beginPath(); ctx.arc(bx,byb,W*0.006,0,Math.PI*2); ctx.fill();
 
@@ -3078,9 +3110,8 @@ function drawDoma(W,H,t){
   const ft = t * 0.001;
 
   // ── Pozadí – stěna s texturou, teplejší ───────────────────────────────
-  const wG = ctx.createLinearGradient(0, 0, 0, flY);
-  wG.addColorStop(0, '#181428'); wG.addColorStop(0.5, '#201a34'); wG.addColorStop(1, '#241e36');
-  ctx.fillStyle = wG; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = _grad('doma_wall', () => { const g = ctx.createLinearGradient(0, 0, 0, flY); g.addColorStop(0, '#181428'); g.addColorStop(0.5, '#201a34'); g.addColorStop(1, '#241e36'); return g; });
+  ctx.fillRect(0, 0, W, H);
 
   // ── STRING LIGHTS podél stropu ─────────────────────────────────────────
   {
@@ -3099,12 +3130,14 @@ function drawDoma(W,H,t){
       const ly = slY + Math.sin(lx * 0.008) * H * 0.008 + H * 0.008;
       const lc = lColors[li % lColors.length];
       const la = 0.5 + 0.3 * Math.sin(ft * 1.5 + li * 0.8);
-      // Záře
-      const lG = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * 0.025);
-      const lr=parseInt(lc.slice(1,3),16), lg2=parseInt(lc.slice(3,5),16), lb=parseInt(lc.slice(5,7),16);
-      lG.addColorStop(0, `rgba(${lr},${lg2},${lb},${la*0.30})`);
-      lG.addColorStop(1, 'transparent');
-      ctx.fillStyle = lG; ctx.beginPath(); ctx.arc(lx, ly, W * 0.025, 0, Math.PI * 2); ctx.fill();
+      // Záře – only on detail frames (skip glow every other frame)
+      if(_cache.detail){
+        const lG = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * 0.025);
+        const lr=parseInt(lc.slice(1,3),16), lg2=parseInt(lc.slice(3,5),16), lb=parseInt(lc.slice(5,7),16);
+        lG.addColorStop(0, `rgba(${lr},${lg2},${lb},${la*0.30})`);
+        lG.addColorStop(1, 'transparent');
+        ctx.fillStyle = lG; ctx.beginPath(); ctx.arc(lx, ly, W * 0.025, 0, Math.PI * 2); ctx.fill();
+      }
       // Žárovička
       ctx.fillStyle = lc; ctx.globalAlpha = la;
       ctx.beginPath(); ctx.arc(lx, ly, 2.5, 0, Math.PI * 2); ctx.fill();
@@ -3162,8 +3195,7 @@ function drawDoma(W,H,t){
   }
 
   // Podlaha – dřevěná s detailem
-  const flG = ctx.createLinearGradient(0, flY, 0, H);
-  flG.addColorStop(0, '#2e2016'); flG.addColorStop(0.5, '#261a10'); flG.addColorStop(1, '#1e140c');
+  const flG = _grad('doma_floor', () => { const g = ctx.createLinearGradient(0, flY, 0, H); g.addColorStop(0, '#2e2016'); g.addColorStop(0.5, '#261a10'); g.addColorStop(1, '#1e140c'); return g; });
   ctx.fillStyle = flG; ctx.fillRect(0, flY, W, H - flY);
   // Prkna podlahy s suky
   ctx.strokeStyle = 'rgba(60,40,20,0.45)'; ctx.lineWidth = 1;
@@ -3521,19 +3553,19 @@ function render(){
   const rm=ROOMS[gs.room];
   const W=canvas.width, H=canvas.height;
   const t=gs.ts, p=gs.player;
+  _initCache(W, H);
+  _cache.frame++;
+  _cache.detail = (_cache.frame % 2 === 0); // heavy details every other frame
   drawRoom(rm,W,H,t);
 
   // Voodoo animace (overlay přes Křemži)
   if(gs.voodoo_anim) drawVoodooAnim(W,H);
 
-  // Scanlines
-  ctx.fillStyle='rgba(0,0,0,0.04)';
-  for(let y=0;y<H;y+=3) ctx.fillRect(0,y,W,1);
+  // Scanlines (pre-rendered pattern)
+  if(_cache.scanPat){ ctx.fillStyle=_cache.scanPat; ctx.fillRect(0,0,W,H); }
 
-  // Vigneta (všechny místnosti)
-  const vigAll=ctx.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,Math.max(W,H)*0.78);
-  vigAll.addColorStop(0,'transparent'); vigAll.addColorStop(1,'rgba(0,0,0,0.38)');
-  ctx.fillStyle=vigAll; ctx.fillRect(0,0,W,H);
+  // Vigneta (cached)
+  ctx.fillStyle=_cache.vig; ctx.fillRect(0,0,W,H);
 
   // Sběratelské kartičky – zářivé body v místnostech
   const rarityGlow = { common:'rgba(148,163,184,', uncommon:'rgba(34,197,94,', rare:'rgba(59,130,246,', legendary:'rgba(245,158,11,' };

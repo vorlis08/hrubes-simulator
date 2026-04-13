@@ -835,6 +835,7 @@ function updateVoodooAnim(dt){
 
 // ─── Herní smyčka ─────────────────────────────────────────────────────────
 
+let _lastRenderTs = 0;
 function gameLoop(ts){
   if(!gs.running && !gs.ca_active && !gs.voodoo_anim) return;
   const dt = Math.min(ts - lastTime, 50);
@@ -842,6 +843,7 @@ function gameLoop(ts){
   if(gs.ca_active && gs.ca) updateCihalovaCA(dt);
   if(gs.voodoo_anim) updateVoodooAnim(dt);
   if(gs.running) update(dt);
-  render();
+  // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
+  if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
   requestAnimationFrame(gameLoop);
 }
