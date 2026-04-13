@@ -465,11 +465,19 @@ function interact(){
     }
   }
 
-  // Dveře doma
+  // Dveře doma – potvrzovací dialog
   if(gs.room === 'doma'){
     const doorCX = canvas.width * 0.50, doorCY = canvas.height * 0.05;
     if(dist2(gs.player, {x:doorCX, y:doorCY}) < PROX_R * 1.5){
-      changeRoom('up'); return;
+      document.getElementById('dav').textContent   = '🚪';
+      document.getElementById('dname').textContent = 'DVEŘE';
+      document.getElementById('drole').textContent = 'východ ven';
+      document.getElementById('dtxt').textContent  = 'Jsem připraven na nový den?';
+      document.getElementById('dchoices').innerHTML =
+        `<button class="db prim" onclick="closeDialog();changeRoom('up')">To si piš!</button>` +
+        `<button class="db" onclick="closeDialog()">Ještě ne</button>`;
+      document.getElementById('dov').classList.add('on');
+      return;
     }
   }
 
