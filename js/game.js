@@ -74,8 +74,8 @@ function initRoom(spawnX, spawnY){
   if(gs.story.cibulka_left) currentNPCs = currentNPCs.filter(n => n.id !== 'bezdak');
   // Pláteníková – zobrazit jen po hlasovce a screenshotu
   if(!gs.platenikova_in) currentNPCs = currentNPCs.filter(n => n.id !== 'platenikova');
-  // Šaman mrtvý – nezobrazuj
-  if(gs.saman_dead) currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
+  // Šaman mrtvý nebo právě běhá nahý – nezobrazuj normální verzi
+  if(gs.saman_dead || gs.saman_naked_anim) currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
   // Pája v hospodě – nezobrazuj na ulici
   if(gs.story.paja_in_hospoda) currentNPCs = currentNPCs.filter(n => n.id !== 'paja');
   // Pája v hospodě – přidat ho tam + balonek
@@ -547,6 +547,28 @@ function update(dt){
 
   // Room transition fade decay
   if(gs.roomFadeAlpha > 0) gs.roomFadeAlpha = Math.max(0, gs.roomFadeAlpha - dt * 0.003);
+
+  // Šaman OBÍDEK – pobíhá nahý po hospodě
+  if(gs.saman_naked_anim && gs.room === 'hospoda' && gs.saman_naked_anim.phase === 'running'){
+    const a = gs.saman_naked_anim;
+    const W = canvas.width, H = canvas.height;
+    const k = dt / 16.667;
+    a.x += a.vx * k;
+    a.y += a.vy * k;
+    // odraz od krajů místnosti (zhruba podlaha hospody)
+    const ml = 60, mr = W - 60, mt = H * 0.32, mb = H * 0.86;
+    if(a.x < ml){ a.x = ml; a.vx = Math.abs(a.vx); a.flipX = 1; }
+    if(a.x > mr){ a.x = mr; a.vx = -Math.abs(a.vx); a.flipX = -1; }
+    if(a.y < mt){ a.y = mt; a.vy = Math.abs(a.vy); }
+    if(a.y > mb){ a.y = mb; a.vy = -Math.abs(a.vy); }
+    // občas chaotická změna směru
+    if(Math.random() < 0.025){
+      const ang = Math.random() * Math.PI * 2;
+      a.vx = Math.cos(ang) * 5.5;
+      a.vy = Math.sin(ang) * 3.5;
+      a.flipX = a.vx >= 0 ? 1 : -1;
+    }
+  }
 
   // Animace posouváni regálu mléka
   if(gs.shelf_sliding){

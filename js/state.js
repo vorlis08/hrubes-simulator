@@ -43,6 +43,8 @@ const gs = {
   // Šaman mrtvý
   saman_dead: false,
   saman_death_anim: null,
+  // Šaman OBÍDEK – nahá běhací animace
+  saman_naked_anim: null,
   // Pláteníková
   platenikova_in: false,
   // Pre-game artefakty vzaté do hry

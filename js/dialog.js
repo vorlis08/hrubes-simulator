@@ -122,6 +122,7 @@ function submitPassword(){
   if(pw.rep && pw.reward !== 'rep') gainRep(pw.rep, 'Šamanovo heslo: ' + ans);
   if(pw.special === 'fabie'){
     addObj('quest_fabie');
+    gs.story.fabie_promised = true;
     addLog('Máš klíčky od Fábie! Najdi ji v Křemži a jeď domů!', 'lm');
   }
   updateHUD();
@@ -153,37 +154,75 @@ function triggerGodMode(){
   fnotif('🍆 OBROVSKÝ PENIS!', 'itm');
 }
 
-// === OBÍDEK – šaman se zastřelí ===
+// === OBÍDEK – šaman zešílí, sundá si kalhoty, běhá nahý a zastřelí se ===
 function triggerObidek(){
-  addLog('*Šamanovi začnou tikat koutky...*', 'lw');
-  gs.saman_dead = true;
-  // Odstraň šamana z NPC a nahraď tělem
+  addLog('*Šamanovi ztuhne obličej* "...obídek?"', 'lw');
+
+  // Zachyť pozici šamana, odeber ho z NPC – od teď ho renderujeme my
+  const samanNPC = currentNPCs.find(n => n.id === 'kratom_saman');
+  const startX = samanNPC ? samanNPC.x : canvas.width * 0.80;
+  const startY = samanNPC ? samanNPC.y : canvas.height * 0.62;
   currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
-  let phase = 0;
-  const lines = [
-    '*Šamanovi se rozzáří oči* "OBÍDEK?!"',
-    '*Začne křičet* "OBÍÍÍÍDEEEK!! OBÍÍÍÍDEEEK!!"',
-    '*Skanduje a oslavuje, tancuje po hospodě*',
-    '*Skáče na stůl, mává rukama, slzy radosti mu tečou po tvářích*',
-    '*Najednou se zastaví... třese se vzrušením...*',
-    '"Já... já to nemůžu... je toho moc... OBÍDEK..." *vytáhne revolver*',
+
+  gs.saman_naked_anim = {
+    x: startX, y: startY,
+    vx: 0, vy: 0,
+    startTime: gs.ts,
+    phaseStart: gs.ts,
+    phase: 'reaction',   // reaction → undressing → running → aiming
+    flipX: 1,
+    pantsX: 0, pantsY: 0,
+  };
+
+  const seq = [
+    { delay: 1200, log:'*ROZTRHNE oči* "OBÍDEK?! KDO ŘEKL OBÍDEK?!"', cls:'lw' },
+    { delay: 1500, log:'"OBÍÍÍÍDEEEK!! OBÍÍÍÍDEEEK!! TADY JE OBÍDEK!!!"', cls:'lw' },
+    { delay: 1600, log:'*Strhne si kalhoty a kope je do kouta* "JE TADY HORKO, KURVA!!"', cls:'lw', phase:'undressing' },
+    { delay: 1800, log:'*Začne nahý pobíhat po hospodě a řvát "OBÍDEK"*', cls:'lw', phase:'running' },
+    { delay: 2200, log:'*Skáče přes stoly, mává péro na všechny strany, slzy mu tečou*', cls:'lw' },
+    { delay: 2400, log:'*Zastaví se uprostřed místnosti, oči navrch hlavy, dýchá ztěžka*', cls:'lw', phase:'aiming' },
+    { delay: 2000, log:'"Tohle... tohle už neunesu... OBÍDEK..." *vytáhne revolver a přiloží si ho ke spánku*', cls:'lw' },
   ];
+
+  let i = 0;
   function nextLine(){
-    if(phase < lines.length){
-      addLog(lines[phase], phase < 5 ? 'lm' : 'lw');
-      phase++;
-      setTimeout(nextLine, 1800);
+    if(!gs.saman_naked_anim){ return; } // safety – pokud něco zruší animaci
+    if(i < seq.length){
+      const ln = seq[i];
+      addLog(ln.log, ln.cls);
+      if(ln.phase){
+        gs.saman_naked_anim.phase = ln.phase;
+        gs.saman_naked_anim.phaseStart = gs.ts;
+        if(ln.phase === 'undressing'){
+          // Hodí kalhoty někam do rohu
+          gs.saman_naked_anim.pantsX = canvas.width * (0.10 + Math.random() * 0.08);
+          gs.saman_naked_anim.pantsY = canvas.height * 0.80;
+        }
+        if(ln.phase === 'running'){
+          const ang = Math.random() * Math.PI * 2;
+          gs.saman_naked_anim.vx = Math.cos(ang) * 5.5;
+          gs.saman_naked_anim.vy = Math.sin(ang) * 3.5;
+          gs.saman_naked_anim.flipX = gs.saman_naked_anim.vx >= 0 ? 1 : -1;
+        }
+        if(ln.phase === 'aiming'){
+          gs.saman_naked_anim.vx = 0;
+          gs.saman_naked_anim.vy = 0;
+        }
+      }
+      i++;
+      setTimeout(nextLine, ln.delay);
     } else {
       // Zastřelí se
-      addLog('💥 *VÝSTŘEL* Šaman se zastřelil. Jeho tělo dopadlo na zem.', 'lw');
+      addLog('💥 *VÝSTŘEL* Šaman se zastřelil. Nahé tělo dopadlo na zem.', 'lw');
       fnotif('Šaman je mrtvý 💀', 'rep');
-      screenShake(600);
-      // Vytvořit animaci smrti
-      const samanPos = { x: canvas.width * 0.80, y: canvas.height * 0.62 };
-      gs.saman_death_anim = { x: samanPos.x, y: samanPos.y, startTime: gs.ts };
+      screenShake(700);
+      gs.saman_dead = true;
+      const fx = gs.saman_naked_anim.x, fy = gs.saman_naked_anim.y;
+      gs.saman_death_anim = { x: fx, y: fy, startTime: gs.ts, naked: true };
+      gs.saman_naked_anim = null;
     }
   }
-  setTimeout(nextLine, 500);
+  setTimeout(nextLine, 700);
 }
 
 // ─── getStage ─────────────────────────────────────────────────────────────

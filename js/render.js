@@ -828,6 +828,23 @@ function drawHospoda(W,H,t){
     ctx.beginPath(); ctx.arc(dx,dy,sz2,0,Math.PI*2); ctx.fill();
   }
   ctx.restore();
+
+  // ── Mates – tělo a krvácení z krku ──
+  if(gs.mates_death_anim){
+    drawDeathBody(gs.mates_death_anim, t, '#e87040', 'mates');
+  }
+  // Milan může zemřít i v hospodě (čeká na Matese)
+  if(gs.milan_death_anim){
+    drawDeathBody(gs.milan_death_anim, t, '#06b6d4', 'milan');
+  }
+  // Šaman – mrtvé tělo po OBÍDEK cheatu
+  if(gs.saman_death_anim){
+    drawDeathBody(gs.saman_death_anim, t, '#8b5cf6', 'saman');
+  }
+  // Šaman – nahý po OBÍDEK, před zastřelením
+  if(gs.saman_naked_anim){
+    drawNakedSaman(gs.saman_naked_anim, t);
+  }
 }
 
 // ─── Ulice ────────────────────────────────────────────────────────────────────
@@ -1010,17 +1027,178 @@ function drawUlice(W,H,t){
   for(let i=0;i<18;i++) ctx.beginPath(), ctx.arc((Math.sin(i*53.7)*0.5+0.5)*W*0.35-W*0.175+5,(Math.sin(i*41.3)*0.5+0.5)*H*0.04-H*0.02,1+Math.abs(Math.sin(i*7))*2,0,Math.PI*2), ctx.fill();
   ctx.restore();
 
-  // ── Mates – tělo a krvácení z krku ──
-  if(gs.mates_death_anim && gs.room === 'hospoda'){
-    drawDeathBody(gs.mates_death_anim, t, '#e87040', 'mates');
+}
+
+// ─── Šaman OBÍDEK – nahý šílený šaman ───────────────────────────────────────
+function drawNakedSaman(anim, t){
+  const x = anim.x, y = anim.y;
+  const phase = anim.phase;
+  const isRunning = phase === 'running';
+  // Bouncing krok při běhu
+  const bob = isRunning ? Math.abs(Math.sin(t * 0.022)) * 7 : 0;
+  const bY = y - bob;
+  const flip = anim.flipX || 1;
+
+  // Odhozené kalhoty v rohu (jakmile se svléká)
+  if(phase !== 'reaction' && anim.pantsX){
+    ctx.save();
+    ctx.translate(anim.pantsX, anim.pantsY);
+    ctx.rotate(0.4);
+    // stín
+    ctx.fillStyle = 'rgba(0,0,0,0.30)';
+    ctx.beginPath(); ctx.ellipse(2, 6, 22, 5, 0, 0, Math.PI * 2); ctx.fill();
+    // kalhoty
+    ctx.fillStyle = '#3a2c5a';
+    ctx.fillRect(-18, -8, 36, 14);
+    ctx.fillStyle = '#241a3e';
+    ctx.fillRect(-15, -6, 13, 12);
+    ctx.fillRect(2, -6, 13, 12);
+    // pásek
+    ctx.fillStyle = '#1a0f08';
+    ctx.fillRect(-18, -10, 36, 4);
+    ctx.restore();
   }
-  // Milan může zemřít i v hospodě (čeká na Matese)
-  if(gs.milan_death_anim && gs.room === 'hospoda'){
-    drawDeathBody(gs.milan_death_anim, t, '#06b6d4', 'milan');
+
+  // Stín pod tělem
+  ctx.fillStyle = 'rgba(0,0,0,0.30)';
+  ctx.beginPath(); ctx.ellipse(x + 3, y + 28, 22, 8, 0.05, 0, Math.PI * 2); ctx.fill();
+
+  // Tělo (nahá kůže místo fialového roucha)
+  const skin = '#fde0b8';
+  ctx.fillStyle = skin;
+  ctx.beginPath(); ctx.arc(x, bY, 25, 0, Math.PI * 2); ctx.fill();
+  // chlupy na hrudi
+  ctx.fillStyle = 'rgba(60,30,10,0.55)';
+  for(let i = 0; i < 8; i++){
+    const hx = x - 10 + Math.sin(i * 1.7) * 9;
+    const hy = bY - 4 + Math.cos(i * 2.1) * 6;
+    ctx.beginPath(); ctx.arc(hx, hy, 1.2, 0, Math.PI * 2); ctx.fill();
   }
-  // Šaman – mrtvé tělo po OBÍDEK cheatu
-  if(gs.saman_death_anim && gs.room === 'hospoda'){
-    drawDeathBody(gs.saman_death_anim, t, '#8b5cf6', 'saman');
+
+  // Nohy (běh – ploutvení)
+  ctx.fillStyle = skin;
+  if(isRunning){
+    const lphase = Math.sin(t * 0.025);
+    ctx.save(); ctx.translate(x - 8, bY + 18); ctx.rotate(lphase * 0.5);
+    ctx.fillRect(-4, 0, 8, 16); ctx.restore();
+    ctx.save(); ctx.translate(x + 8, bY + 18); ctx.rotate(-lphase * 0.5);
+    ctx.fillRect(-4, 0, 8, 16); ctx.restore();
+  } else {
+    ctx.fillRect(x - 12, bY + 18, 8, 16);
+    ctx.fillRect(x + 4,  bY + 18, 8, 16);
+  }
+
+  // Genitálie (cenzurované rozmazaným pixelem) – jen v naked fázích
+  ctx.fillStyle = '#7a5a38';
+  ctx.fillRect(x - 5 * flip, bY + 14, 10, 8);
+  // pixelace přes
+  ctx.fillStyle = 'rgba(40,25,15,0.55)';
+  for(let i = 0; i < 3; i++) for(let j = 0; j < 2; j++)
+    ctx.fillRect(x - 5 + i * 4, bY + 14 + j * 4, 3, 3);
+
+  // Ruce (mávají při běhu)
+  ctx.strokeStyle = skin; ctx.lineWidth = 6; ctx.lineCap = 'round';
+  if(isRunning){
+    const aphase = Math.sin(t * 0.025 + Math.PI);
+    ctx.beginPath();
+    ctx.moveTo(x - 18, bY); ctx.lineTo(x - 28, bY - 12 + aphase * 18);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + 18, bY); ctx.lineTo(x + 28, bY - 12 - aphase * 18);
+    ctx.stroke();
+  } else if(phase === 'aiming'){
+    // jedna ruka drží pistoli u hlavy
+    ctx.beginPath();
+    ctx.moveTo(x + 18, bY - 4); ctx.lineTo(x + 18, bY - 28);
+    ctx.stroke();
+    // druhá visí
+    ctx.beginPath();
+    ctx.moveTo(x - 18, bY); ctx.lineTo(x - 22, bY + 14);
+    ctx.stroke();
+  } else {
+    // undressing/reaction – ruce nahoru
+    const wave = Math.sin(t * 0.012) * 6;
+    ctx.beginPath();
+    ctx.moveTo(x - 18, bY); ctx.lineTo(x - 26, bY - 22 + wave);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + 18, bY); ctx.lineTo(x + 26, bY - 22 - wave);
+    ctx.stroke();
+  }
+
+  // Hlava
+  ctx.fillStyle = '#fde8c8';
+  ctx.beginPath(); ctx.arc(x, bY - 24, 20, 0, Math.PI * 2); ctx.fill();
+
+  // Šílený obličej
+  if(phase === 'aiming'){
+    // přivřené šílené oči
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(x - 7, bY - 24, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + 7, bY - 24, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(x - 7, bY - 24, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + 7, bY - 24, 2.5, 0, Math.PI * 2); ctx.fill();
+    // smutná ústa
+    ctx.strokeStyle = '#1a0606'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, bY - 14, 5, 0.2, Math.PI - 0.2); ctx.stroke();
+    // pistole u spánku
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(x + 14, bY - 28, 16, 6);
+    ctx.fillStyle = '#3a3a3a';
+    ctx.fillRect(x + 22, bY - 24, 4, 10);
+    // hlaveň lesk
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.fillRect(x + 14, bY - 28, 16, 1.5);
+  } else {
+    // vyboulené šílené oči
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(x - 7, bY - 24, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + 7, bY - 24, 8, 0, Math.PI * 2); ctx.fill();
+    // zorničky se hýbou náhodně
+    const tw = Math.sin(t * 0.015) * 2;
+    const ty = Math.cos(t * 0.013) * 1.5;
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(x - 7 + tw, bY - 24 + ty, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + 7 + tw, bY - 24 + ty, 3, 0, Math.PI * 2); ctx.fill();
+    // řičící otevřená ústa
+    ctx.fillStyle = '#1a0606';
+    ctx.beginPath(); ctx.ellipse(x, bY - 12, 9, 8, 0, 0, Math.PI * 2); ctx.fill();
+    // jazyk
+    ctx.fillStyle = '#c83040';
+    ctx.beginPath(); ctx.ellipse(x, bY - 10, 4, 4, 0, 0, Math.PI * 2); ctx.fill();
+    // zuby
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x - 6, bY - 16, 2.5, 2);
+    ctx.fillRect(x + 3.5, bY - 16, 2.5, 2);
+  }
+
+  // Vlasy/divoké chlupy na hlavě
+  ctx.strokeStyle = '#3a2008'; ctx.lineWidth = 2;
+  for(let i = 0; i < 7; i++){
+    const ang = (i / 7) * Math.PI - Math.PI;
+    const sway = Math.sin(t * 0.01 + i) * 3;
+    const hx1 = x + Math.cos(ang) * 18;
+    const hy1 = bY - 24 + Math.sin(ang) * 18;
+    const hx2 = x + Math.cos(ang) * 26 + sway;
+    const hy2 = bY - 24 + Math.sin(ang) * 26 - 5;
+    ctx.beginPath(); ctx.moveTo(hx1, hy1); ctx.lineTo(hx2, hy2); ctx.stroke();
+  }
+
+  // "OBÍDEK!" balónek nad hlavou
+  if(phase === 'running' || phase === 'undressing'){
+    const txts = ['OBÍDEK!', 'OBÍÍÍDEK!!', 'OBÍDEK!!!'];
+    const txt = txts[Math.floor(t / 350) % 3];
+    ctx.font = `bold 18px Outfit,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    const tw2 = ctx.measureText(txt).width + 16;
+    const bx = x - tw2 / 2, by = bY - 70;
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    rrect(bx, by, tw2, 24, 6); ctx.fill();
+    ctx.strokeStyle = 'rgba(220,30,30,0.95)'; ctx.lineWidth = 2;
+    rrect(bx, by, tw2, 24, 6); ctx.stroke();
+    ctx.fillStyle = '#ff4040';
+    ctx.fillText(txt, x, by + 18);
   }
 }
 
