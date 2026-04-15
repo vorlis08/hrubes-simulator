@@ -748,13 +748,15 @@ const QF = {
   // ─── Milan ────────────────────────────────────────────────────────────────
   q_milan_protiutok(){
     gs.story.milan_protiutok_asked = true;
-    gs.inv.kratom_kava = 1; updateInv();
-    addObj('quest_milan_protiutok');
-    addLog('Milan: "Takže ona tě na mě poslala... Výborně." *sáhne do tašky* "Tady je kratom blend. Přimíchej jí ho do kafe. Stůl vlevo od tabule." 🕵️', 'lw');
-    fnotif('☕ kratom_kava +1','itm'); closeDialog();
+    gs.story.milan_knows_fig_spy = true;
+    gs.story.honza_mission = true;
+    gs.story.milan_met = true;
+    addObj('quest_honza_fent');
+    addLog('Milan: "Takže ona tě na mě poslala?!" *zaskřípe zubama* "Dobrý. Víš co? Běž za Honzou. Má fentanylový kafe. Dej ho Figurové, a má klid. Tu svini. Řekni mu, že jsem tě poslal." 😡', 'lw');
+    closeDialog();
   },
   q_milan_protiutok_reward(){
-    if(!gs.story.figurova_kratomed){ closeDialog(); return; }
+    if(!gs.story.figurova_kratomed && !gs.story.figurova_fent){ closeDialog(); return; }
     gs.story.milan_protiutok_done = true;
     gs.money += 300; updateHUD();
     gainRep(6, 'Zneškodnil Figurovou pro Milana');
