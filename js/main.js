@@ -119,6 +119,9 @@ function isTyping(){
   return ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA');
 }
 
+// Normalizace kláves – CAPSLOCK/Shift nesmí rozbít pohyb
+function normKey(k){ return (k && k.length === 1) ? k.toLowerCase() : k; }
+
 window.addEventListener('keydown', e => {
   // Pokud hráč píše do inputu (hádanka, login, apod.), blokuj herní klávesy
   if(isTyping()){
@@ -128,25 +131,26 @@ window.addEventListener('keydown', e => {
     return;
   }
 
-  keys[e.key] = true;
-  if(MOVE_KEYS.has(e.key)) e.preventDefault();
+  const nk = normKey(e.key);
+  keys[nk] = true;
+  if(MOVE_KEYS.has(nk)) e.preventDefault();
 
-  if(e.key === 'q' || e.key === 'Q'){
+  if(nk === 'q'){
     document.getElementById('quest-ov').classList.toggle('on');
   }
   // C key – dříve kartičky, nyní nic
 
   if(!gs.running || gs.dead) return;
 
-  if(e.key === 'e' || e.key === 'E'){ e.preventDefault(); interact(); }
-  if(e.key === '1') useKratom();
-  if(e.key === '2') useZemle();
-  if(e.key === 'Escape'){ closeAllOverlays(); }
-  if(e.key === 'Enter' && document.getElementById('riddle-ov').classList.contains('on'))
+  if(nk === 'e'){ e.preventDefault(); interact(); }
+  if(nk === '1') useKratom();
+  if(nk === '2') useZemle();
+  if(nk === 'Escape'){ closeAllOverlays(); }
+  if(nk === 'Enter' && document.getElementById('riddle-ov').classList.contains('on'))
     submitPassword();
 });
 
-window.addEventListener('keyup', e => { if(!isTyping()) keys[e.key] = false; });
+window.addEventListener('keyup', e => { if(!isTyping()) keys[normKey(e.key)] = false; });
 
 // ─── Reset kláves při ztrátě fokusu (zabrání "přilepeným" klávesám) ─────
 window.addEventListener('blur', () => {

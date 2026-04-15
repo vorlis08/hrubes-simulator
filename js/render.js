@@ -994,16 +994,59 @@ function drawUlice(W,H,t){
   ctx.fillStyle=fogG; ctx.fillRect(0,H*0.80,W,H*0.20);
   ctx.restore();
 
-  // ── Déšť — výrazný, šikmý ──
+  // ── Déšť — vrstvený, s gradientními kapkami a cáknutím ──
   ctx.save();
-  ctx.lineWidth=1.0;
-  for(let i=0;i<180;i++){
-    const rx=((i*73.7+t*0.12)%(W*1.2))-W*0.1;
-    const ry=((i*41.3+t*0.35)%(H*1.2))-H*0.1;
-    const rLen=H*0.035+Math.sin(i*3)*H*0.01;
-    const rA=0.15+0.10*Math.sin(i*7.1);
-    ctx.strokeStyle=`rgba(170,190,230,${rA})`;
-    ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx-3,ry+rLen); ctx.stroke();
+  ctx.lineCap='round';
+  // Zadní vrstva – menší, světlejší kapky (pozadí)
+  for(let i=0;i<90;i++){
+    const speed=0.24;
+    const rx=((i*91.3+t*speed)%(W*1.2))-W*0.1;
+    const ry=((i*57.7+t*speed*1.9)%(H*1.2))-H*0.1;
+    const rLen=H*0.022+Math.sin(i*3.1)*H*0.006;
+    const rA=0.12+0.06*Math.sin(i*7.1);
+    const g=ctx.createLinearGradient(rx,ry,rx-2,ry+rLen);
+    g.addColorStop(0,`rgba(200,215,240,0)`);
+    g.addColorStop(1,`rgba(200,215,240,${rA})`);
+    ctx.strokeStyle=g; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx-2,ry+rLen); ctx.stroke();
+  }
+  // Přední vrstva – delší, ostřejší kapky s hlavou
+  for(let i=0;i<140;i++){
+    const speed=0.42;
+    const rx=((i*73.7+t*speed)%(W*1.2))-W*0.1;
+    const ry=((i*41.3+t*speed*1.75)%(H*1.2))-H*0.1;
+    const rLen=H*0.045+Math.sin(i*2.3)*H*0.012;
+    const rA=0.28+0.14*Math.sin(i*5.1);
+    // ocásek kapky – gradient
+    const g=ctx.createLinearGradient(rx,ry,rx-4,ry+rLen);
+    g.addColorStop(0,`rgba(220,230,250,0)`);
+    g.addColorStop(0.4,`rgba(180,200,235,${rA*0.5})`);
+    g.addColorStop(1,`rgba(220,235,255,${rA})`);
+    ctx.strokeStyle=g; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx-4,ry+rLen); ctx.stroke();
+    // hlava kapky – malý jasný bod na konci
+    ctx.fillStyle=`rgba(235,245,255,${rA*0.9})`;
+    ctx.beginPath(); ctx.arc(rx-4,ry+rLen,0.9,0,Math.PI*2); ctx.fill();
+  }
+  // Cáknutí na dlažbě – malé elipsy na náhodných místech u země
+  for(let i=0;i<22;i++){
+    const sx=((i*137.2+t*0.04)%(W*1.1))-W*0.05;
+    const sy=H*0.82+Math.sin(i*4.7)*H*0.08;
+    const life=((t*0.0018+i*0.31)%1);
+    if(life<0.5){
+      const sz=1.5+life*8;
+      const sA=(1-life*2)*0.35;
+      ctx.strokeStyle=`rgba(200,220,245,${sA})`;
+      ctx.lineWidth=1;
+      ctx.beginPath(); ctx.ellipse(sx,sy,sz,sz*0.25,0,0,Math.PI*2); ctx.stroke();
+      // Malé odlétající kapičky
+      if(life<0.3){
+        const spA=(0.3-life)/0.3*0.5;
+        ctx.fillStyle=`rgba(220,235,255,${spA})`;
+        ctx.beginPath(); ctx.arc(sx-sz*0.7,sy-life*8,0.7,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(sx+sz*0.7,sy-life*8,0.7,0,Math.PI*2); ctx.fill();
+      }
+    }
   }
   ctx.restore();
 
@@ -1911,27 +1954,28 @@ function drawKoupelna(W,H,t){
   ctx.fillText('↓ ZPĚT DO VILY', W*0.5, H*0.97);
   ctx.textAlign='left';
 
-  // ── Kapající voda z baterie – víc kapek, výraznější ──
+  // ── Kapající voda z baterie – jen krátké kapky padající do dřezu ──
   ctx.save();
   const dripX=W*0.40, dripStartY=H*0.36;
-  for(let d=0;d<10;d++){
-    const dPhase=((ft*0.8+d*0.17)%1);
-    const dY=dripStartY+dPhase*H*0.32;
-    const dA=(1-dPhase*0.6)*0.80;
+  const dripLen=H*0.06; // kapky padají jen krátce – do dřezu, ne na zem
+  for(let d=0;d<4;d++){
+    const dPhase=((ft*0.6+d*0.27)%1);
+    const dY=dripStartY+dPhase*dripLen;
+    const dA=(1-dPhase*0.4)*0.85;
     // kapka
-    const dG=ctx.createLinearGradient(dripX+d*3,dY-4,dripX+d*3,dY+4);
+    const dG=ctx.createLinearGradient(dripX,dY-4,dripX,dY+4);
     dG.addColorStop(0,`rgba(180,210,255,${dA*0.5})`); dG.addColorStop(1,`rgba(100,150,220,${dA})`);
     ctx.fillStyle=dG;
-    ctx.beginPath(); ctx.ellipse(dripX+(d%3-1)*4,dY,1.6,4,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(dripX,dY,1.6,4,0,0,Math.PI*2); ctx.fill();
     // lesk
     ctx.fillStyle=`rgba(255,255,255,${dA*0.6})`;
-    ctx.beginPath(); ctx.arc(dripX+(d%3-1)*4-0.5,dY-1.5,0.5,0,Math.PI*2); ctx.fill();
-    // splash na podlaze
-    if(dPhase>0.88){
-      const spA=(dPhase-0.88)/0.12;
-      ctx.strokeStyle=`rgba(150,180,220,${(1-spA)*0.5})`;
-      ctx.lineWidth=0.8;
-      ctx.beginPath(); ctx.ellipse(dripX+(d%3-1)*4,dripStartY+H*0.32,2+spA*10,0.8+spA*2,0,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(dripX-0.5,dY-1.5,0.5,0,Math.PI*2); ctx.fill();
+    // mikro-cáknutí v dřezu
+    if(dPhase>0.85){
+      const spA=(dPhase-0.85)/0.15;
+      ctx.strokeStyle=`rgba(150,180,220,${(1-spA)*0.55})`;
+      ctx.lineWidth=0.7;
+      ctx.beginPath(); ctx.ellipse(dripX,dripStartY+dripLen,1.5+spA*3,0.6+spA*1,0,0,Math.PI*2); ctx.stroke();
     }
   }
   ctx.restore();
@@ -3044,7 +3088,12 @@ function render(){
   });
 
   // Hráč
-  const px=p.x,py=p.y,pc=gs.kratom_on?'#10b981':'#7c6ff7';
+  const px=p.x;
+  // Jemný walk-bob (konzistentní s drawNakedSaman / NPC gait)
+  const walkBob = p.mv ? Math.abs(Math.sin(t * 0.018)) * 3.2 : 0;
+  const py=p.y - walkBob;
+  let pc = '#7c6ff7';
+  if(gs.kratom_on) pc = gs.kratom_blend_on ? `hsl(${(t*0.2)%360},90%,58%)` : '#10b981';
   ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(px,py+29,17,7,0,0,Math.PI*2); ctx.fill();
   const pg=ctx.createRadialGradient(px,py,0,px,py,42);
   pg.addColorStop(0,pc+'4a'); pg.addColorStop(1,'transparent');
@@ -3061,8 +3110,25 @@ function render(){
 
   if(gs.kratom_on&&gs.kratom_t>0){
     const kpct=gs.kratom_t/gs.kratom_max;
-    ctx.strokeStyle='#10b981'; ctx.lineWidth=3; ctx.lineCap='round';
-    ctx.beginPath(); ctx.arc(px,py,32,-Math.PI/2,-Math.PI/2+kpct*Math.PI*2); ctx.stroke();
+    if(gs.kratom_blend_on){
+      // Rainbow/gold duhový oblouk při kombinaci s blendem
+      const hueBase = (t*0.25) % 360;
+      const seg = 24;
+      ctx.lineWidth = 4; ctx.lineCap='round';
+      for(let s=0;s<seg;s++){
+        const a0 = -Math.PI/2 + (s/seg)*kpct*Math.PI*2;
+        const a1 = -Math.PI/2 + ((s+1)/seg)*kpct*Math.PI*2;
+        ctx.strokeStyle = `hsl(${(hueBase + s*15)%360},95%,60%)`;
+        ctx.beginPath(); ctx.arc(px,py,32,a0,a1); ctx.stroke();
+      }
+      // Vnější aureola
+      ctx.strokeStyle = `hsla(${(hueBase+180)%360},90%,65%,0.35)`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(px,py,36 + Math.sin(t*0.006)*2,-Math.PI/2,-Math.PI/2+kpct*Math.PI*2); ctx.stroke();
+    } else {
+      ctx.strokeStyle='#10b981'; ctx.lineWidth=3; ctx.lineCap='round';
+      ctx.beginPath(); ctx.arc(px,py,32,-Math.PI/2,-Math.PI/2+kpct*Math.PI*2); ctx.stroke();
+    }
   }
   if(p.mv){
     for(let i=0;i<3;i++){
@@ -3151,6 +3217,50 @@ function render(){
     vigR.addColorStop(0.6,'rgba(0,0,0,0.08)');
     vigR.addColorStop(1,`rgba(0,0,0,${fx.vigA})`);
     ctx.fillStyle=vigR; ctx.fillRect(0,0,W,H);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  BLEND × KRATOM – extra vizuály (pulzující fraktály, vlny, oči)
+  // ══════════════════════════════════════════════════════════════════════════
+  if(gs.kratom_on && gs.kratom_blend_on){
+    const bt = t * 0.001;
+    // Pulzující barevný overlay
+    const pulse = 0.5 + 0.5*Math.sin(bt*1.6);
+    ctx.fillStyle = `rgba(${120+80*Math.sin(bt*0.7)},${60+40*Math.sin(bt*1.1)},${200-40*Math.cos(bt*0.9)},${0.06+0.05*pulse})`;
+    ctx.fillRect(0,0,W,H);
+    // Soustředné kruhy vibrace kolem hráče
+    const pp = gs.player;
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    for(let r=0; r<6; r++){
+      const rr = 80 + r*60 + 18*Math.sin(bt*2 + r*0.8);
+      const al = 0.08 - r*0.012;
+      ctx.strokeStyle = `rgba(${150+20*r},${80+30*r},${220-20*r},${al})`;
+      ctx.lineWidth = 2 + Math.sin(bt*3+r)*0.8;
+      ctx.beginPath(); ctx.arc(pp.x, pp.y, rr, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.restore();
+    // Plovoucí fraktální oči
+    for(let i=0;i<5;i++){
+      const ex = W*(0.15 + (i*0.18 + Math.sin(bt*0.4+i*1.3)*0.08));
+      const ey = H*(0.22 + Math.sin(bt*0.7+i*2.1)*0.12 + i*0.05);
+      const es = 6 + 3*Math.sin(bt*1.2+i);
+      const ea = 0.25 + 0.15*Math.sin(bt*0.9+i*1.7);
+      ctx.fillStyle = `rgba(255,${200-i*20},${80+i*30},${ea})`;
+      ctx.beginPath(); ctx.ellipse(ex, ey, es*2, es, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = `rgba(20,10,40,${ea*1.2})`;
+      ctx.beginPath(); ctx.arc(ex, ey, es*0.55, 0, Math.PI*2); ctx.fill();
+    }
+    // Horizontální vlnové deformace (chromatic lines)
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for(let y=0; y<H; y+=28){
+      const wobble = Math.sin(bt*2.3 + y*0.04)*8;
+      ctx.strokeStyle = `rgba(${180+30*Math.sin(y*0.01+bt)},${80},${220},0.05)`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(0,y+wobble); ctx.lineTo(W,y-wobble); ctx.stroke();
+    }
+    ctx.restore();
   }
 
 }

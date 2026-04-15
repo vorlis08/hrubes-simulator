@@ -19,6 +19,13 @@ function activateKratom(duration, dose_amount){
   gs.kratom_freeze = 0; // freeze odstraněn
 
   canvas.classList.add('kratom-on');
+  // Pokud je aktivní blend-boost, zesil trip
+  if((gs.blend_boost_until || 0) > gs.ts){
+    canvas.classList.add('kratom-blend');
+    gs.kratom_blend_on = true;
+    gs.kratom_t = Math.round(duration * 1.5); // delší trip
+    addLog('🌿🔥 Blend × Kratom – vědomí se tříští. Vize pulzují.','lw');
+  }
   document.getElementById('kh').classList.add('on');
 
   gainRep(gs.story.kratom_used ? 1 : 4, gs.story.kratom_used ? 'Opět kratom' : 'První kratom trip!');
@@ -40,7 +47,9 @@ function activateKratom(duration, dose_amount){
 function endKratom(){
   gs.kratom_on     = false;
   gs.kratom_freeze = 0;
+  gs.kratom_blend_on = false;
   canvas.classList.remove('kratom-on');
+  canvas.classList.remove('kratom-blend');
   document.getElementById('kh').classList.remove('on');
   addLog('Kratom vyprchal. Realita se vrací.', 'ls');
 }
@@ -53,6 +62,40 @@ function useZemle(){
   addLog(`🍕 Snědl jsi žemli! +${gain} energie`, 'ls');
   fnotif(`+${gain} ⚡`, 'pos');
   updateInv(); updateHUD();
+}
+
+// ─── Blend – konzumace (intenzivnější kratom trip) ───────────────────────
+function useBlend(){
+  if(gs.inv.blend <= 0){ addLog('Nemáš žádný blend.','lw'); return; }
+  // Potvrzovací dialog – pokud je blend potřeba pro Janu
+  if(gs.story.jana_rande_asked && !gs.story.jana_rande_ok){
+    document.getElementById('dav').textContent   = '🍃';
+    document.getElementById('dname').textContent = 'BLEND';
+    document.getElementById('drole').textContent = 'speciální mix';
+    document.getElementById('dtxt').textContent  = 'Jana tenhle blend čeká. Fakt ho chceš zkouřit sám?';
+    document.getElementById('dchoices').innerHTML =
+      `<button class="db danger" onclick="closeDialog();_consumeBlend()">🔥 Vykouřit (Jana se nedozví)</button>` +
+      `<button class="db prim" onclick="closeDialog()">Nechat pro Janu</button>`;
+    document.getElementById('dov').classList.add('on');
+    return;
+  }
+  _consumeBlend();
+}
+
+function _consumeBlend(){
+  if(gs.inv.blend <= 0) return;
+  gs.inv.blend -= 1; updateInv();
+  gs.story.blend_consumed = (gs.story.blend_consumed || 0) + 1;
+  gs.blend_boost_until = gs.ts + 30000; // 30s boost pro další kratom trip
+  addLog('🍃 Zkouřil jsi blend. Cítíš v hrudi tlumený vnitřní tlak...', 'lw');
+  fnotif('🍃 BLEND AKTIVNÍ', 'itm');
+  // Pokud je zrovna kratom aktivní, prodluž a zesil
+  if(gs.kratom_on){
+    gs.kratom_t = Math.max(gs.kratom_t, 18000);
+    gs.kratom_blend_on = true;
+    canvas.classList.add('kratom-blend');
+    addLog('Vize sílí. Geometrie tančí. Stěny dýchají.', 'lw');
+  }
 }
 
 function usePikoSelf(){

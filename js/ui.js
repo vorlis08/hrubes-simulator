@@ -74,7 +74,8 @@ function updateInv(){
     foto_kubatova:'ic-foto_kubatova', c2_cert:'ic-c2_cert',
     fig_nuz:'ic-fig_nuz', fig_gun:'ic-fig_gun', milan_phone:'ic-milan_phone',
     zelizka:'ic-zelizka', prasek:'ic-prasek', klice_vila:'ic-klice_vila', podprsenka:'ic-podprsenka',
-    klice_fabie:'ic-klice_fabie', saman_hlava:'ic-saman_hlava',
+    klice_fabie:'ic-klice_fabie', klice_fabie_fig:'ic-klice_fabie_fig', saman_hlava:'ic-saman_hlava',
+    fent_kava:'ic-fent_kava',
     membership_vaza:'ic-membership_vaza',
   };
   for(const [k, id] of Object.entries(map)){
@@ -100,7 +101,7 @@ function updateInv(){
   // Oddělovače – schovat pokud jsou obě sousední skupiny prázdné
   const g1 = ['kratom','blend','zemle'];
   const g2 = ['piko','fake_kratom','pytel'];
-  const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','foto_kubatova','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','podprsenka','membership_vaza'];
+  const g3 = ['pivo','cibule','kratom_kava','fent_kava','cert','voodoo','nuz','screenshot','hlasovka','foto_kubatova','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','klice_fabie','klice_fabie_fig','podprsenka','membership_vaza'];
   function grpVisible(keys){ return keys.some(k => (gs.inv[k]||0) > 0 || (k==='pytel' && gs.cihalova_in_bag)); }
   const seps = document.querySelectorAll('.isep');
   if(seps[0]) seps[0].style.display = (grpVisible(g1) && grpVisible(g2)) ? '' : 'none';

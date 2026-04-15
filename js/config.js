@@ -45,6 +45,7 @@ const NPCS = {
         text:'"Tak už to máš? Už jsem se začínala klepat. No tak dělej, na co čekáš? Davaj!"',
         choices:[
           {label:'💊 Předat zásilku Číhalové', cls:'prim',   fn:'q_cihalova_deliver'},
+          {label:'☠️ "Tady máš celou dávku."', cls:'danger', fn:'q_cihalova_overdose', sub:'Předávkuje se'},
           {label:'💊 Vzít si piko sám',        cls:'danger', fn:'q_piko_self', sub:'Číhalová kouká'},
           {label:'Ještě ho nemám',             cls:'danger', fn:'close'},
         ]
@@ -122,6 +123,26 @@ const NPCS = {
       {
         text:'"Efficiency." *přepočítá bankovky* "3 000 Kč. A Fábie bude na náměstí do večera." *mlčí* "We were never here."',
         choices:[]
+      }
+    ]
+  },
+
+  lenka: {
+    name:'Lenka', role:'Prodavačka pizzy', emoji:'🍕',
+    room:'billa', rx:.32, ry:.45, color:'#ea580c', size:1,
+    dialogs:[
+      {
+        text:'"Ahooj, Jana dneska není – zaskakuju. Co si dáš? Pizza žemle za 35 Kč, anebo mám i fresh margheritu za 80 Kč."',
+        choices:[
+          {label:'🍕 Pizza žemle (35 Kč)',    cls:'prim',   fn:'q_lenka_zemle'},
+          {label:'🍕 Margherita (80 Kč)',    cls:'prim',   fn:'q_lenka_margherita', sub:'+45 energie'},
+          {label:'"Kde je Jana?"',           cls:'special', fn:'q_lenka_kde_jana'},
+          {label:'Později',                  cls:'danger', fn:'close'},
+        ]
+      },
+      {
+        text:'"Jana? Slyšela jsem něco s Johnnym v hospodě... Chudák holka. Kdybys ji viděl, pozdravuj!"',
+        choices:[{label:'Jasně', fn:'close'}]
       }
     ]
   },
@@ -302,25 +323,13 @@ const NPCS = {
         text:'"Ty magore! Co jsem ti říkal? Že to vytočim! Tady máš nazpátek i s úrokama, kup si za to něco hezkého na sebe."',
         choices:[{label:'💰 Vzít 500 Kč', cls:'prim', fn:'q_paja_collect'}]
       },
-      // stage 2 – v hospodě, opilý, balí balonek
+      // stage 2 – v hospodě, opilý po jackpotu
       {
-        text:'"FANDAAA! *objímá heliový balonek* Mám JACKPOT brácho! Pět tisíc! PĚĚT TISÍÍC!" *škytne* "Hele... nemůžu řídit, jsem na šrot. Klíčky od Fábie si vem zpátky. Ale... nemám je u sebe." *zamyslí se* "Půjčil jsem je tomu šamanovi v hospodě, on chtěl jet na nákup... ale samozřejmě nikam nejel." *škytne* "Dojdi za ním a řekni mu heslo: FÁBIE. Jinak ti to nedá. A DÁVEJ BACHA, je agresivní, když mu řekneš blbost!"',
+        text:'"FANDAAA! *zvedne sklenici* Mám JACKPOT brácho! Pět tisíc! PĚĚT TISÍÍC!" *škytne* "Hele... nemůžu řídit, jsem na šrot. Klíčky od Fábie si vem zpátky. Ale... nemám je u sebe." *zamyslí se* "Půjčil jsem je tomu šamanovi v hospodě, on chtěl jet na nákup... ale samozřejmě nikam nejel." *škytne* "Dojdi za ním a řekni mu heslo: FÁBIE. Jinak ti to nedá. A DÁVEJ BACHA, je agresivní, když mu řekneš blbost!"',
         choices:[
           {label:'OK, dojdu za šamanem', cls:'prim', fn:'q_paja_fabie_info'},
           {label:'(Odejít)', fn:'close'},
         ]
-      }
-    ]
-  },
-
-  // ─── Heliový balonek (hospoda, po Pájově jackpotu) ───────────────────────
-  balonek: {
-    name:'Heliový balonek', role:'Pomalovaný, létající', emoji:'🎈',
-    room:'hospoda', rx:.38, ry:.28, color:'#ff69b4', size:0.7,
-    dialogs:[
-      {
-        text:'*Balonek se tiše vznáší a ignoruje Pájovy pokusy o sbalení. Má na sobě namalovaný obličej s výrazem naprostého znechucení.*',
-        choices:[{label:'(Nechat ho být)', fn:'close'}]
       }
     ]
   },
@@ -360,6 +369,19 @@ const NPCS = {
       {
         text:'"Fanda, brácha." *nakloní se blíž, mluví potichu* "Ta Číhalová... bylo by velice nemilé, kdyby se jí něco stalo. VELICE nemilé." *odmlčí se a zapije pivem* "Ale kdybys se o to někdo postaral... já bych byl nesmírně vděčnej. Chapeš co myslim?"',
         choices:[{label:'(Odejít)', fn:'close'}]
+      },
+      // stage 1 – Milan poslal hráče pro fentanyl kafe
+      {
+        text:'"Fanda, brácha..." *zašeptá* "Milan mi říkal, že přijdeš. Takže někdo tě na něj poslal? Seru na to." *sáhne pod stůl* "Mám fentanylový kafe. Dávka která paralyzuje. Stačí, aby ho vypil a bude mít jiný starosti než vás. 400 Kč."',
+        choices:[
+          {label:'☕ Koupit fentanyl-kafe (400 Kč)', cls:'danger', fn:'q_honza_fent', sub:'Pro Figurovou'},
+          {label:'(Odejít)', fn:'close'},
+        ]
+      },
+      // stage 2 – má fent_kava
+      {
+        text:'"Jak to jde, brácho? Figurová už vypila to kafe?"',
+        choices:[{label:'(Odejít)', fn:'close'}]
       }
     ]
   },
@@ -373,7 +395,6 @@ const NPCS = {
         choices:[
           {label:'💸 10g za 30 Kč',                  fn:'q_mik_10g'},
           {label:'🌿 Speciální blend (10g)',           cls:'special', fn:'q_mik_blend', sub:'30–50 Kč · Intenzivní trip'},
-          {label:'🎭 Fejkový kratom (20g / 20 Kč)',   cls:'danger',  fn:'q_mik_fake', sub:'Pro jiné účely...'},
           {label:'Nechci',                             cls:'danger',  fn:'close'},
         ]
       },
@@ -382,7 +403,6 @@ const NPCS = {
         choices:[
           {label:'💸 10g za 30 Kč',                  fn:'q_mik_10g'},
           {label:'🌿 Speciální blend (10g)',           cls:'special', fn:'q_mik_blend', sub:'30–50 Kč · Intenzivní trip'},
-          {label:'🎭 Fejkový kratom (20g / 20 Kč)',   cls:'danger',  fn:'q_mik_fake', sub:'Pro jiné účely...'},
           {label:'Nechci',                             cls:'danger',  fn:'close'},
         ]
       },
@@ -611,7 +631,7 @@ const NPCS = {
 
 const ROOMS = {
   ucebna:  { name:'Učebna 12',       icon:'✏️', sub:'Obchodní akademie',    bg:'#06100e', npcs:['cihalova','krejci','figurova','platenikova'], spawns:{} },
-  billa:   { name:'Billa',           icon:'🛒', sub:'Mariánské náměstí',    bg:'#0a0e1a', npcs:['jana_kosova'],                  spawns:{} },
+  billa:   { name:'Billa',           icon:'🛒', sub:'Mariánské náměstí',    bg:'#0a0e1a', npcs:['jana_kosova','lenka'],          spawns:{} },
   hospoda: { name:'Hospoda',         icon:'🍺', sub:'Big Poppa',            bg:'#1a0800', npcs:['mates','johnny','kratom_saman'],  spawns:{},
              fireplace:{rx:.50, ry:.18} },
   ulice:   { name:'Ulice',           icon:'🌆', sub:'Pravá Křemže',         bg:'#050508', npcs:['bezdak','paja'],                 spawns:{} },
@@ -641,6 +661,7 @@ const ITEM_DESCS = {
   fake_kratom:  'Fejkový kratom. Pozor komu ho dáš – mohl by to poznat.',
   cibule:       'Cibule od Honzy. Bezďák za Billou ji prý potřebuje.',
   kratom_kava:  'Kratom zamíchaný do kafe. Speciální příprava.',
+  fent_kava:    'Fentanyl kafe od Honzy. Dávka, která paralyzuje. Pro Figurovou – od Milana.',
   cert:         'Certifikát. Úřední papír.',
   pytel:        'Igelitový pytel od Matese. Na co ho asi použiješ?',
   voodoo:       'Voodoo panenka od Kubátové. Použij s nožem na Milana.',
@@ -656,7 +677,8 @@ const ITEM_DESCS = {
   prasek:       'Podezřelý bílý prášek z Johnnyho šuplíku.',
   klice_vila:   'Klíče od Johnnyho vily. Teď se tam dostaneš kdykoliv.',
   podprsenka:   'Janina podprsenka. Vzácný artefakt.',
-  klice_fabie:  'Klíčky od Fábie. Nastartuj a jeď domů!',
+  klice_fabie:  'Fandovy klíčky od staré Fábie. Tyhle nastartují. Jeď domů!',
+  klice_fabie_fig: 'Klíčky od Figurové. Slibovala novou Fábii – ale v zámku se otáčí naprázdno. Něco na tom nesedí.',
   saman_hlava:  'Šamanova hlava. Celá od krve. Proč ji máš?!',
   membership_vaza: 'Vaza Systems membership kartička. Ultimátní členství – neomezený počet webů.',
 };
@@ -675,6 +697,8 @@ const OBJ_DEFS = [
   {id:'side_honza_ukol',    tag:'Vedlejší',  text:'Zařídit Honzovi komot z češtiny'},
   {id:'quest_cihalova_burn',tag:'Tajné',     text:'Zbav se Číhalové v krbu'},
   {id:'quest_honza_cibule', tag:'Tajné',     text:'Vyzvednout odměnu od Honzy'},
+  {id:'quest_honza_fent',   tag:'Šedá zóna', text:'Honza má fentanyl kafe pro Figurovou'},
+  {id:'quest_figurova_kafe', tag:'Šedá zóna', text:'Podat Figurové fentanyl kafe'},
   {id:'side_bezdak_cibule', tag:'Záhadné',   text:'Co chce bezďák s tou cibulí?'},
   {id:'quest_kgb',          tag:'Minihra',   text:'Postřílet ruské agenty KGB a GRU'},
   {id:'quest_milan_protiutok',   tag:'Tajné',     text:'Sabotovat Figurovou pro Milana'},

@@ -78,6 +78,7 @@ function submitPassword(){
   }
   if(ans === 'obídek' || ans === 'obidek'){
     closeRiddle();
+    closeDialog();
     triggerObidek();
     return;
   }
@@ -241,7 +242,7 @@ function getStage(id){
     case 'figurova':
       if(s.figurova_kratomed) return 3;
       if(s.figurova_dark_done) return 3;
-      if(s.figurova_dark_started && s.mates_dead && s.milan_shot) return 6;
+      if(s.figurova_dark_started && s.mates_dead && (s.milan_shot || s.milan_voodoo_dead)) return 6;
       if(s.figurova_dark_contract) return 5;
       if(s.figurova_dark_started) return 4;
       if(s.figurova >= 2) return 2;
@@ -278,12 +279,14 @@ function getStage(id){
       if(s.paja_in_hospoda) return 2;
       if(s.paja === 2) return 1;
       return 0;
-    case 'balonek': return 0;
     case 'platenikova':
       if(s.platenikova_rewarded) return 2;
       if(gs.story.cihalova_burned || gs.cihalova_collapsed) return 1;
       return 0;
-    case 'honza': return 0;
+    case 'honza':
+      if(s.honza_fent_bought) return 2;
+      if(s.honza_mission && !s.honza_fent_bought) return 1;
+      return 0;
     case 'mikulas':
       if(s.mikulas_reveal_line !== undefined && !s.mikulas_reveal_done) return 4 + (s.mikulas_reveal_line || 0);
       if(s.mikulas_pressed && !s.krejci_resolved) return 3;
@@ -372,8 +375,13 @@ function showDialog(npc){
     if(gs.story.figurova === 1 && gs.story.milan_met && !gs.story.milan_protiutok_asked
         && !gs.story.milan_fig_evidence && gs.rep < 50)
       choices.push({label:'🕵️ Figurová mě na tebe poslala...', cls:'danger', fn:'q_milan_protiutok', sub:'Říct Milanovi pravdu'});
+    // Alternativní: po vysvětlení figurová může hráč zmínit špiclování → Milan pošle k Honzovi pro fentanyl kafe
+    if(gs.story.milan_explained_figurova && gs.story.figurova === 1 && !gs.story.milan_knows_fig_spy && !gs.story.milan_protiutok_asked)
+      choices.push({label:'🕵️ "Figurová mě na tebe poslala špiclovat."', cls:'danger', fn:'q_milan_told_figurova_spy', sub:'Upřímně'});
     if(gs.story.figurova_kratomed && !gs.story.milan_protiutok_done)
       choices.push({label:'✅ Figurová vyřízena', cls:'prim', fn:'q_milan_protiutok_reward'});
+    if(gs.story.figurova_fent && !gs.story.milan_protiutok_done)
+      choices.push({label:'✅ Figurová je mimo provoz (kafe od Honzy)', cls:'prim', fn:'q_milan_protiutok_reward'});
   }
   if(npc.id === 'mates'){
     if(!gs.story.mates_zemle && !gs.story.mates_dead)
@@ -417,11 +425,14 @@ function showDialog(npc){
     choices.push({label:'📜 Chci certifikát C2 z angličtiny.', cls:'danger', fn:'q_figurova_blackmail_cert', sub:'Vydírání – vzácnější volba'});
   }
   // Figurová – odměna po dark path vraždách
-  if(npc.id === 'figurova' && gs.story.figurova_dark_started && gs.story.mates_dead && gs.story.milan_shot && !gs.story.figurova_dark_done)
+  if(npc.id === 'figurova' && gs.story.figurova_dark_started && gs.story.mates_dead && (gs.story.milan_shot || gs.story.milan_voodoo_dead) && !gs.story.figurova_dark_done)
     choices.push({label:'✅ Práce hotová.', cls:'prim', fn:'q_figurova_dark_reward'});
   // Figurová – kratom do kafe (jen REP < 50)
   if(npc.id === 'figurova' && gs.story.figurova === 1 && gs.inv.kratom_kava && !gs.story.figurova_kratomed && gs.rep < 50)
     choices.push({label:'☕ Přimíchat kratom do kafe', cls:'danger', fn:'q_figurova_kratom', sub:'Milan by byl potěšen'});
+  // Figurová – fentanyl kafe od Honzy (Milan poslal)
+  if(npc.id === 'figurova' && gs.inv.fent_kava && !gs.story.figurova_fent && !gs.story.figurova_kratomed && !gs.story.figurova_dark_done)
+    choices.push({label:'☕ "Tady máte kafe, profesorko."', cls:'danger', fn:'q_figurova_fent', sub:'Fentanyl od Honzy'});
   // Bezďák – dát cibuli (odkrytí Cibulky)
   if(npc.id === 'bezdak' && (gs.story.bezdak||0) >= 1 && gs.inv.cibule > 0 && !gs.story.bezdak_cibulka)
     choices.push({label:'🧅 Dát cibuli', cls:'special', fn:'q_bezdak_give_cibule'});

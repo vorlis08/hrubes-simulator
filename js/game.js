@@ -78,14 +78,11 @@ function initRoom(spawnX, spawnY){
   if(gs.saman_dead || gs.saman_naked_anim) currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
   // Pája v hospodě – nezobrazuj na ulici
   if(gs.story.paja_in_hospoda) currentNPCs = currentNPCs.filter(n => n.id !== 'paja');
-  // Pája v hospodě – přidat ho tam + balonek
+  // Pája v hospodě – přidat ho tam
   if(gs.room === 'hospoda' && gs.story.paja_in_hospoda && !gs.story.paja_fabie_told){
     const pNPC = NPCS['paja'];
     if(!currentNPCs.find(n => n.id === 'paja'))
       currentNPCs.push({...pNPC, id:'paja', x:pNPC.rx*canvas.width*0.55, y:pNPC.ry*canvas.height*1.4, bob:0, bobDir:1});
-    const bNPC = NPCS['balonek'];
-    if(bNPC && !currentNPCs.find(n => n.id === 'balonek'))
-      currentNPCs.push({...bNPC, id:'balonek', x:bNPC.rx*canvas.width, y:bNPC.ry*canvas.height, bob:0, bobDir:1});
   }
   // Číhalová mrtvá / v pytli / spálená / po skolabování – nezobrazuj ji
   if(gs.cihalova_in_bag || gs.story.cihalova_burned)
@@ -111,17 +108,24 @@ function initRoom(spawnX, spawnY){
     }, 900);
   }
   // Jana – skrýt v Bille pokud je v hospodě/vile (ale ne po záchraně – vrací se do Billy)
-  if(gs.story.jana_in_hospoda || (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa) || gs.story.jana_drugged_villa)
+  const janaAway = gs.story.jana_in_hospoda || (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa) || gs.story.jana_drugged_villa;
+  if(janaAway)
     currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova');
+  // Lenka zaskakuje za Janu v Bille – zobrazí se jen když Jana chybí
+  if(gs.room === 'billa' && !janaAway)
+    currentNPCs = currentNPCs.filter(n => n.id !== 'lenka');
   // Jana z vily – po spoutání Johnnyho nebo v ložnici se neobjevuje ve vile
   if(gs.room === 'johnny_vila' && (gs.story.johnny_cuffed || gs.story.johnny_bedroom))
     currentNPCs = currentNPCs.filter(n => n.id !== 'jana_vila');
   // Johnny vila – schovat v ložnici
   if(gs.room === 'johnny_vila' && gs.story.johnny_bedroom)
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
-  // Johnny – schovat v hospodě pokud je spoutaný nebo je vila hotová
-  if(gs.story.johnny_cuffed || gs.story.johnny_villa_rewards)
+  // Johnny – schovat v hospodě pokud je spoutaný, je vila hotová, nebo odešel s Janou domů
+  if(gs.story.johnny_cuffed || gs.story.johnny_villa_rewards || gs.story.johnny_took_jana)
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny');
+  // Mates zabit – navždy pryč
+  if(gs.story.mates_dead)
+    currentNPCs = currentNPCs.filter(n => n.id !== 'mates');
   // Jana v hospodě na rande
   if(gs.room === 'hospoda' && gs.story.jana_in_hospoda && !gs.story.johnny_took_jana){
     const jn = NPCS['jana_kosova'];
@@ -184,11 +188,12 @@ function checkProx(){
     const d = dist2(p, i); if(d < bd){ bd = d; best = {...i, isItem:true}; }
   });
 
-  // Krb v hospodě
+  // Krb v hospodě – interakční zóna je větší a posunuta níž (krb je nahoře)
   if(gs.room === 'hospoda' && gs.cihalova_in_bag){
     const fp = ROOMS.hospoda.fireplace;
-    const fd = dist2(p, {x:fp.rx*canvas.width, y:fp.ry*canvas.height});
-    if(fd < PROX_R){ best = {isFireplace:true}; }
+    const fx = fp.rx*canvas.width, fy = fp.ry*canvas.height + canvas.height*0.18;
+    const fd = dist2(p, {x:fx, y:fy});
+    if(fd < PROX_R * 1.7){ best = {isFireplace:true}; }
   }
 
   // Johnnyho vila v Křemži (přístupná během questu nebo po dokončení s klíči)
@@ -249,7 +254,7 @@ function checkProx(){
   }
 
   // Fábie na náměstí v Křemži
-  if(gs.room === 'kremze' && gs.inv.klice_fabie){
+  if(gs.room === 'kremze' && (gs.inv.klice_fabie || gs.inv.klice_fabie_fig)){
     const fab = ROOMS.kremze.fabie;
     if(fab){
       const fx = canvas.width * fab.rx, fy = canvas.height * fab.ry;
@@ -438,16 +443,17 @@ function interact(){
     }
   }
 
-  // Krb
+  // Krb – interakční zóna níž a větší
   if(gs.room === 'hospoda' && gs.cihalova_in_bag){
     const fp = ROOMS.hospoda.fireplace;
-    if(dist2(gs.player, {x:fp.rx*canvas.width, y:fp.ry*canvas.height}) < PROX_R){
+    const fx = fp.rx*canvas.width, fy = fp.ry*canvas.height + canvas.height*0.18;
+    if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.7){
       burnCihalova(); return;
     }
   }
 
   // Fábie – nastartovat a jet domů
-  if(gs.room === 'kremze' && gs.inv.klice_fabie){
+  if(gs.room === 'kremze' && (gs.inv.klice_fabie || gs.inv.klice_fabie_fig)){
     const fab = ROOMS.kremze.fabie;
     if(fab){
       const fx = canvas.width * fab.rx, fy = canvas.height * fab.ry;
@@ -496,8 +502,17 @@ function interact(){
         const ay = acy + Math.sin(angle) * ary;
         if(dist2(gs.player, {x:ax, y:ay}) < PROX_R * 0.9){
           gs.pregame_artifacts[key] = true;
-          addLog(`Sebral jsi artefakt: ${key}`, 'lm');
+          // Přenést artefakt do inventáře
+          const artNames = {screenshot:'Screenshot',hlasovka:'Hlasovka',foto_kubatova:'Fotka Kubátové',c2_cert:'C2 Certifikát',voodoo:'Voodoo panenka',fig_nuz:'Nůž od Figurové',fig_gun:'Pistole od Figurové',milan_phone:'Telefon Milana',zelizka:'Želízka',podprsenka:'Podprsenka',klice_vila:'Klíče od vily',pytel_cihalova:'Pytel s Číhalovou',klice_fabie:'Klíčky Fandovy Fábie',saman_hlava:'Šamanova hlava',maturita:'Maturita',cibule:'Cibule',membership_vaza:'Členská karta Vaza'};
+          if(key === 'pytel_cihalova'){
+            gs.inv.pytel = 1; gs.cihalova_in_bag = true;
+          } else if(gs.inv[key] !== undefined){
+            gs.inv[key] = 1;
+          }
+          updateInv();
+          addLog(`Sebral jsi artefakt: ${artNames[key] || key}`, 'lm');
           fnotif('Artefakt sebrán!', 'itm');
+          triggerPickupFlash(ax, ay, [251,191,36]);
           return;
         }
       }
@@ -717,8 +732,8 @@ function update(dt){
     updateHUD();
   }
 
-  // Pláteníková – vchází do učebny po zjištění hlasovky
-  if(!gs.platenikova_in && gs.inv.hlasovka && gs.story.milan_fig_evidence){
+  // Pláteníková – vchází do učebny po zjištění hlasovky (persistní flag, aby fungovalo i po předání Figurové)
+  if(!gs.platenikova_in && (gs.inv.hlasovka || gs.story.hlasovka_known) && gs.story.milan_fig_evidence){
     gs.platenikova_in = true;
     addLog('*Dveře se otevřou. Do učebny vchází zástupkyně ředitelky paní Pláteníková.*', 'lw');
     fnotif('Pláteníková! 👩‍💼', 'rep');

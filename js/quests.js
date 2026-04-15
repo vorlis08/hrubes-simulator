@@ -21,6 +21,30 @@ const QF = {
       'PŘEDÁVKOVAL SES', 'SMRT NA PIKO', 'death_piko'
     ), 600);
   },
+  // Číhalová – dát jí celé balení → předávkování a smrt
+  q_cihalova_overdose(){
+    if(!gs.inv.piko){ addLog('Nemáš piko!','lw'); closeDialog(); return; }
+    gs.inv.piko = 0; updateInv();
+    document.getElementById('piko-badge').classList.remove('on');
+    gs.story.cihalova_overdosed = true;
+    gs.story.cihalova = 2;
+    gs.cihalova_deadline = 0;
+    gs.cihalova_collapsed = true;
+    gs.cihalova_overdose_dead = true;
+    gs.money += 800; updateHUD();
+    addLog('Podal jsi Číhalové celou dávku naráz. "Díky, Hrubeš..." *polkne*', 'lw');
+    fnotif('+800 Kč','pos');
+    doneObj('main_cihalova');
+    closeDialog();
+    setTimeout(() => {
+      addLog('*Číhalová se chytá za hrudník. Dýchá mělce. Upadá na zem.*','lw');
+      fnotif('💀 Číhalová OD','lw');
+    }, 2000);
+    setTimeout(() => {
+      addLog('*Sípot přestává. Ticho. Číhalová je po smrti.*','lw');
+      gs.story.cihalova_dead = true;
+    }, 5500);
+  },
   q_cihalova_deliver(){
     if(!gs.inv.piko){ addLog('Nemáš piko!','lw'); closeDialog(); return; }
     gs.inv.piko          = 0; updateInv();
@@ -80,6 +104,7 @@ const QF = {
     gs.inv.screenshot = 0; gs.inv.hlasovka = 0; updateInv();
     gs.story.figurova_dark_started = true;
     gs.story.milan_fig_evidence = true;
+    gs.story.hlasovka_known = true; // Pláteníková zjistí i bez fyzického itemu
     addLog('Figurová vzala telefon. Četla. Pak si pustila hlasovku.', 'ls');
     addLog('Výraz v její tváři se změnil. Nebyla to zlost. Bylo to... chladné rozhodnutí.', 'lw');
     closeDialog();
@@ -131,17 +156,43 @@ const QF = {
     doneObj('side_figurova');
   },
   q_figurova_dark_reward(){
-    if(!gs.story.mates_dead || !gs.story.milan_shot){ closeDialog(); return; }
+    const milanGone = gs.story.milan_shot || gs.story.milan_voodoo_dead;
+    if(!gs.story.mates_dead || !milanGone){ closeDialog(); return; }
     gs.story.figurova_dark_done = true;
     gs.money += 3000; updateHUD();
     if(gs.inv.milan_phone){ gs.inv.milan_phone = 0; updateInv(); }
     gs.story.fabie_promised = true;
+    // Figurová dá svoje klíčky – jsou ale falešné (neotevřou Fandovu Fábii)
+    gs.inv.klice_fabie_fig = 1; updateInv();
     fnotif('+3 000 Kč 💰','pos');
-    fnotif('Fábie čeká 🚗','pos');
+    fnotif('🔑 Klíčky od Figurové','itm');
     closeDialog();
     setTimeout(() => {
-      showNPCLine('figurova', '"Jsem ti strašně vděčná, Hrubeši. Na tu tvou starou sračku jsem se už nemohla koukat, tak jsem ti koupila nejnovější Fábii. Dokonce automat – s tím by se rozjel i Johnny Zahradník." *mlčí* "We were never here."');
+      // Voodoo path – Figurová si všimne čistého nože
+      if(gs.story.milan_voodoo_dead && gs.inv.fig_gun){
+        showNPCLine('figurova',
+          '"Milan je mrtvý, ale..." *prohlíží tvoji pistoli* "...tahle je čistá. Ani jeden vystřel." *prohlíží nůž* "A ten nůž? Taky čistý. Jak jsi to zvládl?"'
+        );
+        setTimeout(() => {
+          document.getElementById('dname').textContent = 'FIGUROVÁ';
+          document.getElementById('drole').textContent = 'Uč. AJ';
+          document.getElementById('dtxt').textContent  = 'Figurová si tě pronikavě prohlíží.';
+          document.getElementById('dchoices').innerHTML =
+            `<button class="db prim" onclick="QF._fig_voodoo_explain()">"Nepotřeboval jsem je."</button>`;
+          document.getElementById('dov').classList.add('on');
+        }, 2500);
+        return;
+      }
+      showNPCLine('figurova', '"Jsem ti strašně vděčná, Hrubeši. Na tu tvou starou sračku jsem se už nemohla koukat, tak jsem ti koupila nejnovější Fábii. Dokonce automat – s tím by se rozjel i Johnny Zahradník." *podá ti klíčky* "We were never here."');
     }, 200);
+  },
+  _fig_voodoo_explain(){
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('figurova',
+        '"Hm." *přikývne pomalu* "Je hustej, Hrubeš. Fakt hustej. Takovej klid a Milan je pod zemí." *usměje se nebezpečně* "Tady máš klíčky. Od Fábie. We were never here."'
+      );
+    }, 300);
   },
   q_figurova_kratom(){
     if(!gs.inv.kratom_kava){ addLog('Nemáš nic na přimíchání!','lw'); closeDialog(); return; }
@@ -186,6 +237,24 @@ const QF = {
     gs.money -= 35; gs.inv.zemle++; updateInv(); updateHUD();
     addLog('Koupil jsi pizza žemli v Bille. 🍕','ls');
     fnotif('+1 🍕','itm'); closeDialog();
+  },
+  // ─── Lenka – záskok za Janu v Bille ──────────────────────────────────────
+  q_lenka_zemle(){
+    if(gs.money < 35){ addLog('Nemáš 35 Kč!','lw'); closeDialog(); return; }
+    gs.money -= 35; gs.inv.zemle++; updateInv(); updateHUD();
+    addLog('Lenka ti prodala pizza žemli. 🍕','ls');
+    fnotif('+1 🍕','itm'); closeDialog();
+  },
+  q_lenka_margherita(){
+    if(gs.money < 80){ addLog('Nemáš 80 Kč!','lw'); closeDialog(); return; }
+    gs.money -= 80; updateHUD();
+    const gain = Math.min(45, 100 - gs.energy);
+    gs.energy = Math.min(100, gs.energy + 45);
+    addLog(`🍕 Lenka ti ohřála margheritu. +${gain} energie`, 'ls');
+    fnotif(`+${gain} ⚡`,'pos'); closeDialog();
+  },
+  q_lenka_kde_jana(){
+    showNPCLine('lenka', '"Jana? Je v hospodě s tím Johnnym. Nevypadala šťastně, když odcházela. Kdybys ji viděl, pozdravuj." *podává ti účtenku*');
   },
   q_jana_fake(){
     if(!gs.inv.fake_kratom){ addLog('Nemáš fejkový kratom!','lw'); closeDialog(); return; }
@@ -603,11 +672,32 @@ const QF = {
     }
     closeDialog();
   },
-  q_mik_fake(){
-    if(gs.money < 20){ addLog('Nemáš 20 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 20; gs.inv.fake_kratom += 20; updateInv(); updateHUD();
-    addLog('Koupil jsi 20g fejkového kratomu od Mikuláše. 🎭','lw');
-    fnotif('+20g 🎭','itm'); closeDialog();
+  // q_mik_fake – odstraněno, fejkový kratom už Mikuláš neprodává
+  // ─── Honza – fentanyl kafe pro Figurovou ────────────────────────────────
+  q_honza_fent(){
+    if(gs.money < 400){ addLog('Nemáš 400 Kč!','lw'); closeDialog(); return; }
+    if(gs.inv.fent_kava){ addLog('Už máš fentanyl kafe!','lw'); closeDialog(); return; }
+    gs.money -= 400; gs.inv.fent_kava = 1; updateInv(); updateHUD();
+    gs.story.honza_fent_bought = true;
+    addLog('Honza ti pod stolem podal kelímek. "Studený, ale nic si toho nevšimne." ☕', 'lw');
+    fnotif('☕ Fentanyl kafe','itm');
+    addObj('quest_figurova_kafe');
+    closeDialog();
+  },
+  q_figurova_fent(){
+    if(!gs.inv.fent_kava){ addLog('Nemáš fentanyl kafe!','lw'); closeDialog(); return; }
+    gs.inv.fent_kava = 0; updateInv();
+    gs.story.figurova_fent = true;
+    gs.story.figurova_sanitka = true;
+    addLog('Figurová vypila kafe. Za chvíli se chytila za hrudník. Dýchání zpomalilo.', 'lw');
+    setTimeout(() => {
+      addLog('*Sanitka přijela. Odvezli ji. "We were never here." – poslední, co řekla.*','lw');
+      currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
+      doneObj('quest_figurova_kafe');
+      doneObj('side_figurova');
+      fnotif('Figurová paralyzovaná ☕','rep');
+    }, 2500);
+    closeDialog();
   },
   q_mik_free(){
     gs.inv.kratom += 50; updateInv(); updateHUD();
@@ -691,6 +781,13 @@ const QF = {
     closeDialog();
     showNPCLine('milan', '"Figurová?" *odfoukne* "Upřímně, fakt netuším, co jsem jí udělal. Ale už mě to sere, hlavně teď po tom, co vyhrožovala Matesovi."');
   },
+  q_milan_told_figurova_spy(){
+    gs.story.milan_knows_fig_spy = true;
+    closeDialog();
+    showNPCLine('milan', '"Takže ona tě na mě poslala?!" *zaskřípe zubama* "Dobrý. Víš co? Běž za Honzou. Má fentanylový kafe. Dej ho Figurové, a má klid. Tu svini. Řekni mu, že jsem tě poslal." 😡');
+    gs.story.honza_mission = true;
+    addObj('quest_honza_fent');
+  },
   q_milan_threats(){
     gs.story.milan_showed_threats = true;
     closeDialog();
@@ -699,6 +796,7 @@ const QF = {
   q_milan_fig(){
     // Screenshot + hlasovka jako důkaz
     gs.story.milan_fig_evidence = true; gs.story.milan_met = true;
+    gs.story.hlasovka_known = true;
     gs.inv.screenshot = 1; gs.inv.hlasovka = 1; updateInv();
     addLog('Milan ti ukázal screenshot a pustil ti hlasovku.','ls');
     fnotif('📱 Screenshot +1','itm');
@@ -903,7 +1001,23 @@ const QF = {
 
   // ─── Fábie – jet domů (WIN) ───────────────────────────────────────────────
   q_fabie_drive(){
+    // Figurová klíčky = falešné, otáčí se naprázdno
+    if(!gs.inv.klice_fabie && gs.inv.klice_fabie_fig){
+      addLog('Zasuneš klíček od Figurové… otáčí se naprázdno. "We were never here." Ty klíčky nejsou od téhle Fábie.','lw');
+      fnotif('🔑 Figurové klíčky nesedí!','lw');
+      return;
+    }
     if(!gs.inv.klice_fabie){ addLog('Nemáš klíčky od Fábie!','lw'); return; }
+    // Potvrzení – chceš už to dneska zabalit?
+    document.getElementById('dname').textContent = 'FÁBIE';
+    document.getElementById('drole').textContent  = 'klíčky v ruce';
+    document.getElementById('dtxt').textContent  = 'Chci už to dneska zabalit a jet domů?';
+    document.getElementById('dchoices').innerHTML =
+      `<button class="db prim" onclick="closeDialog();QF._fabie_drive_confirmed()">🚗 Ano, jedu domů</button>` +
+      `<button class="db" onclick="closeDialog()">Ještě ne</button>`;
+    document.getElementById('dov').classList.add('on');
+  },
+  _fabie_drive_confirmed(){
     doneObj('quest_fabie');
     doneObj('main_rep');
     setTimeout(showWin, 800);
