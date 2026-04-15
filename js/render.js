@@ -2324,6 +2324,46 @@ function drawSklep(W,H,t){
     ctx.restore();
   }
 
+  // ─── Figurová – leží po skopnutí (před Kubátovou) ────────────────────────
+  if(gs.story.figurova_kicked && !gs.story.figurova_dead_sklep){
+    const fx=W*0.62, fy=H*0.75;
+    // loužička pod ní
+    const fpool=ctx.createRadialGradient(fx+8,fy+10,0,fx+8,fy+10,W*0.055);
+    fpool.addColorStop(0,'rgba(71,85,105,0.45)'); fpool.addColorStop(1,'rgba(71,85,105,0)');
+    ctx.fillStyle=fpool; ctx.beginPath(); ctx.ellipse(fx+8,fy+10,W*0.055,H*0.028,0.2,0,Math.PI*2); ctx.fill();
+    // tělo – padlá figura
+    ctx.save(); ctx.translate(fx,fy); ctx.rotate(Math.PI/2.3);
+    // stín
+    ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(5,5,W*0.038,H*0.055,0,0,Math.PI*2); ctx.fill();
+    // torzo
+    ctx.fillStyle='#475569'; ctx.beginPath(); ctx.ellipse(0,0,W*0.038,H*0.055,0,0,Math.PI*2); ctx.fill();
+    // hlava
+    ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(-W*0.030,-H*0.005,W*0.022,0,Math.PI*2); ctx.fill();
+    // brýle
+    ctx.strokeStyle='rgba(80,80,80,0.8)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(-W*0.030-W*0.008,-H*0.005,W*0.007,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-W*0.030+W*0.008,-H*0.005,W*0.007,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-W*0.030-W*0.015,-H*0.005); ctx.lineTo(-W*0.030-W*0.001,-H*0.005); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-W*0.030+W*0.001,-H*0.005); ctx.lineTo(-W*0.030+W*0.015,-H*0.005); ctx.stroke();
+    // zkřížené oči (bezvědomí/smrt)
+    ctx.strokeStyle='rgba(0,0,0,0.75)'; ctx.lineWidth=1.5;
+    [[-W*0.030-W*0.008,-H*0.005],[- W*0.030+W*0.008,-H*0.005]].forEach(([ex,ey])=>{
+      ctx.beginPath(); ctx.moveTo(ex-W*0.006,ey-H*0.006); ctx.lineTo(ex+W*0.006,ey+H*0.006); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex+W*0.006,ey-H*0.006); ctx.lineTo(ex-W*0.006,ey+H*0.006); ctx.stroke();
+    });
+    ctx.restore();
+    // text titulek
+    ctx.save(); ctx.font=`bold ${Math.floor(W*0.011)}px JetBrains Mono,monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(71,85,105,0.55)'; ctx.fillText('Figurová', fx, fy+H*0.08);
+    ctx.restore();
+  }
+
+  // ─── Figurová – animace a tělo po útoku Kubátové ─────────────────────────
+  if(gs.figurova_death_anim){
+    drawDeathBody(gs.figurova_death_anim, t, '#475569', 'figurova');
+  }
+
   // ── Kapající voda ze stropu – výraznější, víc kapek ──
   ctx.save();
   for(let i=0;i<18;i++){

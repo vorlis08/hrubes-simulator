@@ -369,19 +369,6 @@ const NPCS = {
       {
         text:'"Fanda, brácha." *nakloní se blíž, mluví potichu* "Ta Číhalová... bylo by velice nemilé, kdyby se jí něco stalo. VELICE nemilé." *odmlčí se a zapije pivem* "Ale kdybys se o to někdo postaral... já bych byl nesmírně vděčnej. Chapeš co myslim?"',
         choices:[{label:'(Odejít)', fn:'close'}]
-      },
-      // stage 1 – Milan poslal hráče pro fentanyl kafe
-      {
-        text:'"Fanda, brácha..." *zašeptá* "Milan mi říkal, že přijdeš. Takže někdo tě na něj poslal? Seru na to." *sáhne pod stůl* "Mám fentanylový kafe. Dávka která paralyzuje. Stačí, aby ho vypil a bude mít jiný starosti než vás. 400 Kč."',
-        choices:[
-          {label:'☕ Koupit fentanyl-kafe (400 Kč)', cls:'danger', fn:'q_honza_fent', sub:'Pro Figurovou'},
-          {label:'(Odejít)', fn:'close'},
-        ]
-      },
-      // stage 2 – má fent_kava
-      {
-        text:'"Jak to jde, brácho? Figurová už vypila to kafe?"',
-        choices:[{label:'(Odejít)', fn:'close'}]
       }
     ]
   },
@@ -661,7 +648,6 @@ const ITEM_DESCS = {
   fake_kratom:  'Fejkový kratom. Pozor komu ho dáš – mohl by to poznat.',
   cibule:       'Cibule od Honzy. Bezďák za Billou ji prý potřebuje.',
   kratom_kava:  'Kratom zamíchaný do kafe. Speciální příprava.',
-  fent_kava:    'Fentanyl kafe od Honzy. Dávka, která paralyzuje. Pro Figurovou – od Milana.',
   cert:         'Certifikát. Úřední papír.',
   pytel:        'Igelitový pytel od Matese. Na co ho asi použiješ?',
   voodoo:       'Voodoo panenka od Kubátové. Použij s nožem na Milana.',
@@ -681,6 +667,8 @@ const ITEM_DESCS = {
   klice_fabie_fig: 'Klíčky od Figurové. Slibovala novou Fábii – ale v zámku se otáčí naprázdno. Něco na tom nesedí.',
   saman_hlava:  'Šamanova hlava. Celá od krve. Proč ji máš?!',
   membership_vaza: 'Vaza Systems membership kartička. Ultimátní členství – neomezený počet webů.',
+  propiska:     'Speciální propiska z Temu. Stisk = elektrický šok. Původně koupená Honzou a Mikulášem na Fandu.',
+  foto_figurova:'Fotografie Figurové. Pochroumané tělo v Mikulášově sklepě. Trochu morbidní, ale co naplat.',
 };
 
 // ─── Definice úkolů ──────────────────────────────────────────────────────────
@@ -697,11 +685,10 @@ const OBJ_DEFS = [
   {id:'side_honza_ukol',    tag:'Vedlejší',  text:'Zařídit Honzovi komot z češtiny'},
   {id:'quest_cihalova_burn',tag:'Tajné',     text:'Zbav se Číhalové v krbu'},
   {id:'quest_honza_cibule', tag:'Tajné',     text:'Vyzvednout odměnu od Honzy'},
-  {id:'quest_honza_fent',   tag:'Šedá zóna', text:'Honza má fentanyl kafe pro Figurovou'},
-  {id:'quest_figurova_kafe', tag:'Šedá zóna', text:'Podat Figurové fentanyl kafe'},
   {id:'side_bezdak_cibule', tag:'Záhadné',   text:'Co chce bezďák s tou cibulí?'},
   {id:'quest_kgb',          tag:'Minihra',   text:'Postřílet ruské agenty KGB a GRU'},
   {id:'quest_milan_protiutok',   tag:'Tajné',     text:'Sabotovat Figurovou pro Milana'},
+  {id:'quest_figurova_vyres',    tag:'Tajné',     text:'Vyřeš situaci s Figurovou'},
   {id:'quest_mraz',              tag:'Démonické', text:'Vyřiď Mrázův osud pro Kubátovou'},
   {id:'quest_figurova_mates',    tag:'Temné',     text:'Zlikviduj Matese pro Figurovou'},
   {id:'quest_figurova_milan',    tag:'Temné',     text:'Zlikviduj Milana pro Figurovou'},

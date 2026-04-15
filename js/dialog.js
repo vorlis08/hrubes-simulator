@@ -240,6 +240,7 @@ function getStage(id){
       if(s.krejci === 1 && s.krejci_resolved) return 1;
       return 0;
     case 'figurova':
+      if(s.figurova_dead_sklep || s.figurova_propiska_kill) return 3;
       if(s.figurova_kratomed) return 3;
       if(s.figurova_dark_done) return 3;
       if(s.figurova_dark_started && s.mates_dead && (s.milan_shot || s.milan_voodoo_dead)) return 6;
@@ -284,8 +285,6 @@ function getStage(id){
       if(gs.story.cihalova_burned || gs.cihalova_collapsed) return 1;
       return 0;
     case 'honza':
-      if(s.honza_fent_bought) return 2;
-      if(s.honza_mission && !s.honza_fent_bought) return 1;
       return 0;
     case 'mikulas':
       if(s.mikulas_reveal_line !== undefined && !s.mikulas_reveal_done) return 4 + (s.mikulas_reveal_line || 0);
@@ -342,6 +341,11 @@ function typeText(el, text, speed = 18){
 // ─── showDialog ───────────────────────────────────────────────────────────
 
 function showDialog(npc){
+  // Figurová nás sleduje – nelze s ní mluvit
+  if(npc.id === 'figurova' && gs.story.figurova_following && !gs.story.figurova_at_door){
+    addLog('Figurová tě sleduje. Zaveď ji ke sklepu v Bille.', 'ls');
+    return;
+  }
   const stage = getStage(npc.id);
   const d     = NPCS[npc.id].dialogs[stage];
   if(!d) return;
@@ -371,17 +375,12 @@ function showDialog(npc){
     if(gs.story.figurova === 1 && gs.story.milan_fig_evidence && !gs.story.milan_protiutok_asked
         && gs.story.mraz_done && !gs.story.milan_voodoo_dead && !gs.inv.foto_kubatova)
       choices.push({label:'📸 A ta fotka z toho sklepa...', cls:'special', fn:'q_milan_fig_foto', sub:'Silnější důkaz'});
-    // Protiútok – říct pravdu (jen REP < 50, Milan zná hráče)
+    // Protiútok – říct pravdu Milanovi
     if(gs.story.figurova === 1 && gs.story.milan_met && !gs.story.milan_protiutok_asked
-        && !gs.story.milan_fig_evidence && gs.rep < 50)
+        && !gs.story.milan_fig_evidence)
       choices.push({label:'🕵️ Figurová mě na tebe poslala...', cls:'danger', fn:'q_milan_protiutok', sub:'Říct Milanovi pravdu'});
-    // Alternativní: po vysvětlení figurová může hráč zmínit špiclování → Milan pošle k Honzovi pro fentanyl kafe
-    if(gs.story.milan_explained_figurova && gs.story.figurova === 1 && !gs.story.milan_knows_fig_spy && !gs.story.milan_protiutok_asked)
-      choices.push({label:'🕵️ "Figurová mě na tebe poslala špiclovat."', cls:'danger', fn:'q_milan_told_figurova_spy', sub:'Upřímně'});
     if(gs.story.figurova_kratomed && !gs.story.milan_protiutok_done)
       choices.push({label:'✅ Figurová vyřízena', cls:'prim', fn:'q_milan_protiutok_reward'});
-    if(gs.story.figurova_fent && !gs.story.milan_protiutok_done)
-      choices.push({label:'✅ Figurová je mimo provoz (kafe od Honzy)', cls:'prim', fn:'q_milan_protiutok_reward'});
   }
   if(npc.id === 'mates'){
     if(!gs.story.mates_zemle && !gs.story.mates_dead)
@@ -413,6 +412,16 @@ function showDialog(npc){
   // Honza – vyzvednout cibuli (po spálení)
   if(npc.id === 'honza' && gs.story.cihalova_burned && !gs.story.honza_cibule_given)
     choices.push({label:'🔥 "Práce je hotová."', cls:'prim', fn:'q_honza_cibule_reward'});
+  // Honza – propiska quest (po Milan protiutok, Figurová ještě naživu)
+  if(npc.id === 'honza' && gs.story.milan_knows_fig_spy && !gs.story.figurova_killed
+     && !gs.story.honza_propiska_asked && !gs.story.figurova_kratomed && !gs.story.figurova_dead_sklep)
+    choices.push({label:'🤔 "Ty máš vždycky u sebe různé píčovinky..."', cls:'special', fn:'q_honza_propiska_ask'});
+  if(npc.id === 'honza' && gs.story.honza_propiska_asked && !gs.story.honza_kapsy_prohledany)
+    choices.push({label:'👜 "Prohledej kapsy"', cls:'special', fn:'q_honza_kapsy'});
+  if(npc.id === 'honza' && gs.story.honza_kapsy_prohledany && !gs.story.honza_propiska_info_given)
+    choices.push({label:'✏️ "Hele, ta propiska..."', cls:'special', fn:'q_honza_propiska_info'});
+  if(npc.id === 'honza' && gs.story.honza_propiska_info_given && !gs.inv.propiska)
+    choices.push({label:'✏️ "Dáš mi ji?"', cls:'prim', fn:'q_honza_get_propiska'});
   // Figurová – certifikát jako důkaz (starý fallback)
   if(npc.id === 'figurova' && gs.story.figurova === 1 && gs.inv.cert && !gs.story.milan_fig_evidence && !gs.story.figurova_kratomed)
     choices.push({label:'📋 Předložit certifikát jako důkaz', cls:'special', fn:'q_figurova_cert', sub:'Figurová to nějak uzná'});
@@ -430,9 +439,25 @@ function showDialog(npc){
   // Figurová – kratom do kafe (jen REP < 50)
   if(npc.id === 'figurova' && gs.story.figurova === 1 && gs.inv.kratom_kava && !gs.story.figurova_kratomed && gs.rep < 50)
     choices.push({label:'☕ Přimíchat kratom do kafe', cls:'danger', fn:'q_figurova_kratom', sub:'Milan by byl potěšen'});
-  // Figurová – fentanyl kafe od Honzy (Milan poslal)
-  if(npc.id === 'figurova' && gs.inv.fent_kava && !gs.story.figurova_fent && !gs.story.figurova_kratomed && !gs.story.figurova_dark_done)
-    choices.push({label:'☕ "Tady máte kafe, profesorko."', cls:'danger', fn:'q_figurova_fent', sub:'Fentanyl od Honzy'});
+  // Figurová – sklep lákadlo (Možnost 1, odemčeno po Kubátová questu)
+  if(npc.id === 'figurova' && gs.story.milan_knows_fig_spy
+     && (gs.story.mraz_done || gs.story.sklep_unlocked)
+     && !gs.story.figurova_sklep_started && !gs.story.figurova_killed
+     && !gs.story.figurova_kratomed && !gs.story.figurova_dark_done)
+    choices.push({label:'🕳️ "Špicloval jsem Milana. Mám pro tebe dobrou zprávu."', cls:'special', fn:'q_figurova_sklep_start', sub:'Odemčeno – byl jsi v sklepě'});
+  // Figurová – omluvenka (Možnost 2, po Milan protiutok, Figurová ještě naživu)
+  if(npc.id === 'figurova' && gs.story.milan_knows_fig_spy
+     && !gs.story.figurova_killed && !gs.story.figurova_omluvenka_asked
+     && !gs.story.figurova_sklep_started && !gs.story.figurova_kratomed && !gs.story.figurova_dark_done)
+    choices.push({label:'📝 "Mohla byste mi podepsat omluvenku?"', cls:'special', fn:'q_figurova_omluvenka_ask'});
+  // Figurová – znovu omluvenka (po zmaru)
+  if(npc.id === 'figurova' && gs.story.figurova_omluvenka_failed && !gs.story.figurova_killed)
+    choices.push({label:'📝 "Mohla byste mi podepsat omluvenku?"', cls:'special', fn:'q_figurova_omluvenka_fail2'});
+  // Figurová – nabídnout propisku (když sahá pro tužku)
+  if(npc.id === 'figurova' && gs.story.figurova_omluvenka_asking && gs.inv.propiska > 0)
+    choices.push({label:'✏️ "Přinesl jsem propisku ze Švýcarska – musíte zkusit."', cls:'danger', fn:'q_figurova_propiska_offer', sub:'Šoková propiska'});
+  if(npc.id === 'figurova' && gs.story.figurova_omluvenka_asking && !gs.story.figurova_killed)
+    choices.push({label:'(Nechat ji podepsat vlastní)', fn:'q_figurova_omluvenka_no_propiska'});
   // Bezďák – dát cibuli (odkrytí Cibulky)
   if(npc.id === 'bezdak' && (gs.story.bezdak||0) >= 1 && gs.inv.cibule > 0 && !gs.story.bezdak_cibulka)
     choices.push({label:'🧅 Dát cibuli', cls:'special', fn:'q_bezdak_give_cibule'});
@@ -489,6 +514,29 @@ function closeNPCLine(){
   gs.player.mv = false;
   const cb = gs._npcLineCallback;
   gs._npcLineCallback = null;
+  if(cb) setTimeout(cb, 150);
+}
+
+// ─── Promluva hráče ──────────────────────────────────────────────────────────
+function showPlayerLine(text, callback){
+  const box = document.getElementById('dbox');
+  box.classList.add('player-mode');
+  document.getElementById('dav').textContent   = '🎒';
+  document.getElementById('dname').textContent = 'FANDA';
+  document.getElementById('drole').textContent = '';
+  typeText(document.getElementById('dtxt'), text, 16);
+  document.getElementById('dchoices').innerHTML =
+    `<button class="db prim" onclick="closePlayerLine()">Pokračovat</button>`;
+  gs._playerLineCallback = callback || null;
+  document.getElementById('dov').classList.add('on');
+}
+function closePlayerLine(){
+  document.getElementById('dbox').classList.remove('player-mode');
+  document.getElementById('dov').classList.remove('on');
+  for(const k in keys) keys[k] = false;
+  gs.player.mv = false;
+  const cb = gs._playerLineCallback;
+  gs._playerLineCallback = null;
   if(cb) setTimeout(cb, 150);
 }
 

@@ -651,6 +651,192 @@ const QF = {
     showNPCLine('honza', '"Věděl jsem, že se na tebe dá spolehnout." *podá cibuli* "Dones ji tomu bezďákovi za Billou. Věř mi, bude se ti hodit."');
   },
 
+  // ─── Honza – propiska quest (Fáze C) ─────────────────────────────────────
+  q_honza_propiska_ask(){
+    gs.story.honza_propiska_asked = true;
+    showNPCLine('honza', '"Hmm..." *zamyslí se a pokrčí rameny* "Teď u sebe nic nemám. Upřímně." *odmlčí se* "...počkej. Hele – zkusím prohledat kapsy, možná tam něco je."');
+  },
+  q_honza_kapsy(){
+    gs.story.honza_kapsy_prohledany = true;
+    showNPCLine('honza', '"Tak... tady mám dvě pětikoruny." *cinknou o stůl* "Pablo nikotinový sáčky – čili pytel, nebo puk, jak chceš." *vytáhne kapesník* "Kapesník. A..." *podívá se s překvapením* "...propisku. Hele, to jsem ani nevěděl, že ji mám."');
+  },
+  q_honza_propiska_info(){
+    gs.story.honza_propiska_info_given = true;
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('honza',
+        '"Ta propiska?" *mírně se uculí* "To je speciální věc. Koupil jsem ji na Temu – když ji někdo zmáčkne, proběhne elektrický šok." *pauza* "Původně jsem ji koupil spolu s Mikulášem na tebe, abysme si z tebe udělali prdel."',
+        () => showPlayerLine('"Jste magoři."',
+          () => showNPCLine('honza',
+            '"Jsem si toho vědom." *odfrknul si* "Ale je to pro prdel. Jestli tě tohle překvapilo, tak se máš na co těšit." *přikloní se blíž* "Kdybys jen viděl Mikulášovu sbírku..."'
+          )
+        )
+      );
+    }, 200);
+  },
+  q_honza_get_propiska(){
+    gs.inv.propiska = 1; updateInv();
+    gs.story.honza_propiska_got = true;
+    addLog('Dostal jsi propisku od Honzy. ✏️⚡', 'lm');
+    fnotif('✏️ Propiska +1', 'itm');
+    closeDialog();
+  },
+
+  // ─── Figurová – omluvenka + propiska (Fáze D) ────────────────────────────
+  q_figurova_omluvenka_ask(){
+    gs.story.figurova_omluvenka_asked = true;
+    gs.story.figurova_omluvenka_asking = true;
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('figurova',
+        '"Omluvenka." *zvedne obočí* "Fine. Dám ti ji." *sahá do tašky pro tužku*',
+        () => { const f = currentNPCs.find(n => n.id === 'figurova'); if(f) showDialog(f); }
+      );
+    }, 200);
+  },
+  q_figurova_propiska_offer(){
+    if(!gs.inv.propiska){ addLog('Nemáš propisku!', 'lw'); closeDialog(); return; }
+    gs.inv.propiska = 0; updateInv();
+    gs.story.figurova_omluvenka_asking = false;
+    gs.story.figurova_killed = true;
+    gs.story.figurova_propiska_kill = true;
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('figurova',
+        '"Ze Švýcarska?" *pochybovačně zvedne obočí* "Fine. Ukažte." *bere propisku, zkusí ji zmáčknout*',
+        () => {
+          addLog('*Prošlehlo to. Figurová ani nevydala zvuk. Padla k zemi.*', 'lw');
+          fnotif('Figurová zemřela ⚡', 'rep');
+          currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
+          gs.story.figurova_sanitka = true;
+          doneObj('side_figurova');
+          doneObj('quest_figurova_vyres');
+          gainRep(8, 'Zlikvidoval Figurovou');
+          if(activeProfile){ activeProfile.artifacts.foto_figurova = true; profileSaveProgress(); }
+        }
+      );
+    }, 200);
+  },
+  q_figurova_omluvenka_no_propiska(){
+    gs.story.figurova_omluvenka_asking = false;
+    gs.story.figurova_omluvenka_failed = true;
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('figurova', '"Good." *podepíše a hodí papír* "Hotovo. Teď táhni."');
+      addLog('Figurová podepsala omluvenku vlastní tužkou. Quest zmařen – propisku jsi neměl.', 'lw');
+      fnotif('Quest zmařen 💀', 'lw');
+    }, 200);
+  },
+  q_figurova_omluvenka_fail2(){
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('figurova',
+        '"Já jsem ti přece něco podepisovala, Hrubeši. Nemám celý den na tvoje píčoviny." *nepodívá se na tebe* "Jestli mě chceš otravovat s každou píčovinou, jdi si za Martou. Ta už mě taky začíná pomalu srát."'
+      );
+    }, 200);
+  },
+
+  // ─── Figurová – sklep (Fáze E) ───────────────────────────────────────────
+  q_figurova_sklep_start(){
+    gs.story.figurova_sklep_started = true;
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('figurova', '"Dobrou zprávu?" *přimhouří oči* "O čem mluvíte, Hrubeši?"',
+        () => showPlayerLine(
+          '"Špicloval jsem Milana. Našel jsem skrytou místnost – schovává tam všechno svoje zboží. Hory kratomu, šňupací tabák, dokonce pár nakradených počítačů od Boxanový."',
+          () => showNPCLine('figurova',
+            '"Evidence..." *vstane, přehodí tašku* "I do NOT want to hear it. I want to SEE it. Ukažte mi tu místnost." *skládá papíry*',
+            () => {
+              gs.story.figurova_following = true;
+              addLog('Figurová tě následuje. Zaveď ji ke sklepu v Bille.', 'ls');
+              fnotif('Figurová tě sleduje 🧐', 'pos');
+            }
+          )
+        )
+      );
+    }, 200);
+  },
+  q_figurova_arrive_door(){
+    gs.story.figurova_at_door = true;
+    gs.story.figurova_following = false;
+    const fig = currentNPCs.find(n => n.id === 'figurova');
+    if(fig){ fig.x = canvas.width * 0.63; fig.y = canvas.height * 0.72; }
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('figurova',
+        '"Zde?" *kouká na tmavý průchod za regálem, přišlápne nohu* "Je tam... strašná tma." *stojí na prahu, nehýbe se* "Já se... sklepů bojím."',
+        () => {
+          document.getElementById('dav').textContent   = '🧐';
+          document.getElementById('dname').textContent = 'FIGUROVÁ';
+          document.getElementById('drole').textContent = 'stojí na prahu';
+          document.getElementById('dtxt').textContent  = 'Figurová se zastavila. Nervy. Přesně jak jsi čekal.';
+          document.getElementById('dchoices').innerHTML =
+            `<button class="db danger" onclick="runQF('q_figurova_kick')">👟 Skopnout ji dolů</button>` +
+            `<button class="db" onclick="closeDialog()">Nechat ji, ať se rozmyslí</button>`;
+          document.getElementById('dov').classList.add('on');
+        }
+      );
+    }, 300);
+  },
+  q_figurova_kick(){
+    gs.story.figurova_kicked = true;
+    gs.story.figurova_following = false;
+    gs.story.figurova_at_door = false;
+    currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
+    closeDialog();
+    addLog('*Figurová vykřikla.* "HRUB–" *pak ticho. Temné, hluboké ticho.*', 'lw');
+    fnotif('Figurová letí dolů 🕳️', 'rep');
+    addLog('Jdi do sklepa.', 'ls');
+  },
+  q_figurova_sklep_plea(){
+    showNPCLine('figurova',
+      '"Hrubeši..." *hlas se láme* "Prosím... zavolejte pomoc. Nemůžu se pohnout." *oči se jí zalévají slzami* "Nezasloužím si to... prosím vás..."',
+      () => showPlayerLine('"Neměla ses srát do Milana."',
+        () => {
+          gs.story.figurova_plea_done = true;
+          QF._kubatova_attack();
+        }
+      )
+    );
+  },
+  _kubatova_attack(){
+    const figX = canvas.width * 0.50, figY = canvas.height * 0.82;
+    addLog('*Ticho. Pak – svist. Kubátová se pohnula.*', 'lw');
+    setTimeout(() => {
+      addLog('*Přesun byl bleskový. Ani jsi nestačil zareagovat.*', 'lw');
+      gs.figurova_death_anim = { x: figX, y: figY, startTime: gs.ts };
+      currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
+    }, 700);
+    setTimeout(() => {
+      addLog('*Křik. Krátký. Pak ticho.*', 'lw');
+      addLog('*Kubátová se vzpřímí. Otočí se k tobě. Na tváři krev.*', 'lw');
+      gs.story.figurova_dead_sklep = true;
+      gs.story.figurova_killed = true;
+      fnotif('Figurová... 💀', 'rep');
+      doneObj('side_figurova');
+      doneObj('quest_figurova_vyres');
+      gainRep(10, 'Figurová skoncována v sklepě');
+    }, 1800);
+    setTimeout(() => {
+      const kub = currentNPCs.find(n => n.id === 'kubatova');
+      if(!kub) return;
+      showNPCLine('kubatova',
+        '"Děkuji ti, Hrubši." *klidný hlas, jako by se nic nestalo* "Zařídil jsi to výtečně."',
+        () => showPlayerLine('"To bylo možná až moc kruté. Je mi jí trochu líto."',
+          () => showNPCLine('kubatova',
+            '"Líto?" *mírně nakloní hlavu* "Ta svině všem vyžrávala obědy z lednice. Každý den. Bez výjimky." *pauza* "Zasloužila si to."',
+            () => {
+              gs.inv.foto_figurova = 1; updateInv();
+              if(activeProfile){ activeProfile.artifacts.foto_figurova = true; profileSaveProgress(); }
+              addLog('Na památku ti Kubátová podala fotku Figurové. 📸', 'lm');
+              fnotif('📸 Fotka Figurové!', 'itm');
+            }
+          )
+        )
+      );
+    }, 2800);
+  },
+
   // ─── Mikuláš ──────────────────────────────────────────────────────────────
   q_mik_10g(){
     if(gs.money < 30){ addLog('Nemáš 30 Kč!','lw'); closeDialog(); return; }
@@ -673,32 +859,6 @@ const QF = {
     closeDialog();
   },
   // q_mik_fake – odstraněno, fejkový kratom už Mikuláš neprodává
-  // ─── Honza – fentanyl kafe pro Figurovou ────────────────────────────────
-  q_honza_fent(){
-    if(gs.money < 400){ addLog('Nemáš 400 Kč!','lw'); closeDialog(); return; }
-    if(gs.inv.fent_kava){ addLog('Už máš fentanyl kafe!','lw'); closeDialog(); return; }
-    gs.money -= 400; gs.inv.fent_kava = 1; updateInv(); updateHUD();
-    gs.story.honza_fent_bought = true;
-    addLog('Honza ti pod stolem podal kelímek. "Studený, ale nic si toho nevšimne." ☕', 'lw');
-    fnotif('☕ Fentanyl kafe','itm');
-    addObj('quest_figurova_kafe');
-    closeDialog();
-  },
-  q_figurova_fent(){
-    if(!gs.inv.fent_kava){ addLog('Nemáš fentanyl kafe!','lw'); closeDialog(); return; }
-    gs.inv.fent_kava = 0; updateInv();
-    gs.story.figurova_fent = true;
-    gs.story.figurova_sanitka = true;
-    addLog('Figurová vypila kafe. Za chvíli se chytila za hrudník. Dýchání zpomalilo.', 'lw');
-    setTimeout(() => {
-      addLog('*Sanitka přijela. Odvezli ji. "We were never here." – poslední, co řekla.*','lw');
-      currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
-      doneObj('quest_figurova_kafe');
-      doneObj('side_figurova');
-      fnotif('Figurová paralyzovaná ☕','rep');
-    }, 2500);
-    closeDialog();
-  },
   q_mik_free(){
     gs.inv.kratom += 50; updateInv(); updateHUD();
     gainRep(2,'Dostal kratom zdarma');
@@ -749,29 +909,22 @@ const QF = {
   q_milan_protiutok(){
     gs.story.milan_protiutok_asked = true;
     gs.story.milan_knows_fig_spy = true;
-    gs.story.honza_mission = true;
     gs.story.milan_met = true;
-    addObj('quest_honza_fent');
-    addLog('Milan: "Takže ona tě na mě poslala?!" *zaskřípe zubama* "Dobrý. Víš co? Běž za Honzou. Má fentanylový kafe. Dej ho Figurové, a má klid. Tu svini. Řekni mu, že jsem tě poslal." 😡', 'lw');
     closeDialog();
+    setTimeout(() => {
+      showNPCLine('milan',
+        '"Takže ona tě na mě poslala?!" *zaskřípe zubama, pak se zastaví a vydechne* "Dobrej. Díky, že mi to říkáš." *chvíli přemýšlí* "Poslouchej – já ti říct, co máš dělat, nemůžu. To musíš vyřešit sám. Ale Figurová se musí přestat motat do mých věcí." *mávne rukou* "Nějak to zařiď. Věřím, že na něco přijdeš."',
+        () => { addObj('quest_figurova_vyres'); }
+      );
+    }, 200);
   },
   q_milan_protiutok_reward(){
-    if(!gs.story.figurova_kratomed && !gs.story.figurova_fent){ closeDialog(); return; }
+    if(!gs.story.figurova_kratomed){ closeDialog(); return; }
     gs.story.milan_protiutok_done = true;
     gs.money += 300; updateHUD();
     gainRep(6, 'Zneškodnil Figurovou pro Milana');
     addLog('Milan: "Sanitka přijela rychle. Bylo to... efektivní." *strkuje ti peníze* "Nikdy jsme se neviděli. +300 Kč" 💰', 'lm');
     fnotif('+300 Kč','pos'); closeDialog();
-  },
-  q_milan_note(){
-    if(!gs.inv.note){ addLog('Nemáš dopis!','lw'); closeDialog(); return; }
-    gs.inv.note = 0; gs.inv.kratom += 100; updateInv(); updateHUD();
-    gs.story.milan_met = true;
-    gainRep(3,'Dal Milanovi dopis místo na poštu');
-    addLog('Dal jsi dopis Milanovi. 100g zdarma! 🌿','lm');
-    fnotif('+100g 🌿','itm');
-    if(gs.story.krejci === 1) gs.story.krejci_delivered = true;
-    closeDialog();
   },
   q_milan_honza(){
     gs.story.milan_honza_ok = true;
@@ -782,13 +935,6 @@ const QF = {
     gs.story.milan_explained_figurova = true;
     closeDialog();
     showNPCLine('milan', '"Figurová?" *odfoukne* "Upřímně, fakt netuším, co jsem jí udělal. Ale už mě to sere, hlavně teď po tom, co vyhrožovala Matesovi."');
-  },
-  q_milan_told_figurova_spy(){
-    gs.story.milan_knows_fig_spy = true;
-    closeDialog();
-    showNPCLine('milan', '"Takže ona tě na mě poslala?!" *zaskřípe zubama* "Dobrý. Víš co? Běž za Honzou. Má fentanylový kafe. Dej ho Figurové, a má klid. Tu svini. Řekni mu, že jsem tě poslal." 😡');
-    gs.story.honza_mission = true;
-    addObj('quest_honza_fent');
   },
   q_milan_threats(){
     gs.story.milan_showed_threats = true;

@@ -52,6 +52,7 @@ function createBlankProfile(username){
       maturita:         false,
       cibule:           false,
       membership_vaza:  false,
+      foto_figurova:    false,
     },
 
     endings: {
@@ -81,6 +82,7 @@ function createBlankProfile(username){
       side_bezdak_cibule:     false,
       quest_kgb:              false,
       quest_milan_protiutok:  false,
+      quest_figurova_vyres:   false,
       quest_mraz:             false,
       quest_figurova_mates:   false,
       quest_figurova_milan:   false,
@@ -665,6 +667,7 @@ function renderProfileHome(){
     { key:'klice_fabie',    emoji:'🔑', name:'Fábie' },
     { key:'saman_hlava',    emoji:'🩸', name:'Šam. hlava' },
     { key:'maturita',       emoji:'🏆', name:'Maturita' },
+    { key:'foto_figurova',  emoji:'📸', name:'Fotka Fig.' },
   ];
   const artC = document.getElementById('hs-artifacts');
   artC.innerHTML = '';
@@ -723,6 +726,7 @@ function renderProfileQuests(p){
     { id:'side_bezdak_cibule',    tag:'Záhadné',   name:'Co chce bezďák s cibulí?' },
     { id:'quest_kgb',             tag:'Minihra',   name:'Postřílet agenty KGB a GRU' },
     { id:'quest_milan_protiutok', tag:'Tajné',     name:'Sabotovat Figurovou pro Milana' },
+    { id:'quest_figurova_vyres',  tag:'Tajné',     name:'Vyřeš situaci s Figurovou' },
     { id:'quest_mraz',            tag:'Démonické', name:'Vyřiď Mrázův osud' },
     { id:'quest_figurova_mates',  tag:'Temné',     name:'Zlikviduj Matese' },
     { id:'quest_figurova_milan',  tag:'Temné',     name:'Zlikviduj Milana' },

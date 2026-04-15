@@ -126,6 +126,19 @@ function initRoom(spawnX, spawnY){
   // Mates zabit – navždy pryč
   if(gs.story.mates_dead)
     currentNPCs = currentNPCs.filter(n => n.id !== 'mates');
+  // Figurová zabita / parayzovaná / skopnuta – skrýt v učebně
+  if(gs.story.figurova_killed || gs.story.figurova_kicked || gs.story.figurova_kratomed || gs.story.figurova_fent)
+    currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
+  // Figurová sleduje hráče – přidat ji do aktuální místnosti (přechody mezi místnostmi)
+  if(gs.story.figurova_following && !gs.story.figurova_at_door){
+    const figNPC = NPCS['figurova'];
+    if(!currentNPCs.find(n => n.id === 'figurova'))
+      currentNPCs.push({...figNPC, id:'figurova', x:gs.player.x + 55, y:gs.player.y, bob:0, bobDir:1});
+  }
+  // Figurová skopnuta – schovat v Bille, zobrazit v sklepě na zemi (log při vstupu)
+  if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep){
+    setTimeout(() => addLog('*Na podlaze sklepa... Figurová. Pochroumána. Ještě se hýbe.*', 'lw'), 600);
+  }
   // Jana v hospodě na rande
   if(gs.room === 'hospoda' && gs.story.jana_in_hospoda && !gs.story.johnny_took_jana){
     const jn = NPCS['jana_kosova'];
@@ -252,6 +265,16 @@ function checkProx(){
     const mx = canvas.width * 0.63, my = canvas.height * 0.55;
     if(dist2(p, {x:mx, y:my}) < PROX_R * 1.5){ best = {isMilkShelf:true}; }
   }
+  // Figurová sleduje – interakce u dveří sklepa
+  if(gs.room === 'billa' && gs.story.figurova_following && !gs.story.figurova_at_door){
+    const dx = canvas.width * 0.63, dy = canvas.height * 0.72;
+    if(dist2(p, {x:dx, y:dy}) < PROX_R * 2) best = {isFigurovaDoor:true};
+  }
+  // Figurová pochroumána v sklepě
+  if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep){
+    const fx = canvas.width * 0.50, fy = canvas.height * 0.82;
+    if(dist2(p, {x:fx, y:fy}) < PROX_R * 1.5) best = {isFigurovaSklep:true};
+  }
 
   // Fábie na náměstí v Křemži
   if(gs.room === 'kremze' && (gs.inv.klice_fabie || gs.inv.klice_fabie_fig)){
@@ -276,7 +299,7 @@ function checkProx(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza'];
+    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza','foto_figurova'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){
@@ -324,6 +347,10 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Vzít klíče od Johnnyho';
     } else if(best.isFireplace){
       document.getElementById('ptxt').textContent = 'Hodit Číhalovou do krbu';
+    } else if(best.isFigurovaDoor){
+      document.getElementById('ptxt').textContent = 'Zastavit se u průchodu do sklepa';
+    } else if(best.isFigurovaSklep){
+      document.getElementById('ptxt').textContent = 'Promluvit s Figurovou';
     } else if(best.isMilkShelf){
       document.getElementById('ptxt').textContent = gs.story.shelf_open ? 'Sestoupit do sklepa' : 'Otevřít průchod';
     } else if(best.isFabie){
@@ -430,6 +457,17 @@ function interact(){
     }
   }
 
+  // Figurová sleduje – zastavit u dveří sklepa
+  if(gs.room === 'billa' && gs.story.figurova_following && !gs.story.figurova_at_door){
+    const dx = canvas.width * 0.63, dy = canvas.height * 0.72;
+    if(dist2(gs.player, {x:dx, y:dy}) < PROX_R * 2){ runQF('q_figurova_arrive_door'); return; }
+  }
+  // Figurová pochroumána v sklepě – promluvit
+  if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep && !gs.story.figurova_plea_done){
+    const fx = canvas.width * 0.50, fy = canvas.height * 0.82;
+    if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.5){ runQF('q_figurova_sklep_plea'); return; }
+  }
+
   // Regál mléka – tajný vchod do sklepa
   if(gs.room === 'billa' && gs.story.sklep_unlocked && !gs.shelf_sliding){
     const mx = canvas.width * 0.63, my = canvas.height * 0.55;
@@ -489,7 +527,7 @@ function interact(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza'];
+    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza','foto_figurova'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){
@@ -562,6 +600,20 @@ function update(dt){
 
   // Room transition fade decay
   if(gs.roomFadeAlpha > 0) gs.roomFadeAlpha = Math.max(0, gs.roomFadeAlpha - dt * 0.003);
+
+  // Figurová sleduje hráče
+  if(gs.story.figurova_following && !gs.story.figurova_at_door){
+    const fig = currentNPCs.find(n => n.id === 'figurova');
+    if(fig){
+      const dx = p.x - fig.x, dy = p.y - fig.y;
+      const d = Math.hypot(dx, dy);
+      if(d > 65){
+        const spd = 2.6 * dt / 16.667;
+        fig.x += (dx / d) * spd;
+        fig.y += (dy / d) * spd;
+      }
+    }
+  }
 
   // Šaman OBÍDEK – pobíhá nahý po hospodě
   if(gs.saman_naked_anim && gs.room === 'hospoda' && gs.saman_naked_anim.phase === 'running'){
