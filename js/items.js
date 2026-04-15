@@ -19,13 +19,6 @@ function activateKratom(duration, dose_amount){
   gs.kratom_freeze = 0; // freeze odstraněn
 
   canvas.classList.add('kratom-on');
-  // Pokud je aktivní blend-boost, zesil trip
-  if((gs.blend_boost_until || 0) > gs.ts){
-    canvas.classList.add('kratom-blend');
-    gs.kratom_blend_on = true;
-    gs.kratom_t = Math.round(duration * 1.5); // delší trip
-    addLog('🌿🔥 Blend × Kratom – vědomí se tříští. Vize pulzují.','lw');
-  }
   document.getElementById('kh').classList.add('on');
 
   gainRep(gs.story.kratom_used ? 1 : 4, gs.story.kratom_used ? 'Opět kratom' : 'První kratom trip!');
@@ -86,16 +79,23 @@ function _consumeBlend(){
   if(gs.inv.blend <= 0) return;
   gs.inv.blend -= 1; updateInv();
   gs.story.blend_consumed = (gs.story.blend_consumed || 0) + 1;
-  gs.blend_boost_until = gs.ts + 30000; // 30s boost pro další kratom trip
-  addLog('🍃 Zkouřil jsi blend. Cítíš v hrudi tlumený vnitřní tlak...', 'lw');
-  fnotif('🍃 BLEND AKTIVNÍ', 'itm');
-  // Pokud je zrovna kratom aktivní, prodluž a zesil
-  if(gs.kratom_on){
-    gs.kratom_t = Math.max(gs.kratom_t, 18000);
-    gs.kratom_blend_on = true;
-    canvas.classList.add('kratom-blend');
-    addLog('Vize sílí. Geometrie tančí. Stěny dýchají.', 'lw');
+  addLog('🍃 Zkouřil jsi blend. Geometrie tančí, stěny dýchají...', 'lw');
+  fnotif('🌿🔥 BLEND TRIP', 'itm');
+
+  // Spustí rovnou intenzivní kratom trip (stejná délka jako klasický kratom)
+  gs.kratom_on = true;
+  gs.kratom_blend_on = true;
+  gs.kratom_t = gs.kratom_max;
+  gs.kratom_freeze = 0;
+  canvas.classList.add('kratom-on');
+  canvas.classList.add('kratom-blend');
+  document.getElementById('kh').classList.add('on');
+
+  if(!gs.story.kratom_used){
+    gainRep(4, 'První trip!');
+    gs.story.kratom_used = true;
   }
+  updateHUD();
 }
 
 function usePikoSelf(){
