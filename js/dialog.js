@@ -429,9 +429,6 @@ function showDialog(npc){
   if(npc.id === 'figurova' && gs.story.figurova === 1 && !gs.story.figurova_motive_explained
      && !gs.story.figurova_killed && !gs.story.figurova_kratomed)
     choices.push({label:'🤔 "Proč vám tak záleží na Milanovi?"', cls:'special', fn:'q_figurova_motive_ask', sub:'Osobní motiv'});
-  // Honza – co ví o Figurové (po propiskovém chainu nebo po milan_protiutok)
-  if(npc.id === 'honza' && gs.story.milan_knows_fig_spy && !gs.story.honza_fig_info_told)
-    choices.push({label:'🗞️ "A co ty víš o Figurové?"', cls:'special', fn:'q_honza_fig_info'});
   // Figurová – certifikát jako důkaz (starý fallback)
   if(npc.id === 'figurova' && gs.story.figurova === 1 && gs.inv.cert && !gs.story.milan_fig_evidence && !gs.story.figurova_kratomed)
     choices.push({label:'📋 Předložit certifikát jako důkaz', cls:'special', fn:'q_figurova_cert', sub:'Figurová to nějak uzná'});

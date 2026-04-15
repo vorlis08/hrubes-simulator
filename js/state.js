@@ -38,6 +38,7 @@ const gs = {
   voodoo_tx:   0,
   voodoo_ty:   0,
   vm:          null,   // stav animace Milana { x, y, phase, phaseT, trail, fnX, fnY }
+  kubatova_bite_anim: null, // { startTime, figX, figY } – Kubátová jde k Figurové
   kasna_red:   false,  // kašna je červená od krve
 
   // Šaman – špatná hesla tracker

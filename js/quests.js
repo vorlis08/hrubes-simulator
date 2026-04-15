@@ -658,7 +658,7 @@ const QF = {
   },
   q_honza_kapsy(){
     gs.story.honza_kapsy_prohledany = true;
-    showNPCLine('honza', '"Tak... tady mám dvě pětikoruny." *cinknou o stůl* "Pablo nikotinový sáčky – čili pytel, nebo puk, jak chceš." *vytáhne kapesník* "Kapesník. A..." *podívá se s překvapením* "...propisku. Hele, to jsem ani nevěděl, že ji mám."');
+    showNPCLine('honza', '"Tak... tady mám dvě pětikoruny." *cinknou o stůl* "Nikotinový sáčky – čili pytel." *vytáhne kapesník* "Kapesník. A..." *podívá se s překvapením* "...propisku. Hele, to jsem ani nevěděl, že ji mám."');
   },
   q_honza_propiska_info(){
     gs.story.honza_propiska_info_given = true;
@@ -743,17 +743,17 @@ const QF = {
     closeDialog();
     setTimeout(() => {
       showNPCLine('figurova', '"Dobrou zprávu?" *přimhouří oči* "O čem mluvíte, Hrubeši?"',
-        () => showPlayerLine(
-          '"Špicloval jsem Milana. Našel jsem skrytou místnost – schovává tam všechno svoje zboží. Hory kratomu, šňupací tabák, dokonce pár nakradených počítačů od Boxanový."',
-          () => showNPCLine('figurova',
-            '"Evidence..." *vstane, přehodí tašku* "I do NOT want to hear it. I want to SEE it. Ukažte mi tu místnost." *skládá papíry*',
+        () => {
+          addLog('"Špicloval jsem Milana. Našel jsem skrytou místnost – schovává tam zboží. Hory kratomu, šňupací tabák, nakradené počítače od Boxanový." *říkáš potichu*', 'ls');
+          setTimeout(() => showNPCLine('figurova',
+            '"Evidence..." *vstane, přehodí tašku* "Nechci to slyšet. Chci to vidět. Ukažte mi tu místnost." *skládá papíry*',
             () => {
               gs.story.figurova_following = true;
               addLog('Figurová tě následuje. Zaveď ji ke sklepu v Bille.', 'ls');
               fnotif('Figurová tě sleduje 🧐', 'pos');
             }
-          )
-        )
+          ), 400);
+        }
       );
     }, 200);
   },
@@ -761,7 +761,7 @@ const QF = {
     gs.story.figurova_at_door = true;
     gs.story.figurova_following = false;
     const fig = currentNPCs.find(n => n.id === 'figurova');
-    if(fig){ fig.x = canvas.width * 0.63; fig.y = canvas.height * 0.72; }
+    if(fig){ fig.x = canvas.width * 0.63; fig.y = canvas.height * 0.55; }
     closeDialog();
     setTimeout(() => {
       showNPCLine('figurova',
@@ -792,50 +792,51 @@ const QF = {
   q_figurova_sklep_plea(){
     showNPCLine('figurova',
       '"Hrubeši..." *hlas se láme* "Prosím... zavolejte pomoc. Nemůžu se pohnout." *oči se jí zalévají slzami* "Nezasloužím si to... prosím vás..."',
-      () => showPlayerLine('"Neměla ses srát do Milana."',
-        () => {
+      () => {
+        addLog('"Neměla ses srát do Milana." *říkáš tiše*', 'ls');
+        setTimeout(() => {
           gs.story.figurova_plea_done = true;
           QF._kubatova_attack();
-        }
-      )
+        }, 500);
+      }
     );
   },
   _kubatova_attack(){
-    const figX = canvas.width * 0.50, figY = canvas.height * 0.82;
+    const figX = canvas.width * 0.22, figY = canvas.height * 0.78;
+    currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
     addLog('*Ticho. Pak – svist. Kubátová se pohnula.*', 'lw');
-    setTimeout(() => {
-      addLog('*Přesun byl bleskový. Ani jsi nestačil zareagovat.*', 'lw');
-      gs.figurova_death_anim = { x: figX, y: figY, startTime: gs.ts };
-      currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
-    }, 700);
+    gs.kubatova_bite_anim = { startTime: gs.ts, figX, figY };
+    // hlava zmizí = dead_sklep flag při návratu Kubátové
     setTimeout(() => {
       addLog('*Křik. Krátký. Pak ticho.*', 'lw');
-      addLog('*Kubátová se vzpřímí. Otočí se k tobě. Na tváři krev.*', 'lw');
+    }, 1200);
+    setTimeout(() => {
       gs.story.figurova_dead_sklep = true;
       gs.story.figurova_killed = true;
       fnotif('Figurová... 💀', 'rep');
       doneObj('side_figurova');
       doneObj('quest_figurova_vyres');
       gainRep(10, 'Figurová skoncována v sklepě');
-    }, 1800);
+    }, 3700);
+    setTimeout(() => {
+      addLog('*Kubátová se vzpřímí. Otočí se k tobě.*', 'lw');
+    }, 4600);
     setTimeout(() => {
       const kub = currentNPCs.find(n => n.id === 'kubatova');
       if(!kub) return;
       showNPCLine('kubatova',
         '"Děkuji ti, Hrubši." *klidný hlas, jako by se nic nestalo* "Zařídil jsi to výtečně."',
-        () => showPlayerLine('"To bylo možná až moc kruté. Je mi jí trochu líto."',
-          () => showNPCLine('kubatova',
-            '"Líto?" *mírně nakloní hlavu* "Ta svině všem vyžrávala obědy z lednice. Každý den. Bez výjimky." *pauza* "Zasloužila si to."',
-            () => {
-              gs.inv.foto_figurova = 1; updateInv();
-              if(activeProfile){ activeProfile.artifacts.foto_figurova = true; profileSaveProgress(); }
-              addLog('Na památku ti Kubátová podala fotku Figurové. 📸', 'lm');
-              fnotif('📸 Fotka Figurové!', 'itm');
-            }
-          )
+        () => showNPCLine('kubatova',
+          '"Ta svině všem vyžrávala obědy z lednice. Každý den. Bez výjimky." *pauza* "Zasloužila si to."',
+          () => {
+            gs.inv.foto_figurova = 1; updateInv();
+            if(activeProfile){ activeProfile.artifacts.foto_figurova = true; profileSaveProgress(); }
+            addLog('Na památku ti Kubátová podala fotku Figurové. 📸', 'lm');
+            fnotif('📸 Fotka Figurové!', 'itm');
+          }
         )
       );
-    }, 2800);
+    }, 5000);
   },
 
   // ─── Mikuláš ──────────────────────────────────────────────────────────────
@@ -978,23 +979,12 @@ const QF = {
     gs.story.figurova_motive_explained = true;
     closeDialog();
     showNPCLine('figurova',
-      '"Why Milan?" *odloží pero* "Milan Mráz is not just a dealer, Hrubeš. He is a destabilizing element. Three of my best students last semester – kratom, absences, completely derailed." *skříží ruce* "I have a responsibility to this school."',
+      '"Proč Milan?" *odloží pero* "Milan Mráz není jenom dealer, Hrubeši. Tři z mých nejlepších studentů loni – kratom, absence, totálně vyhořeli. Mám zodpovědnost vůči téhle škole." *skříží ruce*',
       () => showNPCLine('figurova',
-        '"And he knows things he should not." *chvíle ticha* "Things about certain administrative... arrangements. If that information reaches the wrong people, it is not just my career." *zahledí se na tebe* "So yes. It is personal. And professional. Bring me proof."'
+        '"A ví věci, které by vědět neměl." *chvíle ticha* "Věci o určitých... administrativních záležitostech. Pokud se ty informace dostanou na špatná místa, nejde jen o moji kariéru." *zahledí se na tebe* "Takže ano. Je to osobní i profesionální. Sežeňte mi důkazy."'
       )
     );
   },
-  q_honza_fig_info(){
-    gs.story.honza_fig_info_told = true;
-    closeDialog();
-    showNPCLine('honza',
-      '"Figurová?" *odfrknul* "Loňský rok mě přistihla za školou se šňupákem. Myslel jsem, že jsem v háji."',
-      () => showNPCLine('honza',
-        '"Ale pak mi ji kamarád ukázal – jak vychází ze čtvrté třídy po \'doučování\'. Hotovost v kapse, čtvrt hodiny práce." *pokrčí rameny* "Dal jsem jí vědět, že vím. Od té doby mě nechává na pokoji." *přiloží prst na rty* "Ale to nikomu neříkej."'
-      )
-    );
-  },
-
   // ─── Kubátová ──────────────────────────────────────────────────────────────
 
   // ─── Kubátová – Mrázův quest ──────────────────────────────────────────────

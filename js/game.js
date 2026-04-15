@@ -133,7 +133,7 @@ function initRoom(spawnX, spawnY){
   if(gs.story.figurova_following && !gs.story.figurova_at_door){
     const figNPC = NPCS['figurova'];
     if(!currentNPCs.find(n => n.id === 'figurova'))
-      currentNPCs.push({...figNPC, id:'figurova', x:gs.player.x + 55, y:gs.player.y, bob:0, bobDir:1});
+      currentNPCs.push({...figNPC, id:'figurova', x:gs.player.x - 55, y:gs.player.y, bob:0, bobDir:1});
   }
   // Figurová skopnuta – schovat v Bille, zobrazit v sklepě na zemi (log při vstupu)
   if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep){
@@ -272,7 +272,7 @@ function checkProx(){
   }
   // Figurová pochroumána v sklepě
   if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep){
-    const fx = canvas.width * 0.50, fy = canvas.height * 0.82;
+    const fx = canvas.width * 0.22, fy = canvas.height * 0.78;
     if(dist2(p, {x:fx, y:fy}) < PROX_R * 1.5) best = {isFigurovaSklep:true};
   }
   // Figurová leží po výboji propisky (učebna)
@@ -480,7 +480,7 @@ function interact(){
   }
   // Figurová pochroumána v sklepě – promluvit
   if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep && !gs.story.figurova_plea_done){
-    const fx = canvas.width * 0.50, fy = canvas.height * 0.82;
+    const fx = canvas.width * 0.22, fy = canvas.height * 0.78;
     if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.5){ runQF('q_figurova_sklep_plea'); return; }
   }
 
