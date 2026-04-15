@@ -666,11 +666,12 @@ const QF = {
     setTimeout(() => {
       showNPCLine('honza',
         '"Ta propiska?" *mírně se uculí* "To je speciální věc. Koupil jsem ji na Temu – když ji někdo zmáčkne, proběhne elektrický šok." *pauza* "Původně jsem ji koupil spolu s Mikulášem na tebe, abysme si z tebe udělali prdel."',
-        () => showPlayerLine('"Jste magoři."',
-          () => showNPCLine('honza',
+        () => {
+          addLog('*Hrubeš se jen podívá* "...Jste magoři."', 'ls');
+          setTimeout(() => showNPCLine('honza',
             '"Jsem si toho vědom." *odfrknul si* "Ale je to pro prdel. Jestli tě tohle překvapilo, tak se máš na co těšit." *přikloní se blíž* "Kdybys jen viděl Mikulášovu sbírku..."'
-          )
-        )
+          ), 350);
+        }
       );
     }, 200);
   },
@@ -705,10 +706,10 @@ const QF = {
       showNPCLine('figurova',
         '"Ze Švýcarska?" *pochybovačně zvedne obočí* "Fine. Ukažte." *bere propisku, zkusí ji zmáčknout*',
         () => {
-          addLog('*Prošlehlo to. Figurová ani nevydala zvuk. Padla k zemi.*', 'lw');
+          addLog('*Prošlehlo to. Ani nevydala zvuk. Tuhý výboj. Padla dozadu a zůstala ležet.*', 'lw');
+          setTimeout(() => addLog('*Třída je tichá. Nikdo se nepohnul.*', 'ls'), 1200);
           fnotif('Figurová zemřela ⚡', 'rep');
           currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
-          gs.story.figurova_sanitka = true;
           doneObj('side_figurova');
           doneObj('quest_figurova_vyres');
           gainRep(8, 'Zlikvidoval Figurovou');
@@ -961,6 +962,37 @@ const QF = {
     fnotif('📸 Fotka +1','itm');
     closeDialog();
     setTimeout(() => showFotoKubatova(), 400);
+  },
+
+  q_milan_fig_historia(){
+    gs.story.milan_fig_historia_told = true;
+    closeDialog();
+    showNPCLine('milan',
+      '"Víš co mě štvie?" *zapije pivo* "Ta ženská bere prachy od rodičů za individuální přípravu. Tři tisíce za hodinu, hotovost, bez dokladu. A ta příprava? Nikdy se nekoná. Rodiče se bojí stěžovat, protože jinak jejich dítě propadne nebo nedostane doporučení na vejšku."',
+      () => showNPCLine('milan',
+        '"Mates to ví. Já to vím. Proto mě chce dostat." *nakloní se* "Jenže já nekecám do vzduchu – Mates má hlasovky, já mám jméno jednoho táty, co mi to řekl přímo do telefonu. Figurová to tuší." *pauza* "A teď ses dozvěděl taky ty."'
+      )
+    );
+  },
+  q_figurova_motive_ask(){
+    gs.story.figurova_motive_explained = true;
+    closeDialog();
+    showNPCLine('figurova',
+      '"Why Milan?" *odloží pero* "Milan Mráz is not just a dealer, Hrubeš. He is a destabilizing element. Three of my best students last semester – kratom, absences, completely derailed." *skříží ruce* "I have a responsibility to this school."',
+      () => showNPCLine('figurova',
+        '"And he knows things he should not." *chvíle ticha* "Things about certain administrative... arrangements. If that information reaches the wrong people, it is not just my career." *zahledí se na tebe* "So yes. It is personal. And professional. Bring me proof."'
+      )
+    );
+  },
+  q_honza_fig_info(){
+    gs.story.honza_fig_info_told = true;
+    closeDialog();
+    showNPCLine('honza',
+      '"Figurová?" *odfrknul* "Loňský rok mě přistihla za školou se šňupákem. Myslel jsem, že jsem v háji."',
+      () => showNPCLine('honza',
+        '"Ale pak mi ji kamarád ukázal – jak vychází ze čtvrté třídy po \'doučování\'. Hotovost v kapse, čtvrt hodiny práce." *pokrčí rameny* "Dal jsem jí vědět, že vím. Od té doby mě nechává na pokoji." *přiloží prst na rty* "Ale to nikomu neříkej."'
+      )
+    );
   },
 
   // ─── Kubátová ──────────────────────────────────────────────────────────────

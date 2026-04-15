@@ -366,6 +366,46 @@ function drawUcebna(W,H,t){
     ctx.beginPath(); ctx.arc(cx,cy,csz,0,Math.PI*2); ctx.fill();
   }
   ctx.restore();
+
+  // ── Figurová – leží po výboji propisky ──────────────────────────────────
+  if(gs.story.figurova_propiska_kill){
+    const fx=W*0.50, fy=H*0.68;
+    // stín pod tělem
+    ctx.fillStyle='rgba(0,0,0,0.28)';
+    ctx.beginPath(); ctx.ellipse(fx,fy+12,W*0.052,H*0.022,0,0,Math.PI*2); ctx.fill();
+    // tělo – padlá figura (rotace dozadu)
+    ctx.save(); ctx.translate(fx,fy); ctx.rotate(Math.PI*0.52);
+    ctx.fillStyle='#475569';
+    ctx.beginPath(); ctx.ellipse(0,0,W*0.040,H*0.058,0,0,Math.PI*2); ctx.fill();
+    // hlava
+    ctx.fillStyle='#fde8c8';
+    ctx.beginPath(); ctx.arc(-W*0.032,-H*0.002,W*0.022,0,Math.PI*2); ctx.fill();
+    // vlasy (šedo-hnědé)
+    ctx.fillStyle='#7c6a52';
+    ctx.beginPath(); ctx.ellipse(-W*0.032,-H*0.012,W*0.020,W*0.010,0,Math.PI,Math.PI*2); ctx.fill();
+    // brýle
+    ctx.strokeStyle='rgba(60,60,60,0.85)'; ctx.lineWidth=1.4;
+    [[-W*0.040,-H*0.001],[-W*0.024,-H*0.001]].forEach(([ex,ey])=>{
+      ctx.beginPath(); ctx.arc(ex,ey,W*0.007,0,Math.PI*2); ctx.stroke();
+    });
+    ctx.beginPath(); ctx.moveTo(-W*0.040+W*0.007,-H*0.001); ctx.lineTo(-W*0.024-W*0.007,-H*0.001); ctx.stroke();
+    // zkřížené oči
+    ctx.strokeStyle='rgba(0,0,0,0.7)'; ctx.lineWidth=1.3;
+    [[-W*0.040,-H*0.001],[-W*0.024,-H*0.001]].forEach(([ex,ey])=>{
+      ctx.beginPath(); ctx.moveTo(ex-W*0.005,ey-H*0.005); ctx.lineTo(ex+W*0.005,ey+H*0.005); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex+W*0.005,ey-H*0.005); ctx.lineTo(ex-W*0.005,ey+H*0.005); ctx.stroke();
+    });
+    // drobný šleh opálení na ruce (drží propisku)
+    ctx.strokeStyle='rgba(255,200,60,0.55)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(W*0.022,H*0.018); ctx.lineTo(W*0.038,H*0.005); ctx.stroke();
+    ctx.restore();
+    // popisek
+    ctx.save();
+    ctx.font=`${Math.floor(W*0.011)}px JetBrains Mono,monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(71,85,105,0.5)'; ctx.fillText('Figurová  ⚡', fx, fy+H*0.085);
+    ctx.restore();
+  }
 }
 
 // ─── Billa ────────────────────────────────────────────────────────────────────

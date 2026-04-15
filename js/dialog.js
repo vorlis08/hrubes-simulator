@@ -375,6 +375,9 @@ function showDialog(npc){
     if(gs.story.figurova === 1 && gs.story.milan_fig_evidence && !gs.story.milan_protiutok_asked
         && gs.story.mraz_done && !gs.story.milan_voodoo_dead && !gs.inv.foto_kubatova)
       choices.push({label:'📸 A ta fotka z toho sklepa...', cls:'special', fn:'q_milan_fig_foto', sub:'Silnější důkaz'});
+    // Pozadí Figurové – co o ní Milan ví
+    if(gs.story.milan_explained_figurova && !gs.story.milan_fig_historia_told)
+      choices.push({label:'🧐 "A co na ni vlastně víš?"', cls:'special', fn:'q_milan_fig_historia', sub:'Pozadí celého konfliktu'});
     // Protiútok – říct pravdu Milanovi
     if(gs.story.figurova === 1 && gs.story.milan_met && !gs.story.milan_protiutok_asked
         && !gs.story.milan_fig_evidence)
@@ -422,6 +425,13 @@ function showDialog(npc){
     choices.push({label:'✏️ "Hele, ta propiska..."', cls:'special', fn:'q_honza_propiska_info'});
   if(npc.id === 'honza' && gs.story.honza_propiska_info_given && !gs.inv.propiska)
     choices.push({label:'✏️ "Dáš mi ji?"', cls:'prim', fn:'q_honza_get_propiska'});
+  // Figurová – zeptat se na motiv (proč chce dostat Milana)
+  if(npc.id === 'figurova' && gs.story.figurova === 1 && !gs.story.figurova_motive_explained
+     && !gs.story.figurova_killed && !gs.story.figurova_kratomed)
+    choices.push({label:'🤔 "Proč vám tak záleží na Milanovi?"', cls:'special', fn:'q_figurova_motive_ask', sub:'Osobní motiv'});
+  // Honza – co ví o Figurové (po propiskovém chainu nebo po milan_protiutok)
+  if(npc.id === 'honza' && gs.story.milan_knows_fig_spy && !gs.story.honza_fig_info_told)
+    choices.push({label:'🗞️ "A co ty víš o Figurové?"', cls:'special', fn:'q_honza_fig_info'});
   // Figurová – certifikát jako důkaz (starý fallback)
   if(npc.id === 'figurova' && gs.story.figurova === 1 && gs.inv.cert && !gs.story.milan_fig_evidence && !gs.story.figurova_kratomed)
     choices.push({label:'📋 Předložit certifikát jako důkaz', cls:'special', fn:'q_figurova_cert', sub:'Figurová to nějak uzná'});

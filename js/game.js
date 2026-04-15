@@ -275,6 +275,11 @@ function checkProx(){
     const fx = canvas.width * 0.50, fy = canvas.height * 0.82;
     if(dist2(p, {x:fx, y:fy}) < PROX_R * 1.5) best = {isFigurovaSklep:true};
   }
+  // Figurová leží po výboji propisky (učebna)
+  if(gs.room === 'ucebna' && gs.story.figurova_propiska_kill){
+    const fx = canvas.width * 0.50, fy = canvas.height * 0.68;
+    if(dist2(p, {x:fx, y:fy}) < PROX_R * 1.5) best = {isFigurovaPropBody:true};
+  }
 
   // Fábie na náměstí v Křemži
   if(gs.room === 'kremze' && (gs.inv.klice_fabie || gs.inv.klice_fabie_fig)){
@@ -351,6 +356,8 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Zastavit se u průchodu do sklepa';
     } else if(best.isFigurovaSklep){
       document.getElementById('ptxt').textContent = 'Promluvit s Figurovou';
+    } else if(best.isFigurovaPropBody){
+      document.getElementById('ptxt').textContent = 'Figurová... ⚡';
     } else if(best.isMilkShelf){
       document.getElementById('ptxt').textContent = gs.story.shelf_open ? 'Sestoupit do sklepa' : 'Otevřít průchod';
     } else if(best.isFabie){
@@ -461,6 +468,15 @@ function interact(){
   if(gs.room === 'billa' && gs.story.figurova_following && !gs.story.figurova_at_door){
     const dx = canvas.width * 0.63, dy = canvas.height * 0.72;
     if(dist2(gs.player, {x:dx, y:dy}) < PROX_R * 2){ runQF('q_figurova_arrive_door'); return; }
+  }
+  // Figurová leží v učebně – výboj propisky
+  if(gs.room === 'ucebna' && gs.story.figurova_propiska_kill){
+    const fx = canvas.width * 0.50, fy = canvas.height * 0.68;
+    if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.5){
+      addLog('⚡ *bzzzt*', 'lw');
+      setTimeout(() => addLog('...', 'ls'), 500);
+      return;
+    }
   }
   // Figurová pochroumána v sklepě – promluvit
   if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep && !gs.story.figurova_plea_done){
