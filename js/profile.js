@@ -19,6 +19,8 @@ function toFakeEmail(username){
 function createBlankProfile(username){
   return {
     username,
+    displayName: username,
+    avatar: '🤙',
     createdAt: new Date().toISOString(),
     lastPlayed: null,
 
@@ -251,6 +253,10 @@ async function profileSaveProgressFirebase(){
     killCount:      activeProfile.stats.killCount    || 0,
     totalKratom:    activeProfile.stats.totalKratom  || 0,
     tier:           getProfileTier(activeProfile).emoji,
+    // Avatar: ukládáme jen emoji (base64 obrázky jsou příliš velké pro Firestore)
+    avatar:         (activeProfile.avatar && !activeProfile.avatar.startsWith('data:'))
+                      ? activeProfile.avatar : getProfileTier(activeProfile).emoji,
+    displayName:    activeProfile.displayName || activeProfile.username,
     updatedAt:      firebase.firestore.FieldValue.serverTimestamp(),
   };
 
@@ -350,6 +356,43 @@ async function profileSaveDeath(deathType){
     activeProfile.endings[deathType] = true;
   }
   await profileSaveProgress();
+}
+
+// ─── Úprava profilu ───────────────────────────────────────────────────────────
+
+async function updateProfile(changes){
+  // changes = { displayName, avatar }
+  if(!activeProfile) return { ok:false, msg:'Nejsi přihlášen.' };
+
+  if(changes.displayName !== undefined){
+    const dn = changes.displayName.trim();
+    if(dn.length < 1)  return { ok:false, msg:'Jméno nesmí být prázdné.' };
+    if(dn.length > 24) return { ok:false, msg:'Jméno je příliš dlouhé (max 24).' };
+    activeProfile.displayName = dn;
+  }
+  if(changes.avatar !== undefined){
+    activeProfile.avatar = changes.avatar;
+  }
+
+  // Ulož
+  if(FB_CONFIGURED && activeProfile._uid){
+    try {
+      const profileData = Object.assign({}, activeProfile);
+      delete profileData._uid;
+      await fbDb.collection('profiles').doc(activeProfile._uid).update({
+        displayName: activeProfile.displayName,
+        avatar: activeProfile.avatar,
+      });
+    } catch(e){
+      console.warn('[Firebase] updateProfile failed:', e.message);
+    }
+  } else {
+    const profiles = getAllProfilesLocal();
+    const key = activeProfile.username.toLowerCase();
+    profiles[key] = activeProfile;
+    saveAllProfilesLocal(profiles);
+  }
+  return { ok:true };
 }
 
 // ─── Export / Import ──────────────────────────────────────────────────────────
@@ -545,10 +588,15 @@ function renderLeaderboard(rows, sortKey){
     const isMe = currentUid && r.id === currentUid;
     const val  = cat ? cat.format(r[sortKey] != null ? r[sortKey] : 0) : r[sortKey];
     const rank = rankEmojis[i] || ('#' + (i + 1));
+    const avatarSrc = r.avatar || r.tier || '🤙';
+    const avatarHtml = avatarSrc.startsWith('data:')
+      ? `<img class="lb-avatar-img" src="${avatarSrc}" alt="avatar"/>`
+      : `<span class="lb-avatar">${avatarSrc}</span>`;
+    const displayName = escHtml(r.displayName || r.username || '???');
     return `<div class="lb-row${isMe ? ' lb-me' : ''}">
       <span class="lb-rank">${rank}</span>
-      <span class="lb-avatar">${r.tier || '🤙'}</span>
-      <span class="lb-name">${escHtml(r.username || '???')}</span>
+      ${avatarHtml}
+      <span class="lb-name">${displayName}</span>
       <span class="lb-val">${val}</span>
     </div>`;
   }).join('');
@@ -631,9 +679,22 @@ function renderProfileHome(){
   if(!p) return;
 
   const tier = getProfileTier(p);
-  document.getElementById('hs-avatar').textContent  = tier.emoji;
+  // Avatar: buď vlastní (emoji / base64 obrázek), nebo tier emoji
+  const avatarEl = document.getElementById('hs-avatar');
+  const avatarVal = p.avatar || tier.emoji;
+  if(avatarVal.startsWith('data:')){
+    avatarEl.textContent = '';
+    avatarEl.style.backgroundImage = `url(${avatarVal})`;
+    avatarEl.style.backgroundSize = 'cover';
+    avatarEl.style.backgroundPosition = 'center';
+    avatarEl.style.fontSize = '0';
+  } else {
+    avatarEl.textContent = avatarVal;
+    avatarEl.style.backgroundImage = '';
+    avatarEl.style.fontSize = '';
+  }
   document.getElementById('hs-title').textContent   = tier.title;
-  document.getElementById('hs-username').textContent = p.username;
+  document.getElementById('hs-username').textContent = p.displayName || p.username;
 
   const DUR = 1200;
   setTimeout(() => animateCountUp(document.getElementById('hs-games'),    p.stats.totalGames,  DUR), 100);
@@ -747,6 +808,43 @@ function renderProfileQuests(p){
   });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+//  ANIMOVANÉ INTRO (jen 1× za session)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function runIntro(onDone){
+  const ov = document.getElementById('intro-ov');
+  if(!ov){ onDone(); return; }
+
+  // Jednou za session
+  if(sessionStorage.getItem('kremze_intro_seen')){ ov.style.display='none'; onDone(); return; }
+  sessionStorage.setItem('kremze_intro_seen','1');
+
+  ov.style.display = 'flex';
+
+  const show = (id, delay) => setTimeout(() => {
+    const el = document.getElementById(id);
+    if(el) el.classList.add('visible');
+  }, delay);
+
+  show('il-year',  400);
+  show('il-name',  900);
+  show('il-sub',  1800);
+  show('il-icons',2600);
+  show('il-tag',  3400);
+
+  const finish = () => {
+    ov.classList.add('intro-out');
+    setTimeout(() => { ov.style.display='none'; onDone(); }, 700);
+  };
+
+  const skip = document.getElementById('intro-skip');
+  if(skip) skip.addEventListener('click', finish);
+
+  // Auto-konec po 5.2s
+  setTimeout(finish, 5200);
+}
+
 // ─── Loading sekvence ─────────────────────────────────────────────────────────
 
 function showLoadingScreen(callback){
@@ -813,10 +911,143 @@ function initLoginTabs(){
 
 // ─── Init profile UI ──────────────────────────────────────────────────────────
 
+// ─── Emoji pro picker ─────────────────────────────────────────────────────────
+
+const AVATAR_EMOJIS = [
+  '🤙','😎','🤓','😈','👹','💀','🤡','🥸','🤠','🧛','🥷','🤖','👾','🎭',
+  '🦅','🐉','🐺','🦊','🐸','🦁','🐯','🦝','🐧','🦄',
+  '👑','🔥','⚡','💊','🌿','🔪','🔫','💰','🍺','🚗','🏆','🎯','🎲','🃏',
+  '✊','🤘','🙏','🫡','🤫','😤','🥶','🥵','😵','🫠',
+];
+
+function buildEmojiGrid(containerId, onPick, selectedVal){
+  const grid = document.getElementById(containerId);
+  if(!grid) return;
+  grid.innerHTML = '';
+  AVATAR_EMOJIS.forEach(em => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ep-emoji-btn' + (em === selectedVal ? ' selected' : '');
+    btn.textContent = em;
+    btn.addEventListener('click', () => {
+      grid.querySelectorAll('.ep-emoji-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      onPick(em);
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function setupAvatarUpload(fileInputId, previewId, onPick){
+  const fileInput = document.getElementById(fileInputId);
+  if(!fileInput) return;
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if(!file) return;
+    if(file.size > 512 * 1024){
+      showToast('Obrázek je příliš velký. Max 512 KB.', 'err');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      const prev = document.getElementById(previewId);
+      if(prev){
+        prev.textContent = '';
+        prev.style.backgroundImage = `url(${dataUrl})`;
+        prev.style.backgroundSize = 'cover';
+        prev.style.backgroundPosition = 'center';
+        prev.style.fontSize = '0';
+      }
+      // Odselektuj emoji
+      const gridEl = prev && prev.closest('.login-field, .ep-card');
+      if(gridEl) gridEl.querySelectorAll('.ep-emoji-btn').forEach(b => b.classList.remove('selected'));
+      onPick(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function setAvatarPreview(elId, val){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  if(val && val.startsWith('data:')){
+    el.textContent = '';
+    el.style.backgroundImage = `url(${val})`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.fontSize = '0';
+  } else {
+    el.textContent = val || '🤙';
+    el.style.backgroundImage = '';
+    el.style.fontSize = '';
+  }
+}
+
 function initProfileUI(){
   initLoginTabs();
   initHomeTabs();
   initLeaderboardFilters();
+
+  // ── Registrace: emoji picker + PNG upload ──
+  let regSelectedAvatar = '🤙';
+  buildEmojiGrid('reg-emoji-grid', em => {
+    regSelectedAvatar = em;
+    setAvatarPreview('reg-avatar-preview', em);
+  }, regSelectedAvatar);
+  document.getElementById('reg-avatar-upload-btn').addEventListener('click', () => {
+    document.getElementById('reg-avatar-file').click();
+  });
+  setupAvatarUpload('reg-avatar-file', 'reg-avatar-preview', dataUrl => {
+    regSelectedAvatar = dataUrl;
+  });
+
+  // ── Edit modal ──
+  const epOv = document.getElementById('edit-profile-ov');
+  let epSelectedAvatar = '🤙';
+
+  document.getElementById('hs-edit-profile').addEventListener('click', () => {
+    if(!activeProfile) return;
+    epSelectedAvatar = activeProfile.avatar || '🤙';
+    setAvatarPreview('ep-avatar-preview', epSelectedAvatar);
+    buildEmojiGrid('ep-emoji-grid', em => {
+      epSelectedAvatar = em;
+      setAvatarPreview('ep-avatar-preview', em);
+    }, epSelectedAvatar.startsWith('data:') ? null : epSelectedAvatar);
+    document.getElementById('ep-displayname').value = activeProfile.displayName || activeProfile.username;
+    document.getElementById('ep-err').textContent = '';
+    epOv.classList.add('on');
+  });
+
+  document.getElementById('ep-close').addEventListener('click', () => {
+    epOv.classList.remove('on');
+  });
+  epOv.addEventListener('click', e => {
+    if(e.target === epOv) epOv.classList.remove('on');
+  });
+
+  document.getElementById('ep-avatar-upload-btn').addEventListener('click', () => {
+    document.getElementById('ep-avatar-file').click();
+  });
+  setupAvatarUpload('ep-avatar-file', 'ep-avatar-preview', dataUrl => {
+    epSelectedAvatar = dataUrl;
+    buildEmojiGrid('ep-emoji-grid', em => {
+      epSelectedAvatar = em;
+      setAvatarPreview('ep-avatar-preview', em);
+    }, null);
+  });
+
+  document.getElementById('ep-save-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('ep-save-btn');
+    btn.disabled = true; btn.textContent = '...';
+    const dn = document.getElementById('ep-displayname').value;
+    const res = await updateProfile({ displayName: dn, avatar: epSelectedAvatar });
+    btn.disabled = false; btn.textContent = 'ULOŽIT ZMĚNY';
+    if(!res.ok){ document.getElementById('ep-err').textContent = res.msg; return; }
+    document.getElementById('ep-err').textContent = '';
+    epOv.classList.remove('on');
+    renderProfileHome();
+  });
 
   // Login
   document.getElementById('li-btn').addEventListener('click', async () => {
@@ -855,6 +1086,9 @@ function initProfileUI(){
     btn.disabled = false;
     btn.textContent = 'VYTVOŘIT PROFIL';
     if(!res.ok){ document.getElementById('reg-err').textContent = res.msg; return; }
+    // Ulož vybraný avatar
+    if(activeProfile) activeProfile.avatar = regSelectedAvatar;
+    if(FB_CONFIGURED) await profileSaveProgress(); else profileSaveProgressLocal && profileSaveProgressLocal();
     document.getElementById('reg-err').textContent = '';
     showLoadingScreen(showHomescreen);
   });
@@ -863,21 +1097,6 @@ function initProfileUI(){
     document.getElementById(id).addEventListener('keydown', e => {
       if(e.key === 'Enter') document.getElementById('reg-btn').click();
     });
-  });
-
-  // Import
-  const dropZone  = document.getElementById('import-drop');
-  const fileInput = document.getElementById('import-file');
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('dragover');
-    if(e.dataTransfer.files[0]) handleImportFile(e.dataTransfer.files[0]);
-  });
-  fileInput.addEventListener('change', () => {
-    if(fileInput.files[0]) handleImportFile(fileInput.files[0]);
   });
 
   // Export
@@ -889,12 +1108,23 @@ function initProfileUI(){
   // Delete
   document.getElementById('hs-delete').addEventListener('click', async () => {
     if(!activeProfile) return;
-    const confirmed = confirm('Opravdu smazat profil "' + activeProfile.username + '"? Tato akce je nevratná!');
+    const confirmed = await showConfirm(
+      '🗑️',
+      'Smazat profil?',
+      `Opravdu smazat "${activeProfile.username}"? Tato akce je nevratná.`,
+      'Smazat navždy',
+      'Radši ne'
+    );
     if(!confirmed) return;
-    const pw = prompt('Zadej heslo pro potvrzení:');
+    const pw = await showPromptModal(
+      '🔒',
+      'Zadej heslo',
+      'Potvrď svou totožnost heslem.',
+      '••••••'
+    );
     if(!pw) return;
     const res = await profileDelete(activeProfile.username, pw);
-    if(!res.ok){ alert(res.msg); return; }
+    if(!res.ok){ showToast(res.msg, 'err'); return; }
     profileLogout();
   });
 
@@ -905,11 +1135,93 @@ function initProfileUI(){
   });
 }
 
-function handleImportFile(file){
-  profileImport(file).then(() => {
-    document.getElementById('import-err').textContent = '';
-    showLoadingScreen(showHomescreen);
-  }).catch(err => {
-    document.getElementById('import-err').textContent = err;
+// ═══════════════════════════════════════════════════════════════════════════════
+//  UI MODAL SYSTÉM – toast / confirm / prompt (náhrada za alert/confirm/prompt)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let _uimResolve = null;
+
+function _uimClose(){
+  const ov = document.getElementById('ui-modal-ov');
+  if(ov) ov.classList.remove('on');
+  _uimResolve = null;
+}
+
+/**
+ * showConfirm(icon, title, msg, btnYes, btnNo) → Promise<bool>
+ */
+function showConfirm(icon, title, msg, btnYes='Potvrdit', btnNo='Zrušit'){
+  return new Promise(resolve => {
+    const ov    = document.getElementById('ui-modal-ov');
+    const input = document.getElementById('uim-input');
+    input.style.display = 'none';
+    document.getElementById('uim-icon').textContent  = icon  || '⚠️';
+    document.getElementById('uim-title').textContent = title || 'Potvrď akci';
+    document.getElementById('uim-msg').textContent   = msg   || '';
+    const btns = document.getElementById('uim-btns');
+    btns.innerHTML = '';
+    const bYes = document.createElement('button');
+    bYes.className = 'uim-btn danger'; bYes.textContent = btnYes;
+    bYes.addEventListener('click', () => { _uimClose(); resolve(true); });
+    const bNo  = document.createElement('button');
+    bNo.className  = 'uim-btn secondary'; bNo.textContent = btnNo;
+    bNo.addEventListener('click', () => { _uimClose(); resolve(false); });
+    btns.appendChild(bNo);
+    btns.appendChild(bYes);
+    _uimResolve = resolve;
+    ov.classList.add('on');
+    bNo.focus();
   });
 }
+
+/**
+ * showPromptModal(icon, title, msg, placeholder, inputType) → Promise<string|null>
+ */
+function showPromptModal(icon, title, msg, placeholder='', inputType='password'){
+  return new Promise(resolve => {
+    const ov    = document.getElementById('ui-modal-ov');
+    const input = document.getElementById('uim-input');
+    input.type        = inputType;
+    input.placeholder = placeholder;
+    input.value       = '';
+    input.style.display = 'block';
+    document.getElementById('uim-icon').textContent  = icon  || '🔒';
+    document.getElementById('uim-title').textContent = title || 'Zadej hodnotu';
+    document.getElementById('uim-msg').textContent   = msg   || '';
+    const btns = document.getElementById('uim-btns');
+    btns.innerHTML = '';
+    const bOk  = document.createElement('button');
+    bOk.className  = 'uim-btn gold'; bOk.textContent = 'Potvrdit';
+    const bNo  = document.createElement('button');
+    bNo.className  = 'uim-btn secondary'; bNo.textContent = 'Zrušit';
+    const confirm = () => { const v = input.value; _uimClose(); resolve(v || null); };
+    bOk.addEventListener('click', confirm);
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') confirm(); });
+    bNo.addEventListener('click', () => { _uimClose(); resolve(null); });
+    btns.appendChild(bNo);
+    btns.appendChild(bOk);
+    _uimResolve = resolve;
+    ov.classList.add('on');
+    setTimeout(() => input.focus(), 50);
+  });
+}
+
+/**
+ * showToast(msg, type) – type: 'ok' | 'err' | 'info'
+ */
+function showToast(msg, type='info'){
+  const t = document.getElementById('ui-toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.className = 'ui-toast on ' + type;
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('on'), 3200);
+}
+
+// Klik mimo modal = zavřít (= zrušit)
+document.addEventListener('DOMContentLoaded', () => {
+  const ov = document.getElementById('ui-modal-ov');
+  if(ov) ov.addEventListener('click', e => {
+    if(e.target === ov){ _uimClose(); if(_uimResolve) _uimResolve(false); }
+  });
+});

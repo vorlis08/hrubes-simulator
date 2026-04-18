@@ -26,8 +26,10 @@ function toggleMusic(){
   function tryPassword(){
     if(inp.value.trim() === 'oacb'){
       ov.style.display = 'none';
-      // Po hesle zkus auto-login (zapamatovaná session)
-      checkAutoLogin(() => showLoadingScreen(showHomescreen));
+      // Intro (1× za session), poté auto-login nebo login screen
+      runIntro(() => {
+        checkAutoLogin(() => showLoadingScreen(showHomescreen));
+      });
     } else {
       err.textContent = 'Špatné heslo.';
       inp.value = '';
@@ -138,7 +140,6 @@ window.addEventListener('keydown', e => {
   if(nk === 'q'){
     document.getElementById('quest-ov').classList.toggle('on');
   }
-  // C key – dříve kartičky, nyní nic
 
   if(!gs.running || gs.dead) return;
 
@@ -170,38 +171,6 @@ function closeAllOverlays(){
   document.getElementById('c2-cert-ov').classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
-}
-
-// ─── Sbírka kartiček (overlay) ───────────────────────────────────────────
-
-function toggleCardsOverlay(){
-  const ov = document.getElementById('cards-ov');
-  if(!ov) return;
-  const on = ov.classList.toggle('on');
-  if(on) renderCardsOverlay();
-}
-
-function renderCardsOverlay(){
-  const grid = document.getElementById('cards-grid');
-  const cnt = document.getElementById('cards-count');
-  if(!grid) return;
-  grid.innerHTML = '';
-  const rarityColors = { common:'#94a3b8', uncommon:'#22c55e', rare:'#3b82f6', legendary:'#f59e0b' };
-  let found = 0;
-  CARDS.forEach(card => {
-    const have = gs.cards[card.id];
-    const profileHave = activeProfile && activeProfile.cards && activeProfile.cards[card.id];
-    const unlocked = have || profileHave;
-    if(unlocked) found++;
-    const d = document.createElement('div');
-    d.className = 'cg-card' + (unlocked ? '' : ' locked');
-    if(unlocked) d.style.borderColor = rarityColors[card.rarity] || '#94a3b8';
-    d.innerHTML = unlocked
-      ? `<div class="cg-emoji">${card.emoji}</div><div class="cg-name">${card.name}</div><div class="cg-desc">${card.desc}</div><div class="cg-rarity" style="color:${rarityColors[card.rarity]}">${card.rarity.toUpperCase()}</div>`
-      : `<div class="cg-emoji">❓</div><div class="cg-name">???</div><div class="cg-desc">Prozkoumej svět a najdi tuto kartičku.</div>`;
-    grid.appendChild(d);
-  });
-  if(cnt) cnt.textContent = found + ' / ' + CARDS.length;
 }
 
 // ─── Tooltipy inventáře ──────────────────────────────────────────────────

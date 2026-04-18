@@ -370,40 +370,38 @@ function drawUcebna(W,H,t){
   // ── Figurová – leží po výboji propisky ──────────────────────────────────
   if(gs.story.figurova_propiska_kill){
     const fx=W*0.50, fy=H*0.68;
-    // stín pod tělem
-    ctx.fillStyle='rgba(0,0,0,0.28)';
-    ctx.beginPath(); ctx.ellipse(fx,fy+12,W*0.052,H*0.022,0,0,Math.PI*2); ctx.fill();
-    // tělo – padlá figura (rotace dozadu)
-    ctx.save(); ctx.translate(fx,fy); ctx.rotate(Math.PI*0.52);
-    ctx.fillStyle='#475569';
-    ctx.beginPath(); ctx.ellipse(0,0,W*0.040,H*0.058,0,0,Math.PI*2); ctx.fill();
+    // loužička (šedá – elektrická)
+    ctx.fillStyle='rgba(71,85,105,0.38)';
+    ctx.beginPath(); ctx.ellipse(fx+8,fy+10,W*0.040,W*0.017,0.2,0,Math.PI*2); ctx.fill();
+    // tělo
+    ctx.save(); ctx.translate(fx,fy); ctx.rotate(Math.PI/2.3);
+    ctx.fillStyle='rgba(0,0,0,0.38)'; ctx.beginPath(); ctx.ellipse(5,5,W*0.038,H*0.055,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#475569'; ctx.beginPath(); ctx.ellipse(0,0,W*0.038,H*0.055,0,0,Math.PI*2); ctx.fill();
     // hlava
-    ctx.fillStyle='#fde8c8';
-    ctx.beginPath(); ctx.arc(-W*0.032,-H*0.002,W*0.022,0,Math.PI*2); ctx.fill();
-    // vlasy (šedo-hnědé)
+    ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(-W*0.030,-H*0.005,W*0.022,0,Math.PI*2); ctx.fill();
+    // vlasy
     ctx.fillStyle='#7c6a52';
-    ctx.beginPath(); ctx.ellipse(-W*0.032,-H*0.012,W*0.020,W*0.010,0,Math.PI,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-W*0.030,-H*0.015,W*0.020,W*0.010,0,0,Math.PI*2); ctx.fill();
     // brýle
-    ctx.strokeStyle='rgba(60,60,60,0.85)'; ctx.lineWidth=1.4;
-    [[-W*0.040,-H*0.001],[-W*0.024,-H*0.001]].forEach(([ex,ey])=>{
-      ctx.beginPath(); ctx.arc(ex,ey,W*0.007,0,Math.PI*2); ctx.stroke();
-    });
-    ctx.beginPath(); ctx.moveTo(-W*0.040+W*0.007,-H*0.001); ctx.lineTo(-W*0.024-W*0.007,-H*0.001); ctx.stroke();
+    ctx.strokeStyle='rgba(80,80,80,0.8)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(-W*0.030-W*0.008,-H*0.005,W*0.007,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-W*0.030+W*0.008,-H*0.005,W*0.007,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-W*0.030-W*0.015,-H*0.005); ctx.lineTo(-W*0.030-W*0.001,-H*0.005); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-W*0.030+W*0.001,-H*0.005); ctx.lineTo(-W*0.030+W*0.015,-H*0.005); ctx.stroke();
     // zkřížené oči
-    ctx.strokeStyle='rgba(0,0,0,0.7)'; ctx.lineWidth=1.3;
-    [[-W*0.040,-H*0.001],[-W*0.024,-H*0.001]].forEach(([ex,ey])=>{
-      ctx.beginPath(); ctx.moveTo(ex-W*0.005,ey-H*0.005); ctx.lineTo(ex+W*0.005,ey+H*0.005); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(ex+W*0.005,ey-H*0.005); ctx.lineTo(ex-W*0.005,ey+H*0.005); ctx.stroke();
+    ctx.strokeStyle='rgba(0,0,0,0.75)'; ctx.lineWidth=1.5;
+    [[-W*0.030-W*0.008,-H*0.005],[-W*0.030+W*0.008,-H*0.005]].forEach(([ex,ey])=>{
+      ctx.beginPath(); ctx.moveTo(ex-W*0.006,ey-H*0.006); ctx.lineTo(ex+W*0.006,ey+H*0.006); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex+W*0.006,ey-H*0.006); ctx.lineTo(ex-W*0.006,ey+H*0.006); ctx.stroke();
     });
-    // drobný šleh opálení na ruce (drží propisku)
-    ctx.strokeStyle='rgba(255,200,60,0.55)'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(W*0.022,H*0.018); ctx.lineTo(W*0.038,H*0.005); ctx.stroke();
+    // miniaturní blesk (propiska v ruce)
+    ctx.strokeStyle='rgba(255,220,80,0.65)'; ctx.lineWidth=1.5; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(W*0.020,H*0.016); ctx.lineTo(W*0.028,H*0.008); ctx.lineTo(W*0.024,H*0.011); ctx.lineTo(W*0.033,H*0.002); ctx.stroke();
     ctx.restore();
     // popisek
-    ctx.save();
-    ctx.font=`${Math.floor(W*0.011)}px JetBrains Mono,monospace`;
+    ctx.save(); ctx.font=`bold ${Math.floor(W*0.011)}px JetBrains Mono,monospace`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba(71,85,105,0.5)'; ctx.fillText('Figurová  ⚡', fx, fy+H*0.085);
+    ctx.fillStyle='rgba(71,85,105,0.50)'; ctx.fillText('Figurová ⚡', fx, fy+H*0.082);
     ctx.restore();
   }
 }
@@ -2392,10 +2390,21 @@ function drawSklep(W,H,t){
         ctx.beginPath(); ctx.moveTo(ex+W*0.006,ey-H*0.006); ctx.lineTo(ex-W*0.006,ey+H*0.006); ctx.stroke();
       });
     } else {
-      // bez hlavy – krvavý pahýl krku
-      const ng=ctx.createRadialGradient(-W*0.030,-H*0.005,0,-W*0.030,-H*0.005,W*0.020);
-      ng.addColorStop(0,'rgba(200,0,0,0.95)'); ng.addColorStop(1,'rgba(100,0,0,0)');
-      ctx.fillStyle=ng; ctx.beginPath(); ctx.arc(-W*0.030,-H*0.005,W*0.020,0,Math.PI*2); ctx.fill();
+      // hlava s brýlemi a zkříženýma očima (stejně jako !dead větev)
+      ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(-W*0.030,-H*0.005,W*0.022,0,Math.PI*2); ctx.fill();
+      // vlasy
+      ctx.fillStyle='#7c6a52';
+      ctx.beginPath(); ctx.ellipse(-W*0.030,-H*0.015,W*0.020,W*0.010,0,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(80,80,80,0.8)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(-W*0.030-W*0.008,-H*0.005,W*0.007,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(-W*0.030+W*0.008,-H*0.005,W*0.007,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-W*0.030-W*0.015,-H*0.005); ctx.lineTo(-W*0.030-W*0.001,-H*0.005); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-W*0.030+W*0.001,-H*0.005); ctx.lineTo(-W*0.030+W*0.015,-H*0.005); ctx.stroke();
+      ctx.strokeStyle='rgba(0,0,0,0.75)'; ctx.lineWidth=1.5;
+      [[-W*0.030-W*0.008,-H*0.005],[-W*0.030+W*0.008,-H*0.005]].forEach(([ex,ey])=>{
+        ctx.beginPath(); ctx.moveTo(ex-W*0.006,ey-H*0.006); ctx.lineTo(ex+W*0.006,ey+H*0.006); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ex+W*0.006,ey-H*0.006); ctx.lineTo(ex-W*0.006,ey+H*0.006); ctx.stroke();
+      });
     }
     ctx.restore();
     // popisek
@@ -2959,33 +2968,6 @@ function render(){
   const vigAll=ctx.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,Math.max(W,H)*0.78);
   vigAll.addColorStop(0,'transparent'); vigAll.addColorStop(1,'rgba(0,0,0,0.38)');
   ctx.fillStyle=vigAll; ctx.fillRect(0,0,W,H);
-
-  // Sběratelské kartičky – zářivé body v místnostech
-  const rarityGlow = { common:'rgba(148,163,184,', uncommon:'rgba(34,197,94,', rare:'rgba(59,130,246,', legendary:'rgba(245,158,11,' };
-  for(const card of CARDS){
-    if(card.room !== gs.room || gs.cards[card.id]) continue;
-    const cx=W*card.rx, cy=H*card.ry;
-    const pulse=0.5+0.5*Math.sin(t*0.003+card.rx*10);
-    const glow=rarityGlow[card.rarity]||rarityGlow.common;
-    // Vnější záře
-    const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,38);
-    cg.addColorStop(0,glow+(0.35+pulse*0.25)+')'); cg.addColorStop(0.5,glow+(0.10+pulse*0.08)+')'); cg.addColorStop(1,'transparent');
-    ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(cx,cy,38,0,Math.PI*2); ctx.fill();
-    // Vnitřní jádro
-    ctx.fillStyle=glow+(0.7+pulse*0.3)+')';
-    ctx.beginPath(); ctx.arc(cx,cy,6+pulse*2,0,Math.PI*2); ctx.fill();
-    // Kartička emoji (rotuje)
-    ctx.save(); ctx.translate(cx,cy-18-pulse*4);
-    ctx.font='16px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(card.emoji,0,0);
-    ctx.restore();
-    // Nápis při přiblížení
-    if(dist2(p,{x:cx,y:cy})<PROX_R){
-      ctx.fillStyle='rgba(240,192,64,.85)'; ctx.font='bold 10px JetBrains Mono,monospace';
-      ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-      ctx.fillText('[E] SEBRAT KARTIČKU',cx,cy-42);
-    }
-  }
 
   // Items
   currentItems.forEach(item=>{

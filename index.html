@@ -6,6 +6,7 @@
 <title>František Hrubeš Simulator 2026 – Naprostý Frajer</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="login-redesign.css">
 </head>
 <body>
 
@@ -21,21 +22,178 @@
 
 <!-- ── LOGIN / REGISTER ──────────────────────────────────────────────── -->
 <div id="login-ov">
+
+  <!-- Fullscreen cinematická scéna -->
+  <div class="login-scene" aria-hidden="true">
+    <div class="lscene-glow"></div>
+    <div class="lscene-watermark">KŘEMŽE</div>
+
+    <!-- CSS SVG: Obchodní akademie inspirovaná fotkou -->
+    <svg class="lscene-oa-svg" viewBox="0 0 1400 700" preserveAspectRatio="xMidYMax meet"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <!-- Průčelí budovy – tmavý gradient shora dolů -->
+        <linearGradient id="bfg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#09091a" stop-opacity="0.76"/>
+          <stop offset="100%" stop-color="#0c0a18" stop-opacity="0.86"/>
+        </linearGradient>
+        <!-- Boční fasáda -->
+        <linearGradient id="sfg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#07091a" stop-opacity="0.60"/>
+          <stop offset="100%" stop-color="#0a0816" stop-opacity="0.72"/>
+        </linearGradient>
+        <!-- Římsa/korunní lišta -->
+        <linearGradient id="crn" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#130e08" stop-opacity="0.92"/>
+          <stop offset="100%" stop-color="#0e0a06" stop-opacity="0.88"/>
+        </linearGradient>
+        <!-- Teplá záře zdola (vliv červeného glowu scény) -->
+        <linearGradient id="wfg" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%"   stop-color="#7a1a0a" stop-opacity="0.10"/>
+          <stop offset="35%"  stop-color="#4a0f05" stop-opacity="0.04"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+        </linearGradient>
+        <!-- Symbol: okno horní patro / 2. patro (šíře 76, výška 90, oblouk r=38) -->
+        <symbol id="wf" viewBox="0 0 76 90">
+          <path d="M 0,90 L 0,38 A 38,38 0 0 0 76,38 L 76,90 Z" fill="rgba(30,17,7,0.44)"/>
+          <!-- Jemný odlesk oblouku -->
+          <path d="M 2,38 A 36,36 0 0 0 74,38" fill="none" stroke="rgba(255,200,80,0.07)" stroke-width="1.5"/>
+        </symbol>
+        <!-- Symbol: okno přízemí (šíře 76, výška 115, oblouk r=38) -->
+        <symbol id="wg" viewBox="0 0 76 115">
+          <path d="M 0,115 L 0,38 A 38,38 0 0 0 76,38 L 76,115 Z" fill="rgba(30,17,7,0.44)"/>
+          <path d="M 2,38 A 36,36 0 0 0 74,38" fill="none" stroke="rgba(255,200,80,0.07)" stroke-width="1.5"/>
+        </symbol>
+        <!-- Symbol: okno boční fasáda (šíře 55, výška 75, oblouk r=27) -->
+        <symbol id="ws" viewBox="0 0 55 75">
+          <path d="M 0,75 L 0,27 A 27,27 0 0 0 55,27 L 55,75 Z" fill="rgba(22,12,5,0.34)"/>
+          <path d="M 2,27 A 25,25 0 0 0 53,27" fill="none" stroke="rgba(255,200,80,0.05)" stroke-width="1.2"/>
+        </symbol>
+      </defs>
+
+      <!-- ══ TĚLA FASÁD ══════════════════════════════════════════════════════ -->
+
+      <!-- Boční fasáda (pravá, rohem natočená) -->
+      <rect x="918" y="308" width="185" height="392" fill="url(#sfg)"/>
+      <!-- Boční římsa -->
+      <rect x="918" y="295" width="185" height="15" fill="url(#crn)"/>
+
+      <!-- Hlavní průčelí -->
+      <rect x="178" y="270" width="724" height="430" fill="url(#bfg)"/>
+      <!-- Hlavní římsa (korunní lišta) -->
+      <rect x="178" y="257" width="724" height="15" fill="url(#crn)"/>
+      <!-- Tenká zlatavá linka pod římsou -->
+      <line x1="178" y1="257" x2="902" y2="257" stroke="rgba(240,192,64,0.07)" stroke-width="1"/>
+
+      <!-- ══ ŠTÍTY – 5 na průčelí + 1 boční ════════════════════════════════ -->
+      <!-- Tvar: stupňovitý gotický štít s vrcholovým jehlanem (finiale) -->
+      <!-- polygon: lev.spodek → stoupá → 2 schody → vrchol → zrcadlí dolů -->
+
+      <!-- Štít 1 (x0=200, střed x=255) -->
+      <polygon points="200,270 200,241 212,241 212,221 223,221 223,204 255,174 287,204 298,204 298,221 309,221 309,241 321,241 321,270" fill="url(#bfg)"/>
+      <polygon points="251,181 255,167 259,181" fill="rgba(11,12,22,0.88)"/>
+
+      <!-- Štít 2 (x0=345, střed x=400) -->
+      <polygon points="345,270 345,241 357,241 357,221 368,221 368,204 400,174 432,204 443,204 443,221 454,221 454,241 466,241 466,270" fill="url(#bfg)"/>
+      <polygon points="396,181 400,167 404,181" fill="rgba(11,12,22,0.88)"/>
+
+      <!-- Štít 3 – STŘEDNÍ, nejvyšší (x0=490, střed x=545) -->
+      <polygon points="490,270 490,239 503,239 503,217 514,217 514,198 545,163 576,198 587,198 587,217 598,217 598,239 611,239 611,270" fill="url(#bfg)"/>
+      <polygon points="541,170 545,155 549,170" fill="rgba(11,12,22,0.88)"/>
+
+      <!-- Štít 4 (x0=635, střed x=690) -->
+      <polygon points="635,270 635,241 647,241 647,221 658,221 658,204 690,174 722,204 733,204 733,221 744,221 744,241 756,241 756,270" fill="url(#bfg)"/>
+      <polygon points="686,181 690,167 694,181" fill="rgba(11,12,22,0.88)"/>
+
+      <!-- Štít 5 (x0=770, střed x=825) -->
+      <polygon points="770,270 770,241 782,241 782,221 793,221 793,204 825,174 857,204 868,204 868,221 879,221 879,241 891,241 891,270" fill="url(#bfg)"/>
+      <polygon points="821,181 825,167 829,181" fill="rgba(11,12,22,0.88)"/>
+
+      <!-- Štít boční fasády (x0=930, střed x=975) -->
+      <polygon points="930,308 930,282 941,282 941,264 951,264 951,248 975,220 999,248 1009,248 1009,264 1019,264 1019,282 1030,282 1030,308" fill="url(#sfg)"/>
+      <polygon points="971,227 975,213 979,227" fill="rgba(9,10,20,0.82)"/>
+
+      <!-- ══ OKNA – průčelí ══════════════════════════════════════════════════ -->
+      <!-- 6 oken na 3 patrech; x: 205,307,409,511,613,715 (šíře 76, rozteč 102) -->
+
+      <!-- 2. patro (y=297) -->
+      <use href="#wf" x="205" y="297" width="76" height="90"/>
+      <use href="#wf" x="307" y="297" width="76" height="90"/>
+      <use href="#wf" x="409" y="297" width="76" height="90"/>
+      <use href="#wf" x="511" y="297" width="76" height="90"/>
+      <use href="#wf" x="613" y="297" width="76" height="90"/>
+      <use href="#wf" x="715" y="297" width="76" height="90"/>
+
+      <!-- 1. patro (y=418) -->
+      <use href="#wf" x="205" y="418" width="76" height="90"/>
+      <use href="#wf" x="307" y="418" width="76" height="90"/>
+      <use href="#wf" x="409" y="418" width="76" height="90"/>
+      <use href="#wf" x="511" y="418" width="76" height="90"/>
+      <use href="#wf" x="613" y="418" width="76" height="90"/>
+      <use href="#wf" x="715" y="418" width="76" height="90"/>
+
+      <!-- Přízemí (y=540, vyšší okna) -->
+      <use href="#wg" x="205" y="540" width="76" height="115"/>
+      <use href="#wg" x="307" y="540" width="76" height="115"/>
+      <use href="#wg" x="409" y="540" width="76" height="115"/>
+      <use href="#wg" x="511" y="540" width="76" height="115"/>
+      <use href="#wg" x="613" y="540" width="76" height="115"/>
+      <use href="#wg" x="715" y="540" width="76" height="115"/>
+
+      <!-- ══ OKNA – boční fasáda ══════════════════════════════════════════════ -->
+      <!-- 2 okna na 3 patrech; x: 936, 1012 -->
+      <use href="#ws" x="936" y="330" width="55" height="75"/>
+      <use href="#ws" x="1012" y="330" width="55" height="75"/>
+      <use href="#ws" x="936" y="425" width="55" height="75"/>
+      <use href="#ws" x="1012" y="425" width="55" height="75"/>
+      <use href="#ws" x="936" y="535" width="55" height="75"/>
+      <use href="#ws" x="1012" y="535" width="55" height="75"/>
+
+      <!-- ══ DETAILY ══════════════════════════════════════════════════════════ -->
+      <!-- Pásy mezi patry (pásová římsa) -->
+      <line x1="178" y1="412" x2="902" y2="412" stroke="rgba(255,255,255,0.04)" stroke-width="2"/>
+      <line x1="178" y1="534" x2="902" y2="534" stroke="rgba(255,255,255,0.04)" stroke-width="2"/>
+
+      <!-- Sokl / podstavec budovy -->
+      <rect x="160" y="688" width="760" height="12" fill="rgba(14,10,6,0.90)"/>
+      <rect x="916" y="688" width="194" height="12" fill="rgba(12,8,5,0.82)"/>
+
+      <!-- Teplý overlay (záře scény se promítá na budovu) -->
+      <rect x="0" y="0" width="1400" height="700" fill="url(#wfg)"/>
+    </svg>
+
+    <div class="lscene-fog"></div>
+  </div>
+
+  <!-- Žhnoucí částice (embers) -->
   <div class="login-particles" aria-hidden="true">
     <span class="lp"></span><span class="lp"></span><span class="lp"></span>
     <span class="lp"></span><span class="lp"></span><span class="lp"></span>
     <span class="lp"></span><span class="lp"></span><span class="lp"></span>
     <span class="lp"></span><span class="lp"></span><span class="lp"></span>
+    <span class="lp"></span><span class="lp"></span><span class="lp"></span>
+    <span class="lp"></span>
   </div>
+
   <div class="login-wrap">
+    <!-- Filmový plakát – levá strana -->
     <div class="login-left">
-      <div class="login-art">
-        <div class="login-logo">🏠</div>
-        <div class="login-city">K Ř E M Ž E</div>
-        <div class="login-tagline">Simulator 2026</div>
-        <div class="login-silhouette">
-          <span>🏫</span><span>🛒</span><span>🍺</span><span>🌆</span><span>🏠</span>
+      <div class="login-poster">
+        <div class="lp-rating">⚠ SATIRICKÁ SIMULACE · 18+</div>
+        <div class="lp-eyebrow">František Hrubeš</div>
+        <div class="lp-title">NAPROSTÝ<br>FRAJER</div>
+        <div class="lp-divider"><span></span><span>2026</span><span></span></div>
+        <div class="lp-logline">
+          „Jeden den. Jedna Fábie.<br>
+          Nekonečné množství kratom čaje."
         </div>
+        <div class="lp-tagline">Křemže tě vítá. Křemže tě zničí.</div>
+        <div class="lp-badges">
+          <span class="lp-badge">🏆 Zlatá Kasička</span>
+          <span class="lp-badge">🎬 Simulace roku</span>
+          <span class="lp-badge">💀 Most Deaths</span>
+        </div>
+        <div class="lp-studio">KŘEMŽE STUDIOS · EARLY ACCESS</div>
       </div>
     </div>
     <div class="login-right">
@@ -43,7 +201,6 @@
         <div class="login-tabs">
           <button class="ltab active" data-tab="login">Přihlášení</button>
           <button class="ltab" data-tab="register">Registrace</button>
-          <button class="ltab" data-tab="import">Import</button>
         </div>
 
         <!-- Tab: Login -->
@@ -74,19 +231,22 @@
             <label>Heslo znovu</label>
             <input id="reg-pass2" type="password" placeholder="Potvrdit heslo" autocomplete="off"/>
           </div>
+          <!-- Výběr ikonky -->
+          <div class="login-field">
+            <label>Profilová ikonka</label>
+            <div class="avatar-pick-row">
+              <div class="avatar-preview-big" id="reg-avatar-preview">🤙</div>
+              <button type="button" class="avatar-upload-btn" id="reg-avatar-upload-btn">📤 Nahrát PNG</button>
+              <input type="file" id="reg-avatar-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none"/>
+            </div>
+            <div class="emoji-picker-grid" id="reg-emoji-grid">
+              <!-- generováno JS -->
+            </div>
+          </div>
           <div class="login-err" id="reg-err"></div>
           <button class="login-btn gold" id="reg-btn">VYTVOŘIT PROFIL</button>
         </div>
 
-        <!-- Tab: Import -->
-        <div class="ltab-body" id="ltab-import">
-          <div class="import-drop" id="import-drop">
-            <div class="import-icon">📂</div>
-            <div class="import-text">Přetáhni sem soubor profilu<br><small>nebo klikni pro výběr</small></div>
-            <input type="file" id="import-file" accept=".json" style="display:none"/>
-          </div>
-          <div class="login-err" id="import-err"></div>
-        </div>
       </div>
     </div>
   </div>
@@ -115,7 +275,10 @@
   <div class="home-scroll">
     <!-- Hero -->
     <div class="home-hero">
-      <div class="home-avatar" id="hs-avatar">🤙</div>
+      <div class="home-avatar-wrap">
+        <div class="home-avatar" id="hs-avatar">🤙</div>
+        <button class="home-avatar-edit-btn" id="hs-edit-profile" title="Upravit profil">✏️</button>
+      </div>
       <div class="home-hero-info">
         <div class="home-welcome">Vítej zpátky,</div>
         <div class="home-username" id="hs-username">Fanda</div>
@@ -193,13 +356,6 @@
   <canvas id="canvas"></canvas>
   <div id="scanlines"></div>
   <div id="vignette"></div>
-
-  <!-- Ambient particles -->
-  <div id="ambient-particles" aria-hidden="true">
-    <span class="ap"></span><span class="ap"></span><span class="ap"></span>
-    <span class="ap"></span><span class="ap"></span><span class="ap"></span>
-    <span class="ap"></span><span class="ap"></span>
-  </div>
 
   <!-- Minimalistický název místnosti -->
   <div id="room-name"></div>
@@ -469,6 +625,65 @@
     </div>
 
     <button class="sbtn" id="start-btn">☀️ ZAČÍT NOVÝ DEN</button>
+  </div>
+</div>
+
+<!-- ── ANIMOVANÉ INTRO ────────────────────────────────────────────────── -->
+<div id="intro-ov">
+  <div class="intro-skip" id="intro-skip">PŘESKOČIT ›</div>
+  <div class="intro-stage" id="intro-stage">
+    <div class="intro-line" id="il-year">2026</div>
+    <div class="intro-line intro-big" id="il-name">FRANTIŠEK<br>HRUBEŠ</div>
+    <div class="intro-line intro-sub" id="il-sub">Křemže. Konec školního roku.<br>Jedna šance nastartovat Fábii a zmizet.</div>
+    <div class="intro-icons" id="il-icons">
+      <span>🏫</span><span>🛒</span><span>🍺</span><span>🚗</span><span>💊</span><span>🌿</span>
+    </div>
+    <div class="intro-line intro-tag" id="il-tag">SIMULATOR 2026</div>
+  </div>
+</div>
+
+<!-- ── CONFIRM / PROMPT MODAL ─────────────────────────────────────────── -->
+<div id="ui-modal-ov" class="uim-overlay">
+  <div class="uim-card">
+    <div class="uim-icon" id="uim-icon">⚠️</div>
+    <div class="uim-title" id="uim-title">Potvrď akci</div>
+    <div class="uim-msg"  id="uim-msg"></div>
+    <input  class="uim-input" id="uim-input" type="password" placeholder="" autocomplete="off" style="display:none"/>
+    <div class="uim-btns" id="uim-btns"></div>
+  </div>
+</div>
+
+<!-- ── TOAST NOTIFIKACE ───────────────────────────────────────────────── -->
+<div id="ui-toast" class="ui-toast"></div>
+
+<!-- ── MODAL: Úprava profilu ──────────────────────────────────────────── -->
+<div id="edit-profile-ov" class="ep-overlay">
+  <div class="ep-card">
+    <div class="ep-header">
+      <div class="ep-title">✏️ Upravit profil</div>
+      <button class="ep-close" id="ep-close">✕</button>
+    </div>
+
+    <!-- Ikonka -->
+    <div class="ep-section-label">Profilová ikonka</div>
+    <div class="avatar-pick-row">
+      <div class="avatar-preview-big" id="ep-avatar-preview">🤙</div>
+      <button type="button" class="avatar-upload-btn" id="ep-avatar-upload-btn">📤 Nahrát PNG</button>
+      <input type="file" id="ep-avatar-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none"/>
+    </div>
+    <div class="emoji-picker-grid" id="ep-emoji-grid">
+      <!-- generováno JS -->
+    </div>
+
+    <!-- Zobrazované jméno -->
+    <div class="ep-section-label" style="margin-top:18px">Zobrazované jméno</div>
+    <div class="ep-name-row">
+      <input id="ep-displayname" type="text" placeholder="Tvůj nick..." maxlength="24" autocomplete="off"/>
+      <div class="ep-name-hint">Přihlašovací jméno se nemění.</div>
+    </div>
+
+    <div class="login-err" id="ep-err"></div>
+    <button class="login-btn gold" id="ep-save-btn" style="margin-top:16px">ULOŽIT ZMĚNY</button>
   </div>
 </div>
 

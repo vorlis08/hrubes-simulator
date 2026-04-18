@@ -1,0 +1,371 @@
+
+/* ════════════════════════════════════════════════════════════════════════
+   KOMPLETNÍ REDESIGN LOGIN STRÁNKY – cinematic + satirical
+   ════════════════════════════════════════════════════════════════════════ */
+
+#login-ov {
+  background: linear-gradient(175deg, #03040a 0%, #06080f 55%, #08060d 100%) !important;
+}
+
+/* ── Fullscreen scéna ── */
+.login-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.lscene-glow {
+  position: absolute;
+  bottom: -8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150%;
+  height: 70%;
+  background: radial-gradient(ellipse at 50% 88%,
+    rgba(180,25,20,0.20) 0%,
+    rgba(130,18,15,0.11) 28%,
+    rgba(80,10,15,0.05) 58%,
+    transparent 100%
+  );
+}
+
+.lscene-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -54%);
+  font-family: var(--fd);
+  font-size: clamp(88px, 15vw, 200px);
+  color: rgba(255,255,255,0.017);
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.lscene-city {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 46vh;
+  background: linear-gradient(to top, #060810 52%, rgba(6,8,16,0.25) 100%);
+  clip-path: polygon(
+    0% 100%, 0% 80%,
+    3% 80%, 3% 64%,
+    6% 64%, 6% 72%,
+    8% 72%, 8% 54%,
+    10% 54%, 10% 46%,
+    10.5% 46%, 10.5% 39%,
+    11% 39%, 11% 33%,
+    11.5% 33%, 11.5% 39%,
+    12% 39%, 12% 46%,
+    13% 46%, 13% 56%,
+    16% 56%, 16% 45%,
+    19% 45%, 19% 60%,
+    23% 60%, 23% 42%,
+    26% 42%, 26% 33%,
+    27% 33%, 27% 26%,
+    27.4% 26%, 27.4% 21%,
+    27.8% 21%, 27.8% 26%,
+    28.2% 26%, 28.2% 33%,
+    31% 33%, 31% 48%,
+    36% 48%, 36% 57%,
+    37% 57%, 37% 46%,
+    47% 46%, 47% 60%,
+    51% 60%, 51% 50%,
+    53.5% 50%, 53.5% 38%,
+    54.5% 38%, 54.5% 30%,
+    55% 30%, 55% 24%,
+    55.4% 24%, 55.4% 30%,
+    55.8% 30%, 55.8% 38%,
+    58% 38%, 58% 50%,
+    62% 50%, 62% 63%,
+    66% 63%, 66% 51%,
+    69% 51%, 69% 61%,
+    73% 61%, 73% 44%,
+    76% 44%, 76% 59%,
+    80% 59%, 80% 47%,
+    84% 47%, 84% 63%,
+    88% 63%, 88% 52%,
+    92% 52%, 92% 68%,
+    96% 68%, 96% 57%,
+    100% 57%, 100% 100%
+  );
+}
+
+.lscene-fog {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 38vh;
+  background: linear-gradient(to top,
+    rgba(6,8,16,0.55) 0%,
+    rgba(6,8,16,0.10) 65%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Embers ── */
+.login-particles { z-index: 1; }
+.lp { width: 3px; height: 3px; border-radius: 50%; }
+
+.lp:nth-child(1)  { background:rgba(240,160,30,.90); box-shadow:0 0 5px rgba(240,160,30,.55); left:7%;  animation-duration:15s; animation-delay:0s;   }
+.lp:nth-child(2)  { background:rgba(220,80,20,.80);  box-shadow:0 0 4px rgba(220,80,20,.50);  left:18%; animation-duration:12s; animation-delay:1.4s; }
+.lp:nth-child(3)  { background:rgba(255,200,40,.90); box-shadow:0 0 6px rgba(255,200,40,.50); left:29%; animation-duration:18s; animation-delay:0.7s; }
+.lp:nth-child(4)  { background:rgba(200,60,15,.75);  box-shadow:0 0 4px rgba(200,60,15,.40);  left:41%; animation-duration:13s; animation-delay:3.2s; }
+.lp:nth-child(5)  { background:rgba(240,180,20,.85); box-shadow:0 0 5px rgba(240,180,20,.50); left:53%; animation-duration:16s; animation-delay:2.1s; }
+.lp:nth-child(6)  { background:rgba(255,120,20,.80); box-shadow:0 0 5px rgba(255,120,20,.50); left:64%; animation-duration:14s; animation-delay:0.9s; }
+.lp:nth-child(7)  { background:rgba(240,200,50,.90); box-shadow:0 0 6px rgba(240,200,50,.50); left:76%; animation-duration:19s; animation-delay:4.5s; }
+.lp:nth-child(8)  { background:rgba(210,70,20,.70);  box-shadow:0 0 4px rgba(210,70,20,.40);  left:88%; animation-duration:11s; animation-delay:2.0s; }
+.lp:nth-child(9)  { background:rgba(255,180,30,.85); box-shadow:0 0 5px rgba(255,180,30,.50); left:22%; animation-duration:17s; animation-delay:3.0s; }
+.lp:nth-child(10) { background:rgba(220,100,15,.80); box-shadow:0 0 4px rgba(220,100,15,.40); left:47%; animation-duration:14s; animation-delay:0.4s; }
+.lp:nth-child(11) { background:rgba(255,220,60,.90); box-shadow:0 0 7px rgba(255,220,60,.60); left:59%; animation-duration:12s; animation-delay:3.8s; }
+.lp:nth-child(12) { background:rgba(200,50,10,.70);  box-shadow:0 0 4px rgba(200,50,10,.40);  left:83%; animation-duration:16s; animation-delay:1.6s; }
+.lp:nth-child(13) { background:rgba(240,160,30,.80); box-shadow:0 0 5px rgba(240,160,30,.50); left:35%; animation-duration:13s; animation-delay:5.0s; }
+.lp:nth-child(14) { background:rgba(255,200,40,.85); box-shadow:0 0 6px rgba(255,200,40,.50); left:72%; animation-duration:20s; animation-delay:1.0s; }
+.lp:nth-child(15) { background:rgba(220,80,20,.75);  box-shadow:0 0 4px rgba(220,80,20,.40);  left:12%; animation-duration:14s; animation-delay:6.5s; }
+.lp:nth-child(16) { background:rgba(255,160,20,.90); box-shadow:0 0 6px rgba(255,160,20,.60); left:93%; animation-duration:11s; animation-delay:2.8s; }
+
+@keyframes lpFloat {
+  0%   { bottom:-8px; opacity:0;   transform:translateX(0)    scale(1.0); }
+  8%   {              opacity:.9;                                           }
+  45%  {              opacity:.65; transform:translateX(10px)  scale(.75); }
+  78%  {              opacity:.25; transform:translateX(-5px)  scale(.45); }
+  100% { bottom:105%; opacity:0;   transform:translateX(7px)  scale(.15); }
+}
+
+/* ── Layout ── */
+.login-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 52px !important;
+  max-width: 980px !important;
+  width: 92% !important;
+  z-index: 2 !important;
+  position: relative !important;
+}
+.login-left  { flex: 0 0 310px !important; text-align: left !important; }
+.login-right { flex: 1 !important; min-width: 0 !important; }
+
+/* ── Vypnutí starých levá-strana stylů ── */
+.login-art, .login-logo, .login-city, .login-tagline,
+.login-game-badge, .login-title-main, .login-subtitle,
+.login-divider-line, .login-desc, .login-version,
+.login-silhouette { display: none !important; }
+
+/* ── Filmový plakát ── */
+.login-poster { animation: loginArtIn 1.0s ease .3s both; }
+
+.lp-rating {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid rgba(210,55,45,.38);
+  border-radius: 3px;
+  font-family: var(--fm);
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: rgba(210,75,50,.72);
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+
+.lp-eyebrow {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: rgba(255,255,255,.30);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.lp-title {
+  font-family: var(--fd);
+  font-size: clamp(46px, 5.6vw, 68px);
+  line-height: .95;
+  letter-spacing: 3px;
+  background: linear-gradient(160deg, #ffffff 10%, #f0c040 55%, #e07820 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 35px rgba(210,120,20,.28));
+}
+
+.lp-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.lp-divider span:first-child,
+.lp-divider span:last-child {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240,192,64,.28), transparent);
+}
+.lp-divider span:nth-child(2) {
+  font-family: var(--fm);
+  font-size: 7px;
+  letter-spacing: 5px;
+  color: rgba(240,192,64,.42);
+  white-space: nowrap;
+  flex: none;
+}
+
+.lp-logline {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.85;
+  color: rgba(255,255,255,.42);
+  margin-bottom: 10px;
+}
+
+.lp-tagline {
+  font-family: var(--fm);
+  font-size: 8.5px;
+  letter-spacing: 2px;
+  color: rgba(200,55,35,.58);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.lp-awards {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 28px;
+}
+.lp-award {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+.lp-award span {
+  font-family: var(--fm);
+  font-size: 8.5px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,.22);
+  text-transform: uppercase;
+}
+
+.lp-studio {
+  font-family: var(--fm);
+  font-size: 7px;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,.10);
+  text-transform: uppercase;
+  border-top: 1px solid rgba(255,255,255,.06);
+  padding-top: 14px;
+}
+
+/* ── Glassmorphic karta ── */
+.login-card {
+  background: rgba(4,6,14,.62) !important;
+  backdrop-filter: blur(32px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.3) !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+  box-shadow:
+    0 36px 90px rgba(0,0,0,.75),
+    0 0 0 1px rgba(255,255,255,.03),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+/* Tabs */
+.login-tabs {
+  border-bottom: 1px solid rgba(255,255,255,.07) !important;
+  margin-bottom: 24px !important;
+  display: flex !important;
+  gap: 0 !important;
+}
+.ltab {
+  flex: 1 !important;
+  padding: 10px 0 12px !important;
+  font-family: var(--fm) !important;
+  font-size: 9px !important;
+  letter-spacing: 2.5px !important;
+  text-transform: uppercase !important;
+  border: none !important;
+  background: transparent !important;
+  color: rgba(255,255,255,.28) !important;
+  cursor: pointer !important;
+  border-bottom: 2px solid transparent !important;
+  margin-bottom: -1px !important;
+  transition: all .2s !important;
+}
+.ltab:hover  { color: rgba(255,255,255,.58) !important; }
+.ltab.active { color: var(--gold) !important; border-bottom-color: var(--gold) !important; }
+
+/* Inputy */
+.login-field label {
+  font-size: 8px !important;
+  letter-spacing: 3px !important;
+  color: rgba(255,255,255,.28) !important;
+  text-transform: uppercase !important;
+}
+.login-field input {
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(255,255,255,.09) !important;
+  color: rgba(255,255,255,.88) !important;
+  font-size: 13px !important;
+  padding: 11px 14px !important;
+  border-radius: 7px !important;
+  transition: border-color .2s, background .2s !important;
+}
+.login-field input:focus {
+  border-color: rgba(240,192,64,.38) !important;
+  background: rgba(255,255,255,.06) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(240,192,64,.06) !important;
+}
+.login-field input::placeholder { color: rgba(255,255,255,.16) !important; }
+
+/* ── Skryj starý clip-path city ── */
+.lscene-city { display: none !important; }
+
+/* ── OA budova SVG ── */
+.lscene-oa-svg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-45%);
+  width: 100%;
+  max-width: 1400px;
+  height: 78vh;
+  max-height: 660px;
+  opacity: 0.82;
+  pointer-events: none;
+  animation: oaFadeIn 2.2s ease .5s both;
+}
+
+@keyframes oaFadeIn {
+  from { opacity: 0; transform: translateX(-45%) translateY(18px); }
+  to   { opacity: 0.82; transform: translateX(-45%) translateY(0); }
+}
+
+/* ── Skryj starý awards list ── */
+.lp-awards { display: none !important; }
+
+/* ── Nové mini-badge pruhy ── */
+.lp-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 26px;
+}
+.lp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid rgba(240,192,64,0.18);
+  border-radius: 3px;
+  font-family: var(--fm);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: rgba(240,192,64,0.32);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
