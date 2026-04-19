@@ -634,8 +634,6 @@ const ROOMS = {
 
 const RORDER = ['ucebna','billa','hospoda','ulice','kremze'];
 
-// ─── Sběratelské kartičky – ODSTRANĚNY, princip zachován přes artefakty ─────
-const CARDS = [];
 
 // ─── Popisky inventáře (tooltipy) ────────────────────────────────────────────
 

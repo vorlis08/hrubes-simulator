@@ -135,18 +135,31 @@
   100% { bottom:105%; opacity:0;   transform:translateX(7px)  scale(.15); }
 }
 
-/* ── Layout ── */
+/* ── Layout – formulář vpravo, plakát vlevo, budova mezi ── */
 .login-wrap {
   display: flex !important;
   align-items: center !important;
-  gap: 52px !important;
-  max-width: 980px !important;
-  width: 92% !important;
-  z-index: 2 !important;
+  justify-content: space-between !important;
+  gap: 32px !important;
+  max-width: none !important;
+  width: 96% !important;
+  padding: 0 2.5vw !important;
+  z-index: 3 !important;
   position: relative !important;
 }
-.login-left  { flex: 0 0 310px !important; text-align: left !important; }
-.login-right { flex: 1 !important; min-width: 0 !important; }
+.login-left  { flex: 0 0 290px !important; text-align: left !important; }
+.login-right { flex: 0 0 360px !important; min-width: 0 !important; max-width: 360px !important; }
+.login-card  { padding: 22px 22px 26px !important; }
+
+/* Plakát – jemnější, aby budova vynikla */
+.login-poster {
+  background: linear-gradient(165deg, rgba(4,6,14,0.62), rgba(4,6,14,0.18));
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  padding: 24px 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
 
 /* ── Vypnutí starých levá-strana stylů ── */
 .login-art, .login-logo, .login-city, .login-tagline,
@@ -325,24 +338,58 @@
 /* ── Skryj starý clip-path city ── */
 .lscene-city { display: none !important; }
 
-/* ── OA budova SVG ── */
+/* ── OA budova SVG – fullscreen scéna ── */
 .lscene-oa-svg {
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-45%);
+  inset: 0;
   width: 100%;
-  max-width: 1400px;
-  height: 78vh;
-  max-height: 660px;
-  opacity: 0.82;
+  height: 100%;
+  opacity: 1;
   pointer-events: none;
-  animation: oaFadeIn 2.2s ease .5s both;
+  animation: oaFadeIn 2.2s ease .3s both;
 }
 
 @keyframes oaFadeIn {
-  from { opacity: 0; transform: translateX(-45%) translateY(18px); }
-  to   { opacity: 0.82; transform: translateX(-45%) translateY(0); }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hvězdy – twinkle */
+.lscene-stars .star { fill: rgba(255,250,220,0.55); }
+.lscene-stars .bright { fill: rgba(255,240,180,0.85); }
+.lscene-stars .s1 { animation: twink1 3.2s ease-in-out infinite; }
+.lscene-stars .s2 { animation: twink2 4.6s ease-in-out infinite; }
+.lscene-stars .s3 { animation: twink3 5.8s ease-in-out infinite; }
+.lscene-stars .b1 { animation: twink2 6.0s ease-in-out infinite; filter: drop-shadow(0 0 2px rgba(255,235,150,0.75)); }
+.lscene-stars .b2 { animation: twink1 7.2s ease-in-out infinite; filter: drop-shadow(0 0 2px rgba(255,235,150,0.75)); }
+
+@keyframes twink1 { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes twink2 { 0%,100% { opacity: 0.55; } 50% { opacity: 0.18; } }
+@keyframes twink3 { 0%,100% { opacity: 0.25; } 30% { opacity: 0.85; } 70% { opacity: 0.45; } }
+
+/* Pták letící */
+.lscene-birds {
+  animation: birdsDrift 28s linear infinite;
+  transform-origin: center;
+}
+@keyframes birdsDrift {
+  0%   { transform: translate(0, 0); opacity: 0.55; }
+  50%  { transform: translate(-300px, -40px); opacity: 0.7; }
+  100% { transform: translate(-700px, -10px); opacity: 0; }
+}
+
+/* Lampa – jemné blikání */
+.lscene-lamp-flicker {
+  animation: lampFlicker 4s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes lampFlicker {
+  0%, 100% { opacity: 1; }
+  43%      { opacity: 1; }
+  45%      { opacity: 0.45; }
+  47%      { opacity: 1; }
+  78%      { opacity: 0.7; }
+  80%      { opacity: 1; }
 }
 
 /* ── Skryj starý awards list ── */
@@ -369,3 +416,230 @@
   white-space: nowrap;
   text-transform: uppercase;
 }
+
+/* ── NPC ANIMACE ── */
+.lscene-npcs {
+  position: absolute;
+  bottom: 5%;
+  left: 0;
+  right: 0;
+  height: 13vh;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.lscene-npc {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.npc-tag {
+  font-family: var(--fm, 'JetBrains Mono', monospace);
+  font-size: 7.5px;
+  letter-spacing: 1.4px;
+  color: rgba(240,192,64,0.78);
+  background: rgba(4,6,12,0.78);
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid rgba(240,192,64,0.24);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.85);
+  position: relative;
+  font-weight: 700;
+}
+.npc-tag::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid rgba(240,192,64,0.24);
+}
+
+.lscene-npc.from-left {
+  left: -60px;
+  animation: npcWalkL var(--dur, 12s) linear forwards;
+}
+
+.lscene-npc.from-right {
+  right: -60px;
+  animation: npcWalkR var(--dur, 12s) linear forwards;
+}
+
+@keyframes npcWalkL {
+  0%   { transform: translateX(0);     opacity: 0; }
+  6%   { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(52vw);  opacity: 0; }
+}
+
+@keyframes npcWalkR {
+  0%   { transform: translateX(0);     opacity: 0; }
+  6%   { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(-52vw); opacity: 0; }
+}
+
+.npc-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  animation: npcBob var(--step, 0.42s) ease-in-out infinite alternate;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.65));
+}
+
+.npc-head {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.npc-body {
+  width: 11px;
+  height: 17px;
+  border-radius: 3px 3px 1px 1px;
+}
+
+.npc-skirt {
+  width: 17px;
+  height: 13px;
+  border-radius: 0 0 5px 5px;
+  clip-path: polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%);
+}
+
+.npc-legs {
+  display: flex;
+  gap: 2px;
+}
+
+.npc-leg {
+  width: 5px;
+  height: 13px;
+  border-radius: 0 0 2px 2px;
+  transform-origin: top center;
+}
+
+.npc-leg.l { animation: legSwA var(--step, 0.42s) ease-in-out infinite; }
+.npc-leg.r { animation: legSwB var(--step, 0.42s) ease-in-out infinite; }
+
+.npc-shadow {
+  width: 16px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.42);
+  margin-top: 1px;
+  filter: blur(1px);
+}
+
+@keyframes npcBob {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-2px); }
+}
+
+@keyframes legSwA {
+  0%, 100% { transform: rotate(-18deg); }
+  50%      { transform: rotate(18deg); }
+}
+
+@keyframes legSwB {
+  0%, 100% { transform: rotate(18deg); }
+  50%      { transform: rotate(-18deg); }
+}
+
+/* ── AUTA NA SILNICI ── */
+.lscene-cars {
+  position: absolute;
+  bottom: 0.6%;
+  left: 0;
+  right: 0;
+  height: 6vh;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+.lscene-car {
+  position: absolute;
+  bottom: 12%;
+}
+.lscene-car.from-left  { left:  -180px; animation: carWalkL var(--dur, 7s) linear forwards; }
+.lscene-car.from-right { right: -180px; animation: carWalkR var(--dur, 7s) linear forwards; }
+
+@keyframes carWalkL {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 180px)); }
+}
+@keyframes carWalkR {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(-100vw - 180px)); }
+}
+
+.car-body {
+  position: relative;
+  width: 56px;
+  height: 16px;
+  border-radius: 4px 6px 3px 3px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+}
+.car-cabin {
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  width: 30px;
+  height: 9px;
+  border-radius: 5px 5px 2px 2px;
+  background: rgba(15,18,28,0.85);
+  border-top: 1px solid rgba(220,180,80,0.10);
+}
+.car-window {
+  position: absolute;
+  top: -6px;
+  left: 16px;
+  width: 22px;
+  height: 6px;
+  border-radius: 3px 4px 1px 1px;
+  background: rgba(60,80,120,0.30);
+}
+.car-wheel {
+  position: absolute;
+  bottom: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #050608;
+  border: 1px solid #1a1818;
+}
+.car-wheel.fw { left: 6px; }
+.car-wheel.bw { right: 6px; }
+
+.car-light {
+  position: absolute;
+  top: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+.car-headlight {
+  background: #fff4c0;
+  box-shadow: 0 0 8px 3px rgba(255,235,150,0.65), 0 0 18px 6px rgba(255,200,80,0.30);
+}
+.car-taillight {
+  background: #ff3a3a;
+  box-shadow: 0 0 5px 2px rgba(255,60,60,0.55);
+}
+
+/* Auto směrem doprava (z leva): světla vpředu (vpravo), zadní (vlevo) */
+.lscene-car.from-left .car-headlight { right: 1px; }
+.lscene-car.from-left .car-taillight { left: 1px; }
+/* Auto směrem doleva (z prava): světla vpředu (vlevo), zadní (vpravo) */
+.lscene-car.from-right .car-headlight { left: 1px; }
+.lscene-car.from-right .car-taillight { right: 1px; }

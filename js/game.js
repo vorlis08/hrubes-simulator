@@ -566,7 +566,6 @@ function interact(){
           updateInv();
           addLog(`Sebral jsi artefakt: ${artNames[key] || key}`, 'lm');
           fnotif('Artefakt sebrán!', 'itm');
-          triggerPickupFlash(ax, ay, [251,191,36]);
           return;
         }
       }
@@ -587,11 +586,9 @@ function interact(){
       if(it.type === 'kratom'){
         gs.inv.kratom += 10; updateInv();
         addLog('Sebral jsi kratom! (+10g) 🌿', 'ls'); fnotif('+10g 🌿', 'itm');
-        triggerPickupFlash(it.x, it.y, [16,185,129]);
       } else {
         gs.inv.zemle++; updateInv();
         addLog('Sebral jsi pizza žemli! 🍕', 'ls'); fnotif('+1 🍕', 'itm');
-        triggerPickupFlash(it.x, it.y, [249,115,22]);
       }
       currentItems.splice(i, 1); updateHUD(); return;
     }
