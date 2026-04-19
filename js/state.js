@@ -81,6 +81,75 @@ const gs = {
   // (nastaveno přes gs.story.figurova_sanitka)
 };
 
+function resetGameState(){
+  gs.running = false;
+  gs.dead    = false;
+  gs.money   = 150;
+  gs.energy  = 100;
+  gs.rep     = 0;
+
+  Object.assign(gs.inv, {
+    kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0,
+    fake_kratom:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0,
+    screenshot:0, hlasovka:0, foto_kubatova:0, c2_cert:0, fig_nuz:0, fig_gun:0,
+    milan_phone:0, zelizka:0, prasek:0, klice_vila:0, klice_fabie:0,
+    klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0,
+    propiska:0, foto_figurova:0,
+  });
+
+  gs.kratom_on        = false;
+  gs.kratom_t         = 0;
+  gs.kratom_max       = 13000;
+  gs.kratom_freeze    = 0;
+  gs.kratom_history   = [];
+  gs.kratom_blend_on  = false;
+  gs.blend_boost_until = 0;
+
+  gs.cihalova_deadline  = 0;
+  gs.cihalova_coming    = false;
+  gs.ca_active          = false;
+  gs.ca                 = null;
+  gs.cihalova_in_bag    = false;
+  gs.cihalova_collapsed = false;
+
+  gs.shelf_sliding = false;
+  gs.shelf_anim    = 0;
+
+  gs.voodoo_anim        = false;
+  gs.voodoo_t           = 0;
+  gs.voodoo_tx          = 0;
+  gs.voodoo_ty          = 0;
+  gs.vm                 = null;
+  gs.kubatova_bite_anim = null;
+  gs.kasna_red          = false;
+
+  gs.saman_wrong      = 0;
+  gs.saman_dead       = false;
+  gs.saman_death_anim = null;
+  gs.saman_naked_anim = null;
+  gs.platenikova_in   = false;
+  gs.pregame_artifacts = {};
+  gs.kasicka_taken    = false;
+
+  gs.room    = 'ucebna';
+  gs.player  = { x:0, y:0, spd:4.4, face:'r', mv:false };
+  gs.story   = {};
+  gs.quests  = {};
+  gs.visited = new Set(['ucebna']);
+  gs.objectives = [];
+
+  gs.ts                   = 0;
+  gs.lastDrain            = 0;
+  gs.won                  = false;
+  gs.villa_deadline       = 0;
+  gs.milan_leave_deadline = 0;
+  gs.johnny_stay_deadline = 0;
+  gs.roomFadeAlpha        = 0;
+  gs.mates_death_anim     = null;
+  gs.milan_death_anim     = null;
+  delete gs._deathFlash;
+}
+
 function gainRep(amount, reason){
   if(amount <= 0) return;
   gs.rep += amount;

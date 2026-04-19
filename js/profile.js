@@ -881,6 +881,16 @@ function hideHomescreenAndPlay(){
   document.getElementById('home-ov').classList.remove('on');
 }
 
+function returnToHomescreen(){
+  ['death','win','stab-death'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.classList.remove('on'); el.classList.remove('visible'); }
+  });
+  renderProfileHome();
+  document.getElementById('home-ov').classList.add('on');
+  setTimeout(() => loadLeaderboard('mostMoney'), 600);
+}
+
 // ─── Tab switching ────────────────────────────────────────────────────────────
 
 function initHomeTabs(){

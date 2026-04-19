@@ -32,147 +32,92 @@
     <svg class="lscene-oa-svg" viewBox="0 0 2000 1000" preserveAspectRatio="xMidYMax slice"
          xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
-        <!-- Obloha – soumrak nad Křemží -->
+        <!-- Obloha – denní scéna nad Křemží -->
         <linearGradient id="oaSky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#040616"/>
-          <stop offset="35%"  stop-color="#0a0c22"/>
-          <stop offset="65%"  stop-color="#1a1230"/>
-          <stop offset="88%"  stop-color="#2a1518"/>
-          <stop offset="100%" stop-color="#1a0808"/>
+          <stop offset="0%"   stop-color="#1a7abf"/>
+          <stop offset="30%"  stop-color="#3d9ed6"/>
+          <stop offset="65%"  stop-color="#7ec8e8"/>
+          <stop offset="85%"  stop-color="#aadaf0"/>
+          <stop offset="100%" stop-color="#c8ecf8"/>
         </linearGradient>
         <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%"   stop-color="rgba(240,192,64,0.32)"/>
-          <stop offset="35%"  stop-color="rgba(240,180,80,0.10)"/>
-          <stop offset="100%" stop-color="rgba(240,180,80,0)"/>
+          <stop offset="0%"   stop-color="rgba(255,240,120,0.55)"/>
+          <stop offset="35%"  stop-color="rgba(255,220,80,0.22)"/>
+          <stop offset="100%" stop-color="rgba(255,220,80,0)"/>
         </radialGradient>
-        <radialGradient id="moonBody" cx="0.38" cy="0.36" r="0.65">
-          <stop offset="0%"   stop-color="#fbe49a"/>
-          <stop offset="55%"  stop-color="#f0c040"/>
-          <stop offset="100%" stop-color="#b88018"/>
+        <radialGradient id="moonBody" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0%"   stop-color="#fffde0"/>
+          <stop offset="40%"  stop-color="#ffe85a"/>
+          <stop offset="100%" stop-color="#ffcc00"/>
         </radialGradient>
         <radialGradient id="lampGlow" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%"   stop-color="rgba(255,210,100,0.55)"/>
-          <stop offset="40%"  stop-color="rgba(240,180,80,0.18)"/>
-          <stop offset="100%" stop-color="rgba(240,180,80,0)"/>
+          <stop offset="0%"   stop-color="rgba(255,210,100,0)"/>
+          <stop offset="100%" stop-color="rgba(255,210,100,0)"/>
         </radialGradient>
         <radialGradient id="lampBulb" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%"   stop-color="#fff4c0"/>
-          <stop offset="50%"  stop-color="#f0c040"/>
-          <stop offset="100%" stop-color="#a06808"/>
+          <stop offset="0%"   stop-color="#c0c0b8"/>
+          <stop offset="100%" stop-color="#808078"/>
         </radialGradient>
         <linearGradient id="grndFog" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="rgba(80,40,20,0)"/>
-          <stop offset="100%" stop-color="rgba(120,60,30,0.18)"/>
+          <stop offset="0%"   stop-color="rgba(60,120,40,0)"/>
+          <stop offset="100%" stop-color="rgba(40,90,25,0.10)"/>
         </linearGradient>
         <linearGradient id="roadGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#08080c"/>
-          <stop offset="100%" stop-color="#02020a"/>
+          <stop offset="0%"   stop-color="#5c5c5c"/>
+          <stop offset="100%" stop-color="#424242"/>
         </linearGradient>
         <linearGradient id="treeGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#06080e"/>
-          <stop offset="100%" stop-color="#02030a"/>
+          <stop offset="0%"   stop-color="#3a8020"/>
+          <stop offset="100%" stop-color="#1e4e0e"/>
         </linearGradient>
         <linearGradient id="oaF" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#c8a040" stop-opacity="0.78"/>
-          <stop offset="100%" stop-color="#7e5818" stop-opacity="0.92"/>
+          <stop offset="0%"   stop-color="#e2ba58" stop-opacity="0.92"/>
+          <stop offset="100%" stop-color="#9a6e22" stop-opacity="0.98"/>
         </linearGradient>
         <linearGradient id="oaFS" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#9a7a28" stop-opacity="0.66"/>
-          <stop offset="100%" stop-color="#5c4012" stop-opacity="0.82"/>
+          <stop offset="0%"   stop-color="#b89238" stop-opacity="0.80"/>
+          <stop offset="100%" stop-color="#6e4c18" stop-opacity="0.92"/>
         </linearGradient>
         <linearGradient id="oaR" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#c04018" stop-opacity="0.88"/>
-          <stop offset="100%" stop-color="#6a2008" stop-opacity="0.96"/>
+          <stop offset="0%"   stop-color="#d04820" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="#7a2a0c" stop-opacity="1"/>
         </linearGradient>
         <linearGradient id="oaGl" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0%"   stop-color="#8a2808" stop-opacity="0.12"/>
-          <stop offset="55%"  stop-color="#501606" stop-opacity="0.03"/>
-          <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+          <stop offset="0%"   stop-color="rgba(80,60,20,0.06)"/>
+          <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
         </linearGradient>
         <symbol id="aw" viewBox="0 0 56 84">
-          <path d="M0,84 L0,28 A28,28 0 0 1 56,28 L56,84Z" fill="#05080e"/>
-          <path d="M2,28 A26,26 0 0 1 54,28" fill="none" stroke="rgba(220,165,45,0.13)" stroke-width="1.5"/>
-          <line x1="28" y1="28" x2="28" y2="84" stroke="rgba(220,165,45,0.06)" stroke-width="1"/>
-          <line x1="0"  y1="56" x2="56" y2="56" stroke="rgba(220,165,45,0.06)" stroke-width="1"/>
+          <path d="M0,84 L0,28 A28,28 0 0 1 56,28 L56,84Z" fill="rgba(155,200,230,0.45)"/>
+          <path d="M2,28 A26,26 0 0 1 54,28" fill="none" stroke="rgba(200,220,240,0.55)" stroke-width="1.5"/>
+          <line x1="28" y1="28" x2="28" y2="84" stroke="rgba(200,220,240,0.30)" stroke-width="1"/>
+          <line x1="0"  y1="56" x2="56" y2="56" stroke="rgba(200,220,240,0.30)" stroke-width="1"/>
         </symbol>
         <symbol id="agw" viewBox="0 0 64 110">
-          <path d="M0,110 L0,32 A32,32 0 0 1 64,32 L64,110Z" fill="#05080e"/>
-          <path d="M2,32 A30,30 0 0 1 62,32" fill="none" stroke="rgba(220,165,45,0.13)" stroke-width="1.5"/>
-          <line x1="32" y1="32" x2="32" y2="110" stroke="rgba(220,165,45,0.06)" stroke-width="1"/>
-          <line x1="0"  y1="71" x2="64"  y2="71" stroke="rgba(220,165,45,0.06)" stroke-width="1"/>
+          <path d="M0,110 L0,32 A32,32 0 0 1 64,32 L64,110Z" fill="rgba(155,200,230,0.45)"/>
+          <path d="M2,32 A30,30 0 0 1 62,32" fill="none" stroke="rgba(200,220,240,0.55)" stroke-width="1.5"/>
+          <line x1="32" y1="32" x2="32" y2="110" stroke="rgba(200,220,240,0.30)" stroke-width="1"/>
+          <line x1="0"  y1="71" x2="64"  y2="71" stroke="rgba(200,220,240,0.30)" stroke-width="1"/>
         </symbol>
         <symbol id="asw" viewBox="0 0 48 72">
-          <path d="M0,72 L0,24 A24,24 0 0 1 48,24 L48,72Z" fill="#05080e"/>
-          <path d="M2,24 A22,22 0 0 1 46,24" fill="none" stroke="rgba(220,165,45,0.09)" stroke-width="1.2"/>
+          <path d="M0,72 L0,24 A24,24 0 0 1 48,24 L48,72Z" fill="rgba(155,200,230,0.45)"/>
+          <path d="M2,24 A22,22 0 0 1 46,24" fill="none" stroke="rgba(200,220,240,0.40)" stroke-width="1.2"/>
         </symbol>
       </defs>
 
       <!-- ════ OBLOHA ════ -->
       <rect x="0" y="0" width="2000" height="1000" fill="url(#oaSky)"/>
 
-      <!-- Hvězdy (drobné body s twinkle animací) -->
-      <g class="lscene-stars">
-        <circle class="star s1" cx="80"   cy="60"  r="0.9"/>
-        <circle class="star s2" cx="180"  cy="120" r="0.6"/>
-        <circle class="star s3" cx="240"  cy="40"  r="1.0"/>
-        <circle class="star s1" cx="350"  cy="90"  r="0.7"/>
-        <circle class="star s2" cx="430"  cy="160" r="0.8"/>
-        <circle class="star s3" cx="520"  cy="50"  r="1.1"/>
-        <circle class="star s1" cx="610"  cy="110" r="0.6"/>
-        <circle class="star s2" cx="700"  cy="35"  r="0.9"/>
-        <circle class="star s3" cx="780"  cy="170" r="0.7"/>
-        <circle class="star s1" cx="860"  cy="80"  r="1.0"/>
-        <circle class="star s2" cx="940"  cy="130" r="0.6"/>
-        <circle class="star s3" cx="1020" cy="55"  r="0.8"/>
-        <circle class="star s1" cx="1100" cy="140" r="0.7"/>
-        <circle class="star s2" cx="1180" cy="90"  r="1.0"/>
-        <circle class="star s3" cx="1240" cy="30"  r="0.9"/>
-        <circle class="star s1" cx="1320" cy="110" r="0.7"/>
-        <circle class="star s2" cx="1400" cy="170" r="0.6"/>
-        <circle class="star s3" cx="1480" cy="50"  r="0.9"/>
-        <circle class="star s1" cx="1560" cy="100" r="0.8"/>
-        <circle class="star s2" cx="1620" cy="200" r="0.7"/>
-        <circle class="star s3" cx="1820" cy="80"  r="1.0"/>
-        <circle class="star s1" cx="1900" cy="150" r="0.9"/>
-        <circle class="star s2" cx="1960" cy="40"  r="0.7"/>
-        <circle class="star s3" cx="60"   cy="200" r="0.6"/>
-        <circle class="star s1" cx="140"  cy="240" r="0.8"/>
-        <circle class="star s2" cx="290"  cy="220" r="0.6"/>
-        <circle class="star s3" cx="380"  cy="280" r="0.9"/>
-        <circle class="star s1" cx="490"  cy="240" r="0.7"/>
-        <circle class="star s2" cx="600"  cy="270" r="0.6"/>
-        <circle class="star s3" cx="690"  cy="220" r="0.8"/>
-        <circle class="star s1" cx="780"  cy="260" r="0.7"/>
-        <circle class="star s2" cx="900"  cy="240" r="0.9"/>
-        <circle class="star s3" cx="1010" cy="280" r="0.6"/>
-        <circle class="star s1" cx="1110" cy="225" r="0.8"/>
-        <circle class="star s2" cx="1220" cy="260" r="0.7"/>
-        <circle class="star s3" cx="1330" cy="220" r="0.9"/>
-        <circle class="star s1" cx="1450" cy="270" r="0.6"/>
-        <circle class="star s2" cx="1540" cy="240" r="0.8"/>
-        <circle class="star s3" cx="1650" cy="280" r="0.7"/>
-        <circle class="star s1" cx="1760" cy="220" r="0.9"/>
-        <circle class="star s2" cx="1880" cy="260" r="0.6"/>
-        <circle class="star bright b1" cx="220"  cy="170" r="1.4"/>
-        <circle class="star bright b2" cx="540"  cy="200" r="1.3"/>
-        <circle class="star bright b1" cx="950"  cy="60"  r="1.5"/>
-        <circle class="star bright b2" cx="1280" cy="180" r="1.3"/>
-        <circle class="star bright b1" cx="1640" cy="120" r="1.4"/>
-      </g>
+      <!-- Slunce -->
+      <ellipse cx="1700" cy="120" rx="160" ry="160" fill="url(#moonGlow)"/>
+      <circle  cx="1700" cy="120" r="44" fill="url(#moonBody)"/>
 
-      <!-- Měsíc (zlatý, ladí s palettou) -->
-      <ellipse cx="1700" cy="160" rx="180" ry="180" fill="url(#moonGlow)"/>
-      <circle  cx="1700" cy="160" r="48" fill="url(#moonBody)"/>
-      <circle  cx="1688" cy="148" r="6"  fill="rgba(170,128,30,0.32)"/>
-      <circle  cx="1714" cy="170" r="4"  fill="rgba(170,128,30,0.28)"/>
-      <circle  cx="1685" cy="178" r="3"  fill="rgba(170,128,30,0.22)"/>
-      <circle  cx="1720" cy="148" r="2.5" fill="rgba(170,128,30,0.18)"/>
-
-      <!-- Mraky (jemné, dálkové) -->
-      <ellipse cx="350"  cy="180" rx="160" ry="11" fill="rgba(80,55,30,0.18)"/>
-      <ellipse cx="800"  cy="135" rx="120" ry="9"  fill="rgba(70,50,30,0.14)"/>
-      <ellipse cx="1280" cy="220" rx="180" ry="13" fill="rgba(80,55,30,0.20)"/>
-      <ellipse cx="1850" cy="280" rx="140" ry="10" fill="rgba(70,50,30,0.16)"/>
+      <!-- Mraky (denní) -->
+      <ellipse cx="350"  cy="180" rx="160" ry="14" fill="rgba(255,255,255,0.72)"/>
+      <ellipse cx="320"  cy="172" rx="80"  ry="10" fill="rgba(255,255,255,0.60)"/>
+      <ellipse cx="800"  cy="135" rx="130" ry="11" fill="rgba(255,255,255,0.68)"/>
+      <ellipse cx="770"  cy="128" rx="60"  ry="8"  fill="rgba(255,255,255,0.55)"/>
+      <ellipse cx="1280" cy="210" rx="190" ry="15" fill="rgba(255,255,255,0.74)"/>
+      <ellipse cx="1850" cy="270" rx="150" ry="12" fill="rgba(255,255,255,0.65)"/>
 
       <!-- Letící ptáci (siluety) -->
       <g class="lscene-birds" opacity="0.55">
@@ -181,43 +126,43 @@
         <path d="M 650,165 q 4,-3 8,0 q 4,-3 8,0" fill="none" stroke="rgba(8,8,18,0.85)" stroke-width="1.4"/>
       </g>
 
-      <!-- Horizont – teplý svit -->
-      <ellipse cx="1000" cy="900" rx="1500" ry="320" fill="rgba(180,80,30,0.10)"/>
-      <ellipse cx="1000" cy="950" rx="1200" ry="180" fill="rgba(220,100,40,0.07)"/>
+      <!-- Horizont – denní vzdušná perspektiva -->
+      <ellipse cx="1000" cy="900" rx="1500" ry="320" fill="rgba(160,210,240,0.12)"/>
+      <ellipse cx="1000" cy="950" rx="1200" ry="180" fill="rgba(180,220,245,0.08)"/>
 
       <!-- Vzdálené kopce / silueta -->
       <path d="M0,360 Q200,335 400,348 T800,340 T1200,355 T1600,335 T2000,350 L2000,420 L0,420 Z"
-            fill="rgba(8,8,18,0.62)"/>
+            fill="rgba(50,90,42,0.55)"/>
       <path d="M0,395 Q300,378 600,388 T1200,385 T1800,385 T2000,390 L2000,440 L0,440 Z"
-            fill="rgba(6,6,14,0.78)"/>
+            fill="rgba(38,75,32,0.72)"/>
 
       <!-- Vzdálená lesní silueta -->
-      <g opacity="0.78">
-        <ellipse cx="120"  cy="445" rx="50" ry="22" fill="rgba(4,5,12,0.92)"/>
-        <ellipse cx="220"  cy="450" rx="60" ry="20" fill="rgba(4,5,12,0.92)"/>
-        <ellipse cx="290"  cy="440" rx="45" ry="22" fill="rgba(4,5,12,0.92)"/>
-        <ellipse cx="1750" cy="445" rx="55" ry="22" fill="rgba(4,5,12,0.92)"/>
-        <ellipse cx="1850" cy="448" rx="50" ry="20" fill="rgba(4,5,12,0.92)"/>
-        <ellipse cx="1940" cy="445" rx="48" ry="22" fill="rgba(4,5,12,0.92)"/>
+      <g opacity="0.88">
+        <ellipse cx="120"  cy="445" rx="50" ry="22" fill="rgba(28,65,20,0.92)"/>
+        <ellipse cx="220"  cy="450" rx="60" ry="20" fill="rgba(28,65,20,0.92)"/>
+        <ellipse cx="290"  cy="440" rx="45" ry="22" fill="rgba(28,65,20,0.92)"/>
+        <ellipse cx="1750" cy="445" rx="55" ry="22" fill="rgba(28,65,20,0.92)"/>
+        <ellipse cx="1850" cy="448" rx="50" ry="20" fill="rgba(28,65,20,0.92)"/>
+        <ellipse cx="1940" cy="445" rx="48" ry="22" fill="rgba(28,65,20,0.92)"/>
       </g>
 
       <!-- Boční budovy v dálce -->
-      <rect x="80"  y="430" width="160" height="80" fill="rgba(8,8,16,0.68)"/>
-      <rect x="100" y="450" width="14" height="14" fill="rgba(220,170,55,0.22)"/>
-      <rect x="138" y="450" width="14" height="14" fill="rgba(220,170,55,0.10)"/>
-      <rect x="176" y="450" width="14" height="14" fill="rgba(220,170,55,0.18)"/>
-      <rect x="100" y="480" width="14" height="14" fill="rgba(220,170,55,0.12)"/>
-      <rect x="138" y="480" width="14" height="14" fill="rgba(220,170,55,0.20)"/>
-      <rect x="176" y="480" width="14" height="14" fill="rgba(220,170,55,0.08)"/>
+      <rect x="80"  y="430" width="160" height="80" fill="rgba(160,145,118,0.72)"/>
+      <rect x="100" y="450" width="14" height="14" fill="rgba(155,200,230,0.50)"/>
+      <rect x="138" y="450" width="14" height="14" fill="rgba(155,200,230,0.38)"/>
+      <rect x="176" y="450" width="14" height="14" fill="rgba(155,200,230,0.45)"/>
+      <rect x="100" y="480" width="14" height="14" fill="rgba(155,200,230,0.40)"/>
+      <rect x="138" y="480" width="14" height="14" fill="rgba(155,200,230,0.48)"/>
+      <rect x="176" y="480" width="14" height="14" fill="rgba(155,200,230,0.35)"/>
 
-      <rect x="1760" y="425" width="170" height="85" fill="rgba(8,8,16,0.65)"/>
-      <rect x="1780" y="445" width="14" height="14" fill="rgba(220,170,55,0.16)"/>
-      <rect x="1818" y="445" width="14" height="14" fill="rgba(220,170,55,0.22)"/>
-      <rect x="1856" y="445" width="14" height="14" fill="rgba(220,170,55,0.10)"/>
-      <rect x="1894" y="445" width="14" height="14" fill="rgba(220,170,55,0.18)"/>
-      <rect x="1780" y="478" width="14" height="14" fill="rgba(220,170,55,0.20)"/>
-      <rect x="1818" y="478" width="14" height="14" fill="rgba(220,170,55,0.08)"/>
-      <rect x="1856" y="478" width="14" height="14" fill="rgba(220,170,55,0.14)"/>
+      <rect x="1760" y="425" width="170" height="85" fill="rgba(155,140,114,0.70)"/>
+      <rect x="1780" y="445" width="14" height="14" fill="rgba(155,200,230,0.42)"/>
+      <rect x="1818" y="445" width="14" height="14" fill="rgba(155,200,230,0.50)"/>
+      <rect x="1856" y="445" width="14" height="14" fill="rgba(155,200,230,0.36)"/>
+      <rect x="1894" y="445" width="14" height="14" fill="rgba(155,200,230,0.44)"/>
+      <rect x="1780" y="478" width="14" height="14" fill="rgba(155,200,230,0.48)"/>
+      <rect x="1818" y="478" width="14" height="14" fill="rgba(155,200,230,0.34)"/>
+      <rect x="1856" y="478" width="14" height="14" fill="rgba(155,200,230,0.40)"/>
 
       <!-- ════ BUDOVA OBCHODNÍ AKADEMIE ════ -->
       <g transform="translate(300, 220)">
@@ -374,21 +319,21 @@
       <!-- ════ KONEC BUDOVY ════ -->
 
       <!-- Přední trávník před budovou -->
-      <rect x="0" y="900" width="2000" height="20" fill="rgba(8,12,8,0.85)"/>
+      <rect x="0" y="900" width="2000" height="20" fill="rgba(55,115,35,0.90)"/>
       <!-- Drobné keře u zdi -->
-      <ellipse cx="380"  cy="912" rx="30" ry="10" fill="rgba(8,16,10,0.92)"/>
-      <ellipse cx="450"  cy="912" rx="32" ry="11" fill="rgba(6,14,8,0.92)"/>
-      <ellipse cx="520"  cy="912" rx="28" ry="10" fill="rgba(8,16,10,0.92)"/>
-      <ellipse cx="1480" cy="912" rx="30" ry="10" fill="rgba(8,16,10,0.92)"/>
-      <ellipse cx="1550" cy="912" rx="32" ry="11" fill="rgba(6,14,8,0.92)"/>
-      <ellipse cx="1620" cy="912" rx="28" ry="10" fill="rgba(8,16,10,0.92)"/>
+      <ellipse cx="380"  cy="912" rx="30" ry="10" fill="rgba(40,100,28,0.95)"/>
+      <ellipse cx="450"  cy="912" rx="32" ry="11" fill="rgba(35,90,22,0.95)"/>
+      <ellipse cx="520"  cy="912" rx="28" ry="10" fill="rgba(40,100,28,0.95)"/>
+      <ellipse cx="1480" cy="912" rx="30" ry="10" fill="rgba(40,100,28,0.95)"/>
+      <ellipse cx="1550" cy="912" rx="32" ry="11" fill="rgba(35,90,22,0.95)"/>
+      <ellipse cx="1620" cy="912" rx="28" ry="10" fill="rgba(40,100,28,0.95)"/>
 
       <!-- Chodník -->
-      <rect x="0" y="918" width="2000" height="36" fill="rgba(22,18,12,0.92)"/>
-      <line x1="0" y1="918" x2="2000" y2="918" stroke="rgba(160,120,40,0.18)" stroke-width="1"/>
-      <line x1="0" y1="952" x2="2000" y2="952" stroke="rgba(0,0,0,0.55)" stroke-width="1"/>
+      <rect x="0" y="918" width="2000" height="36" fill="rgba(195,188,172,0.95)"/>
+      <line x1="0" y1="918" x2="2000" y2="918" stroke="rgba(140,130,110,0.60)" stroke-width="1"/>
+      <line x1="0" y1="952" x2="2000" y2="952" stroke="rgba(80,75,65,0.50)" stroke-width="1"/>
       <!-- Dlaždicové linie chodníku -->
-      <g opacity="0.18" stroke="rgba(140,105,40,0.30)" stroke-width="1">
+      <g opacity="0.35" stroke="rgba(140,130,110,0.45)" stroke-width="1">
         <line x1="100"  y1="918" x2="100"  y2="952"/>
         <line x1="240"  y1="918" x2="240"  y2="952"/>
         <line x1="380"  y1="918" x2="380"  y2="952"/>
@@ -425,8 +370,8 @@
         <rect x="1860" y="976" width="60" height="3"/>
       </g>
       <!-- Krajnice -->
-      <rect x="0" y="954" width="2000" height="2" fill="rgba(180,140,60,0.20)"/>
-      <rect x="0" y="998" width="2000" height="2" fill="rgba(80,60,30,0.65)"/>
+      <rect x="0" y="954" width="2000" height="2" fill="rgba(200,195,180,0.50)"/>
+      <rect x="0" y="998" width="2000" height="2" fill="rgba(60,60,60,0.70)"/>
 
       <!-- ════ STROMY ════ -->
       <!-- Levý velký strom (rámuje scénu) -->
@@ -513,12 +458,12 @@
     <div class="login-left">
       <div class="login-poster">
         <div class="lp-rating">⚠ SATIRICKÁ SIMULACE · 18+</div>
-        <div class="lp-eyebrow">František Hrubeš</div>
-        <div class="lp-title">NAPROSTÝ<br>FRAJER</div>
-        <div class="lp-divider"><span></span><span>2026</span><span></span></div>
+        <div class="lp-eyebrow">Naprostý Frajer</div>
+        <div class="lp-title">FRANTIŠEK<br>HRUBEŠ</div>
+        <div class="lp-divider"><span></span><span>SIMULATOR 2026 · V. 1.0</span><span></span></div>
         <div class="lp-logline">
-          „Jeden den. Jedna Fábie.<br>
-          Nekonečné množství kratom čaje."
+          „Nasedni. Nastartuj.<br>
+          Neotáčej se."
         </div>
         <div class="lp-tagline">Křemže tě vítá. Křemže tě zničí.</div>
       </div>
@@ -856,7 +801,7 @@
     <div id="sd-title">PIKO ZASÁHLO</div>
     <div id="sd-sub">Jano nevěděla, že je fejkový. Nebo věděla.</div>
     <div id="sd-msg">Čepel vstoupila mezi žebra. Rychle. Bez varování.<br>Fejkový kratom byl tvůj poslední obchod.</div>
-    <button class="death-btn" onclick="location.reload()">ZKUSIT ZNOVU</button>
+    <button class="death-btn" onclick="returnToHomescreen()">ZPĚT NA PROFIL</button>
   </div>
 
 
@@ -909,7 +854,7 @@
   <div id="death-title">SMRT</div>
   <div id="death-sub">KONEC HRY · KŘEMŽE PLÁČE</div>
   <div id="death-msg"></div>
-  <button class="death-btn" onclick="location.reload()">ZKUSIT ZNOVU</button>
+  <button class="death-btn" onclick="returnToHomescreen()">ZPĚT NA PROFIL</button>
 </div>
 
 <!-- Výhra -->
@@ -919,7 +864,7 @@
   <div id="win-sub">Křemžská legenda · Simulator 2026</div>
   <div id="win-body"></div>
   <div id="win-stats"></div>
-  <button class="wbtn" onclick="location.reload()">HRÁT ZNOVU</button>
+  <button class="wbtn" onclick="returnToHomescreen()">ZPĚT NA PROFIL</button>
 </div>
 
 <!-- KGB Minihra overlay -->
@@ -1080,8 +1025,8 @@
     el.className = 'lscene-npc ' + (fromLeft ? 'from-left' : 'from-right');
     el.style.cssText = '--dur:' + dur + ';bottom:' + bottomPct + ';';
     el.innerHTML =
-      '<div class="npc-tag">' + def.label + '</div>' +
-      '<div style="transform:scale(' + scale + ');transform-origin:center bottom;">' +
+      '<div style="transform:scale(' + scale + ');transform-origin:center bottom;display:flex;flex-direction:column;align-items:center;">' +
+        '<div class="npc-tag">' + def.label + '</div>' +
         buildFigure(def) +
       '</div>';
     container.appendChild(el);

@@ -53,7 +53,16 @@ function toggleMusic(){
 // ─── Start hry ────────────────────────────────────────────────────────────
 
 function startGame(){
+  resetGameState();
   document.getElementById('start').style.display = 'none';
+  // Zavři overlaye z předchozí hry
+  ['death','win','stab-death','dov','riddle-ov','kgb-ov'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.classList.remove('on'); el.classList.remove('visible'); }
+  });
+  document.getElementById('logc').innerHTML = '';
+  document.getElementById('piko-badge').classList.remove('on');
+  keys = {};
 
   gs.running   = true;
   gs.ts        = 0;
