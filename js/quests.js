@@ -10,7 +10,7 @@ const QF = {
   q_cihalova_start(){
     gs.story.cihalova   = 1;
     gs.cihalova_deadline = gs.ts + CIHALOVA_TIMER * 1000;
-    addLog('Přijal jsi úkol od Číhalové – máš 90 sekund!', 'lw');
+    addLog('Přijal jsi úkol od Číhalové – hlavně pohni! Číhalová už se klepe', 'lw');
     addObj('main_cihalova');
     closeDialog();
   },
@@ -37,7 +37,7 @@ const QF = {
     doneObj('main_cihalova');
     closeDialog();
     setTimeout(() => {
-      addLog('*Číhalová se chytá za hrudník. Dýchá mělce. Upadá na zem.*','lw');
+      addLog('*Číhalová se chytá za hrudník. Dýchá mělce. Padá na zem.*','lw');
       fnotif('💀 Číhalová OD','lw');
     }, 2000);
     setTimeout(() => {
@@ -53,7 +53,7 @@ const QF = {
     gs.cihalova_collapsed = true;
     gs.cihalova_deadline  = 0;
     document.getElementById('piko-badge').classList.remove('on');
-    addLog('Číhalová si vzala zásilku... a skolabovala. +800 Kč 💰', 'lm');
+    addLog('Číhalová si vzala zásilku... a zkolabovala. +800 Kč 💰', 'lm');
     fnotif('+800 Kč','pos');
     doneObj('main_cihalova');
     addObj('quest_cihalova_burn');
@@ -137,7 +137,7 @@ const QF = {
   q_figurova_dark_accept(){
     gs.inv.fig_nuz = 1; updateInv();
     gs.story.figurova_dark_contract = true;
-    addLog('Figurová ti podala nůž. Studená ocel. Žádné slova navíc.', 'lw');
+    addLog('Figurová ti podala nůž. Vykuchej tu svini.', 'lw');
     addLog('Mates je v hospodě. Milan na náměstí. Figurová čeká.', 'lw');
     fnotif('🗡️ Nůž†  +1','itm');
     addObj('quest_figurova_mates');
@@ -314,7 +314,7 @@ const QF = {
     if(gs.cihalova_in_bag){ addLog('Číhalová už v pytli je.','lw'); closeDialog(); return; }
     if(gs.money < 50){ addLog('Nemáš 50 Kč!','lw'); closeDialog(); return; }
     gs.money -= 50; gs.inv.pytel = 1; updateInv(); updateHUD();
-    addLog('Koupil jsi pytel na odpadky od Matese. 🗑️ Teď jdi k Číhalové.', 'lm');
+    addLog('Koupil jsi pytel na odpadky od Matese. 🗑️', 'lm');
     fnotif('🗑️ +1 pytel','itm');
     closeDialog();
   },
@@ -330,7 +330,7 @@ const QF = {
     gs.money += 200; updateHUD();
     gainRep(6, 'Honzův domácí úkol zařízený');
     addLog('Honza: "Ty jsi borec, Fanda. Upřímně." +200 Kč 💰', 'lm');
-    fnotif('+200 Kč', 'pos');
+    fnotif('+400 Kč', 'pos');
     doneObj('side_honza_ukol');
     gs.story.honza_ukol_rewarded = true;
     closeDialog();
@@ -658,14 +658,14 @@ const QF = {
   },
   q_honza_kapsy(){
     gs.story.honza_kapsy_prohledany = true;
-    showNPCLine('honza', '"Tak... tady mám dvě pětikoruny." *cinknou o stůl* "Nikotinový sáčky – čili pytel." *vytáhne kapesník* "Kapesník. A..." *podívá se s překvapením* "...propisku. Hele, to jsem ani nevěděl, že ji mám."');
+    showNPCLine('honza', '"Tak... tady mám dvě pětikoruny." *Pytel." *vytáhne kapesník* "Kapesník. A..." *podívá se s překvapením* "...propisku. Hele, to jsem ani nevěděl, že ji mám."');
   },
   q_honza_propiska_info(){
     gs.story.honza_propiska_info_given = true;
     closeDialog();
     setTimeout(() => {
       showNPCLine('honza',
-        '"Ta propiska?" *mírně se uculí* "To je speciální věc. Koupil jsem ji na Temu – když ji někdo zmáčkne, proběhne elektrický šok." *pauza* "Původně jsem ji koupil spolu s Mikulášem na tebe, abysme si z tebe udělali prdel."',
+        '"Ta propiska?" *mírně se uculí* "To je speciální věc. Koupil jsem ji na Temu – když ji někdo zmáčkne, proběhne elektrický šok." *pauza* "Původně jsem ji koupil spolu s Mikulášem na tebe, abysme si z tebe udělali prdel. Pak jsem si s tím rozhodl trochu pohrát, teď by to možná zabilo i koně."',
         () => {
           addLog('*Hrubeš se jen podívá* "...Jste magoři."', 'ls');
           setTimeout(() => showNPCLine('honza',

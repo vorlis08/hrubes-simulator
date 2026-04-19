@@ -36,13 +36,6 @@ const SAMAN_PASSWORDS = {
   },
 };
 
-// Šaman – speciální kódy (mimo normální hesla)
-const SAMAN_SPECIAL_CODES = {
-  god: 'god',
-  obídek: 'obidek',
-  obidek: 'obidek',
-};
-
 // Šaman – reakce na špatná hesla (eskalace)
 const SAMAN_WRONG_RESPONSES = [
   '"' + 'To slovo neznám, kamaráde. Zkus znovu.' + '"',
