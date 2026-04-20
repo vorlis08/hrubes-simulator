@@ -132,8 +132,13 @@ function initRoom(spawnX, spawnY){
   // Figurová sleduje hráče – přidat ji do aktuální místnosti (přechody mezi místnostmi)
   if(gs.story.figurova_following && !gs.story.figurova_at_door){
     const figNPC = NPCS['figurova'];
-    if(!currentNPCs.find(n => n.id === 'figurova'))
-      currentNPCs.push({...figNPC, id:'figurova', x:gs.player.x - 55, y:gs.player.y, bob:0, bobDir:1});
+    if(!currentNPCs.find(n => n.id === 'figurova')){
+      // V Bille vychází vždy zleva (spawnX je správná pozice hráče, ne stará)
+      const figX = gs.room === 'billa'
+        ? (spawnX !== undefined ? spawnX - 55 : -55)
+        : gs.player.x - 55;
+      currentNPCs.push({...figNPC, id:'figurova', x:figX, y:gs.player.y, bob:0, bobDir:1});
+    }
   }
   // Figurová skopnuta – schovat v Bille, zobrazit v sklepě na zemi (log při vstupu)
   if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep){
@@ -153,7 +158,6 @@ function initRoom(spawnX, spawnY){
 
   gs.player.x = (spawnX !== undefined) ? spawnX : canvas.width  / 2;
   gs.player.y = (spawnY !== undefined) ? spawnY : canvas.height / 2;
-  addLog(`→ ${rm.name}`, 'ls');
 }
 
 function changeRoom(dir){
@@ -484,8 +488,8 @@ function interact(){
     if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.5){ runQF('q_figurova_sklep_plea'); return; }
   }
 
-  // Regál mléka – tajný vchod do sklepa
-  if(gs.room === 'billa' && gs.story.sklep_unlocked && !gs.shelf_sliding){
+  // Regál mléka – tajný vchod do sklepa (zablokováno pokud Figurová sleduje)
+  if(gs.room === 'billa' && gs.story.sklep_unlocked && !gs.shelf_sliding && !gs.story.figurova_following){
     const mx = canvas.width * 0.63, my = canvas.height * 0.55;
     if(dist2(gs.player, {x:mx, y:my}) < PROX_R * 1.5){
       if(gs.story.shelf_open){

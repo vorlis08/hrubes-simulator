@@ -77,6 +77,7 @@ function useBlend(){
 
 function _consumeBlend(){
   if(gs.inv.blend <= 0) return;
+  closeDialog();
   gs.inv.blend -= 1; updateInv();
   gs.story.blend_consumed = (gs.story.blend_consumed || 0) + 1;
   addLog('🍃 Zkouřil jsi blend. Geometrie tančí, stěny dýchají...', 'lw');
