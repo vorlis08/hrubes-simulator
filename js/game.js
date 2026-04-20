@@ -300,6 +300,12 @@ function checkProx(){
     if(dist2(p, {x:kx, y:ky}) < PROX_R){ best = {isKasicka:true}; }
   }
 
+  // Postel doma – masturbátor pod postelí
+  if(gs.room === 'doma' && !gs.story.masturbator_found){
+    const bpx = canvas.width * 0.80, bpy = canvas.height * 0.68;
+    if(dist2(p, {x:bpx, y:bpy}) < PROX_R * 1.8){ best = {isBed:true}; }
+  }
+
   // Dveře doma (exit ven)
   if(gs.room === 'doma'){
     const doorCX = canvas.width * 0.50, doorCY = canvas.height * 0.05;
@@ -368,6 +374,8 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Nastartovat Fábii a jet domů!';
     } else if(best.isKasicka){
       document.getElementById('ptxt').textContent = 'Vybrat kasičku (100 Kč)';
+    } else if(best.isBed){
+      document.getElementById('ptxt').textContent = 'Prohledat pod postelí';
     } else if(best.isDoor){
       document.getElementById('ptxt').textContent = 'Otevřít dveře – jít ven';
     } else if(best.isArtifact){
@@ -526,6 +534,20 @@ function interact(){
     const kx = canvas.width * 0.06 + canvas.width * 0.055, ky = canvas.height * 0.58 - 22;
     if(dist2(gs.player, {x:kx, y:ky}) < PROX_R){
       runQF('q_kasicka'); return;
+    }
+  }
+
+  // Postel doma – masturbátor pod postelí
+  if(gs.room === 'doma' && !gs.story.masturbator_found){
+    const bpx = canvas.width * 0.80, bpy = canvas.height * 0.68;
+    if(dist2(gs.player, {x:bpx, y:bpy}) < PROX_R * 1.8){
+      gs.story.masturbator_found = true;
+      gs.inv.masturbator = 1;
+      gs.energy = Math.min(100, gs.energy + 100);
+      updateInv(); updateHUD();
+      const mSlot = document.getElementById('sl-masturbator');
+      if(mSlot) mSlot.style.display = '';
+      return;
     }
   }
 

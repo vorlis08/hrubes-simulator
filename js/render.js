@@ -3267,6 +3267,18 @@ function render(){
     }
   });
 
+  // Kaluž spermatu
+  if(gs.semen_puddle){
+    const sp = gs.semen_puddle;
+    const sg = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, 26);
+    sg.addColorStop(0, 'rgba(255,255,230,0.95)');
+    sg.addColorStop(1, 'rgba(255,255,200,0)');
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.ellipse(sp.x, sp.y, 26, 12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(245,245,210,0.75)';
+    ctx.beginPath(); ctx.ellipse(sp.x, sp.y, 18, 8, 0, 0, Math.PI * 2); ctx.fill();
+  }
+
   // Hráč
   const px=p.x;
   // Jemný walk-bob (konzistentní s drawNakedSaman / NPC gait)
@@ -3336,6 +3348,24 @@ function render(){
     godG.addColorStop(0,'rgba(255,215,0,0.15)'); godG.addColorStop(1,'transparent');
     ctx.fillStyle=godG; ctx.beginPath(); ctx.arc(0,25,40,0,Math.PI*2); ctx.fill();
     ctx.restore();
+  }
+
+  // Hráč OBÍDEK (po použití masturbátoru)
+  if(gs.obidek_t > 0 && gs.ts - gs.obidek_t < 3500){
+    const txts = ['OBÍDEK!', 'OBÍÍÍDEK!!', 'OBÍDEK!!!'];
+    const oTxt = txts[Math.floor(t / 350) % 3];
+    ctx.font = 'bold 20px Outfit,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    const otw = ctx.measureText(oTxt).width + 18;
+    const obx = px - otw / 2, oby = py - 62;
+    ctx.fillStyle = 'rgba(0,0,0,0.78)';
+    rrect(obx, oby, otw, 28, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(220,30,30,0.95)'; ctx.lineWidth = 2.2;
+    rrect(obx, oby, otw, 28, 7); ctx.stroke();
+    ctx.fillStyle = '#ff4040';
+    ctx.fillText(oTxt, px, oby + 21);
+    ctx.fillStyle = 'rgba(0,0,0,0.78)';
+    ctx.beginPath(); ctx.moveTo(px - 7, oby + 28); ctx.lineTo(px + 7, oby + 28); ctx.lineTo(px, oby + 42); ctx.closePath(); ctx.fill();
   }
 
   // Číhalová útok – canvas animace

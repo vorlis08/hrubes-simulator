@@ -99,6 +99,15 @@ function _consumeBlend(){
   updateHUD();
 }
 
+function useMasturbator(){
+  if(!gs.inv.masturbator) return;
+  gs.inv.masturbator = 0; updateInv();
+  gs.energy = 100; updateHUD();
+  gs.obidek_t = gs.ts;
+  const off = gs.player.face === 'l' ? -55 : 55;
+  gs.semen_puddle = { x: gs.player.x + off, y: gs.player.y + 28 };
+}
+
 function usePikoSelf(){
   if(!gs.inv.piko){ addLog('Nemáš piko!','lw'); return; }
   closeDialog();
