@@ -314,7 +314,7 @@ function checkProx(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza','foto_figurova'];
+    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){
@@ -379,7 +379,7 @@ function checkProx(){
     } else if(best.isDoor){
       document.getElementById('ptxt').textContent = 'Otevřít dveře – jít ven';
     } else if(best.isArtifact){
-      const artNames = {screenshot:'Screenshot',hlasovka:'Hlasovka',foto_kubatova:'Fotka',c2_cert:'C2 Cert.',voodoo:'Voodoo',fig_nuz:'Nůž†',fig_gun:'Pistole',milan_phone:'Tel. Milan',zelizka:'Želízka',podprsenka:'Artefakt',klice_vila:'Klíče',pytel_cihalova:'Číhalová',klice_fabie:'Fábie',saman_hlava:'Šam. hlava',maturita:'Maturita',cibule:'Cibule',membership_vaza:'Vaza Systems'};
+      const artNames = {c2_cert:'C2 Cert.',milan_phone:'Tel. Milan',podprsenka:'Janina podprsenka',klice_vila:'Klíče od vily',klice_fabie:'Fábie',saman_hlava:'Šam. hlava',maturita:'Maturita',foto_figurova:'Fotka Fig.',membership_vaza:'Vaza Systems',webovky:'Webovky'};
       document.getElementById('ptxt').textContent = 'Vzít ' + (artNames[best.artKey] || best.artKey);
     } else if(best.isSamanBody){
       document.getElementById('ptxt').textContent = 'Vzít šamanovu hlavu';
@@ -421,6 +421,11 @@ function interact(){
         if(gs.story.johnny_villa_rewards && gs.story.johnny_return_left && !gs.story.johnny_return_visit){
           gs.story.johnny_return_visit = true;
           gs.johnny_stay_deadline = gs.ts + 20000; // 20s timer
+        }
+        // Webovky hotové – vrátil se po požádání
+        if(gs.story.johnny_webovka_asked && gs.story.johnny_return_left && !gs.story.johnny_webovka_ready && !gs.story.johnny_webovka_done){
+          gs.story.johnny_webovka_ready = true;
+          addLog('Johnny ti mává od gauče. Vypadá to, že webovky jsou hotové.', 'lm');
         }
         // Návrat po varování – Johnny a Jana v ložnici
         if(gs.story.johnny_return_visit && gs.story.johnny_return_left && gs.johnny_stay_deadline === 0){
@@ -569,7 +574,7 @@ function interact(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['screenshot','hlasovka','foto_kubatova','c2_cert','voodoo','fig_nuz','fig_gun','milan_phone','zelizka','podprsenka','klice_vila','pytel_cihalova','klice_fabie','saman_hlava','maturita','cibule','membership_vaza','foto_figurova'];
+    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){
@@ -583,7 +588,7 @@ function interact(){
         if(dist2(gs.player, {x:ax, y:ay}) < PROX_R * 0.9){
           gs.pregame_artifacts[key] = true;
           // Přenést artefakt do inventáře
-          const artNames = {screenshot:'Screenshot',hlasovka:'Hlasovka',foto_kubatova:'Fotka Kubátové',c2_cert:'C2 Certifikát',voodoo:'Voodoo panenka',fig_nuz:'Nůž od Figurové',fig_gun:'Pistole od Figurové',milan_phone:'Telefon Milana',zelizka:'Želízka',podprsenka:'Podprsenka',klice_vila:'Klíče od vily',pytel_cihalova:'Pytel s Číhalovou',klice_fabie:'Klíčky Fandovy Fábie',saman_hlava:'Šamanova hlava',maturita:'Maturita',cibule:'Cibule',membership_vaza:'Členská karta Vaza'};
+          const artNames = {c2_cert:'C2 Certifikát',voodoo:'Voodoo panenka',fig_nuz:'Nůž od Figurové',fig_gun:'Pistole od Figurové',milan_phone:'Telefon Milana',zelizka:'Želízka',podprsenka:'Podprsenka',klice_vila:'Klíče od vily',pytel_cihalova:'Pytel s Číhalovou',klice_fabie:'Klíčky Fandovy Fábie',saman_hlava:'Šamanova hlava',maturita:'Maturita',cibule:'Cibule',membership_vaza:'Členská karta Vaza'};
           if(key === 'pytel_cihalova'){
             gs.inv.pytel = 1; gs.cihalova_in_bag = true;
           } else if(gs.inv[key] !== undefined){

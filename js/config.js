@@ -506,7 +506,7 @@ const NPCS = {
       },
       {
         // stage 2 – po zdrogování Jany, dává odměny
-        text:'"Tys to zvládnul, Fando." *poklepe ti na rameno* "Tady máš – membership kartičku od Vaza Systems. Ultimátní členství. Neomezený počet webů, design, cokoliv budeš chtít." *hodí ti klíčky* "A tady máš klíče od baráku. Klidně se stav, kdykoli."',
+        text:'"Fando... ty jsi fajn kamarád, víš to?" *poklepe ti na rameno* "Vážím si toho, co pro mě děláš. Vážně." *sáhne do kapsy* "Tady máš – membership kartičku od Vaza Systems. Díky ní máš u mě kdykoli webovky zdarma. Cokoliv budeš chtít." *hodí ti klíčky* "A klíče od baráku. Stav se, kdykoli."',
         choices:[{label:'💳 Vzít kartičku a klíče', cls:'prim', fn:'q_johnny_villa_rewards'}]
       },
       {
@@ -515,6 +515,14 @@ const NPCS = {
         choices:[
           {label:'(Odejít)', cls:'prim', fn:'q_johnny_return_leave'},
           {label:'🤔 (Zůstat)', cls:'danger', fn:'close'},
+        ]
+      },
+      {
+        // stage 4 – webovky hotové
+        text:'"Fando! Právě jsem to dokončoval." *otočí laptop* "fanta-hrubes.webnode.cz – live od dneška. Responsive design, dark theme, SEO optimalizovaný." *mrkne* "Fifty grand by tě to stálo jinak."',
+        choices:[
+          {label:'🌐 Vzít webovky', cls:'prim', fn:'q_johnny_webovka_deliver'},
+          {label:'(Odejít)', fn:'q_johnny_return_leave'},
         ]
       },
     ]

@@ -302,6 +302,7 @@ function getStage(id){
       if(s.mraz_explain_line === 0) return 1;
       return 0;
     case 'johnny_vila':
+      if(s.johnny_webovka_ready && !s.johnny_webovka_done) return 4;
       if(s.johnny_return_visit) return 3;
       if(s.jana_drugged_villa && !s.johnny_villa_rewards) return 2;
       if(s.johnny_cuffed) return 1;
@@ -364,13 +365,6 @@ function showDialog(npc){
     // Po ukázání hrozeb – nabídne důkazy
     if(gs.story.milan_showed_threats && !gs.story.milan_fig_evidence && !gs.story.milan_protiutok_asked)
       choices.push({label:'🕵️ "Ukaž mi ty důkazy"', cls:'special', fn:'q_milan_fig'});
-    // Fotka s Kubátovou – jen pokud dokončena Kubátová linka A Milan přežil
-    if(gs.story.figurova === 1 && gs.story.milan_fig_evidence && !gs.story.milan_protiutok_asked
-        && gs.story.mraz_done && !gs.story.milan_voodoo_dead && !gs.inv.foto_kubatova)
-      choices.push({label:'📸 A ta fotka z toho sklepa...', cls:'special', fn:'q_milan_fig_foto', sub:'Silnější důkaz'});
-    // Pozadí Figurové – co o ní Milan ví
-    if(gs.story.milan_explained_figurova && !gs.story.milan_fig_historia_told)
-      choices.push({label:'🧐 "A co na ni vlastně víš?"', cls:'special', fn:'q_milan_fig_historia', sub:'Pozadí celého konfliktu'});
     // Protiútok – říct pravdu Milanovi
     if(gs.story.figurova === 1 && gs.story.milan_met && !gs.story.milan_protiutok_asked
         && !gs.story.milan_fig_evidence)
@@ -428,11 +422,6 @@ function showDialog(npc){
   // Figurová – předat screenshot (dark path)
   if(npc.id === 'figurova' && gs.story.figurova === 1 && gs.inv.screenshot && !gs.story.figurova_dark_started && !gs.story.figurova_kratomed)
     choices.push({label:'📱 Tady je váš důkaz.', cls:'special', fn:'q_figurova_deliver_screenshot', sub:'Screenshot + hlasovka'});
-  // Figurová – vydírání fotkou (jen foto_kubatova)
-  if(npc.id === 'figurova' && gs.story.figurova === 1 && gs.inv.foto_kubatova && !gs.story.figurova_dark_started && !gs.story.figurova_kratomed){
-    choices.push({label:'💰 Chci 2 000 Kč, nebo to půjde ven.', cls:'danger', fn:'q_figurova_blackmail_money', sub:'Vydírání'});
-    choices.push({label:'📜 Chci certifikát C2 z angličtiny.', cls:'danger', fn:'q_figurova_blackmail_cert', sub:'Vydírání – vzácnější volba'});
-  }
   // Figurová – odměna po dark path vraždách
   if(npc.id === 'figurova' && gs.story.figurova_dark_started && gs.story.mates_dead && (gs.story.milan_shot || gs.story.milan_voodoo_dead) && !gs.story.figurova_dark_done)
     choices.push({label:'✅ Práce hotová.', cls:'prim', fn:'q_figurova_dark_reward'});
@@ -464,6 +453,9 @@ function showDialog(npc){
   // Villa – spoutat Johnnyho želízky
   if(npc.id === 'johnny_vila' && gs.inv.zelizka && !gs.story.johnny_cuffed)
     choices.push({label:'⛓️ Spoutat Johnnyho', cls:'prim', fn:'q_johnny_cuff'});
+  // Villa – požádat o webovky (jen stage 3, kartička v inventáři, ještě nepožádáno)
+  if(npc.id === 'johnny_vila' && gs.story.johnny_return_visit && gs.inv.membership_vaza && !gs.story.johnny_webovka_asked && !gs.story.johnny_webovka_done)
+    choices.push({label:'💻 "Johny, udělej mi webovky."', cls:'special', fn:'q_johnny_webovka', sub:'Vaza Systems membership'});
 
   // Milan – 1. varování (dynamic, zobrazí se jen při stage 0/1)
   if(npc.id === 'milan' && gs.story.kubatova_quest && !gs.story.milan_warn_count && !gs.story.mraz_done && !gs.story.milan_voodoo_dead)
@@ -542,6 +534,21 @@ function closePlayerLine(){
 
 function showNote(){ document.getElementById('note-ov').classList.add('on'); }
 function closeNote(){ document.getElementById('note-ov').classList.remove('on'); }
+
+function showArtDetail(emoji, name, desc, url){
+  document.getElementById('art-detail-emoji').textContent = emoji;
+  document.getElementById('art-detail-name').textContent = name;
+  document.getElementById('art-detail-desc').textContent = desc;
+  const btn = document.getElementById('art-detail-open-btn');
+  if(url){
+    btn.style.display = 'inline-block';
+    btn.onclick = (e) => { e.stopPropagation(); window.open(url, '_blank'); };
+  } else {
+    btn.style.display = 'none';
+  }
+  document.getElementById('art-detail-ov').classList.add('on');
+}
+function closeArtDetail(){ document.getElementById('art-detail-ov').classList.remove('on'); }
 
 function showScreenshot(){ document.getElementById('screenshot-ov').classList.add('on'); }
 function closeScreenshot(){ document.getElementById('screenshot-ov').classList.remove('on'); }

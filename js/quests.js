@@ -113,27 +113,6 @@ const QF = {
       if(f) showDialog(f);
     }, 400);
   },
-  q_figurova_blackmail_money(){
-    if(!gs.inv.foto_kubatova){ addLog('Nemáš fotku!','lw'); closeDialog(); return; }
-    gs.inv.foto_kubatova = 0; updateInv();
-    gs.money += 2000; updateHUD();
-    gs.story.figurova = 2;
-    addLog('Figurová zaplatila 2 000 Kč za mlčení. Ruka se jí třásla.', 'lm');
-    fnotif('+2 000 Kč 💰','pos');
-    doneObj('side_figurova'); closeDialog();
-  },
-  q_figurova_blackmail_cert(){
-    if(!gs.inv.foto_kubatova){ addLog('Nemáš fotku!','lw'); closeDialog(); return; }
-    gs.inv.foto_kubatova = 0; updateInv();
-    gs.inv.c2_cert = 1; updateInv();
-    gs.story.figurova = 2;
-    addLog('Figurová: "Fine." *vytáhne razítko* "Certified C2. Highest score." *podá ti padělek*', 'lm');
-    fnotif('📜 C2 Certifikát!','itm');
-    // Achievement
-    if(typeof unlockAchievement === 'function') unlockAchievement('cert_c2','Certified Bullshitter','C2 certifikát z angličtiny – zfalšovaný Figurovou');
-    doneObj('side_figurova'); closeDialog();
-    setTimeout(() => showC2Cert(), 400);
-  },
   q_figurova_dark_accept(){
     gs.inv.fig_nuz = 1; updateInv();
     gs.story.figurova_dark_contract = true;
@@ -567,6 +546,37 @@ const QF = {
     closeDialog();
     // Po odchodu z vily se nastaví johnny_villa_done
   },
+  q_johnny_webovka(){
+    // Fáze 1 – hráč požádá, Johnny odmítne, pak uvidí kartičku a souhlasí
+    gs.story.johnny_webovka_asked = true;
+    closeDialog();
+    showNPCLine('johnny_vila',
+      '"Webovky?" *zamrká* "Hele, Fando, já mám business, mám schůzky, mám lidi na drátě. Na takovýhle kraviny fakt nemám čas." *odvrátí se* "Sorry."',
+      () => {
+        if(!gs.inv.membership_vaza){ return; }
+        showNPCLine('johnny_vila',
+          '"Co to je?" *vezme kartičku a otočí ji* "...Vaza Systems Gold Membership." *pozvedne obočí* "Ty máš TOHLE?" *vstal ze sedačky* "Fando... OK. Udělám ti to. Dej mi pár dní."',
+          () => {
+            addLog('Johnny se zaváže udělat webovky. Vrať se za chvíli.', 'lm');
+            fnotif('💳 Johnny to udělá!', 'pos');
+          }
+        );
+      }
+    );
+  },
+  q_johnny_webovka_deliver(){
+    // Fáze 2 – webovky hotové, hráč dostane artefakt
+    gs.story.johnny_webovka_done = true;
+    if(activeProfile){ activeProfile.artifacts.webovky = true; profileSaveProgress(); }
+    closeDialog();
+    showNPCLine('johnny_vila',
+      '"Fando!" *vstane a natáhne ruku* "Hotovo. fanta-hrubes.webnode.cz – live od dneška." *poklepe ti na rameno* "Fifty grand by tě to stálo jinak. Ale pro tebe? Nula. Protože jsi kamarád."',
+      () => {
+        addLog('Dostal jsi webovky od Johnnyho. Otevři artefakt a podívej se! 🌐', 'lm');
+        fnotif('🌐 Webovky hotové!', 'itm');
+      }
+    );
+  },
   q_johnny_return_leave(){
     gs.story.johnny_return_left = true;
     gs.room = 'kremze'; initRoom();
@@ -953,16 +963,6 @@ const QF = {
     fnotif('🎙️ Hlasovka +1','itm');
     showNPCLine('milan', '"Evidence is yours now, Fando. Jen se mě neptej, jak jsem k tomu přišel." *mrkne*',
       () => showScreenshot());
-  },
-  q_milan_fig_foto(){
-    // Fotka Milan + Kubátová jako alternativní důkaz
-    gs.story.milan_fig_evidence = true; gs.story.milan_met = true;
-    gs.story.milan_fig_foto = true;
-    gs.inv.foto_kubatova = 1; updateInv();
-    addLog('Milan ti ukázal fotku. Je na ní on a Kubátová v sklepě. Figurová by za tohle zaplatila hodně...','ls');
-    fnotif('📸 Fotka +1','itm');
-    closeDialog();
-    setTimeout(() => showFotoKubatova(), 400);
   },
 
   q_milan_fig_historia(){

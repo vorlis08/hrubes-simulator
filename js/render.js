@@ -2813,21 +2813,16 @@ function drawDoma(W,H,t){
   // ── Artefakty na bustách v kruhu (střed místnosti) ─────────────────────
   if(activeProfile){
     const ART_DEFS = [
-      { key:'screenshot',      emoji:'📱', name:'Screenshot' },
-      { key:'hlasovka',        emoji:'🎙️', name:'Hlasovka' },
-      { key:'foto_kubatova',   emoji:'📸', name:'Fotka' },
       { key:'c2_cert',         emoji:'📜', name:'C2 Cert.' },
-      { key:'voodoo',          emoji:'🪆', name:'Voodoo' },
-      { key:'fig_nuz',         emoji:'🗡️', name:'Nůž†' },
-      { key:'fig_gun',         emoji:'🔫', name:'Pistole' },
       { key:'milan_phone',     emoji:'📲', name:'Tel. Milan' },
-      { key:'zelizka',         emoji:'⛓️', name:'Želízka' },
-      { key:'podprsenka',      emoji:'👙', name:'Artefakt' },
-      { key:'klice_vila',      emoji:'🔑', name:'Klíče' },
-      { key:'pytel_cihalova',  emoji:'🗑️', name:'Číhalová' },
+      { key:'podprsenka',      emoji:'👙', name:'Janina podprsenka' },
+      { key:'klice_vila',      emoji:'🔑', name:'Klíče od vily' },
       { key:'klice_fabie',     emoji:'🔑', name:'Fábie' },
       { key:'saman_hlava',     emoji:'🩸', name:'Šam. hlava' },
       { key:'maturita',        emoji:'🏆', name:'Maturita' },
+      { key:'foto_figurova',   emoji:'📸', name:'Fotka Fig.' },
+      { key:'membership_vaza', emoji:'💳', name:'Vaza Systems' },
+      { key:'webovky',         emoji:'🌐', name:'Webovky' },
     ];
     const cx = W * 0.42, cy = H * 0.38;
     const radiusX = Math.min(W * 0.22, 200);
@@ -3268,7 +3263,7 @@ function render(){
   });
 
   // Kaluž spermatu
-  if(gs.semen_puddle){
+  if(gs.semen_puddle && gs.semen_puddle.room === gs.room){
     const sp = gs.semen_puddle;
     const sg = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, 26);
     sg.addColorStop(0, 'rgba(255,255,230,0.95)');
