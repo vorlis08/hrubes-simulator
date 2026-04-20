@@ -105,7 +105,7 @@ function useMasturbator(){
   gs.energy = 100; updateHUD();
   gs.obidek_t = gs.ts;
   const off = gs.player.face === 'l' ? -55 : 55;
-  gs.semen_puddle = { x: gs.player.x + off, y: gs.player.y + 28 };
+  gs.semen_puddle = { x: gs.player.x + off, y: gs.player.y + 28, room: gs.room };
 }
 
 function usePikoSelf(){

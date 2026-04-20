@@ -4,6 +4,19 @@
 //  František Hrubeš Simulator 2026
 // ═══════════════════════════════════════════
 
+const ART_DEFS_DISPLAY = [
+  { key:'c2_cert',         emoji:'📜', name:'C2 Cert.',         desc:'Zfalšovaný certifikát C2 z angličtiny. Mistrovské dílo byrokracie.' },
+  { key:'milan_phone',     emoji:'📲', name:'Tel. Milan',        desc:'Milanův telefon. Plný důkazů, které by Figurovou pohřbily.' },
+  { key:'podprsenka',      emoji:'👙', name:'Janina podprsenka', desc:'Janina podprsenka. Dala ti ji za odvahu. Vzácný artefakt.' },
+  { key:'klice_vila',      emoji:'🔑', name:'Klíče od vily',     desc:'Klíče od Johnnyho vily. Teď se tam dostaneš kdykoliv.' },
+  { key:'klice_fabie',     emoji:'🔑', name:'Fábie',             desc:'Klíčky od Fandovy staré Fábie. Nasedni a vypadni z Křemže.' },
+  { key:'saman_hlava',     emoji:'🩸', name:'Šam. hlava',        desc:'Šamanova hlava. Celá od krve. Proč ji vlastně máš?' },
+  { key:'maturita',        emoji:'🏆', name:'Maturita',          desc:'Maturitní vysvědčení. Konečně. I Křemže má svůj Harvard.' },
+  { key:'foto_figurova',   emoji:'📸', name:'Fotka Fig.',        desc:'Fotografie Figurové v Mikulášově sklepě. Trochu morbidní, ale co naplat.' },
+  { key:'membership_vaza', emoji:'💳', name:'Vaza Systems',      desc:'Vaza Systems membership kartička. Ultimátní členství – neomezený počet webů.' },
+  { key:'webovky',         emoji:'🌐', name:'Webovky od Johnnyho', desc:'Fanta Hrubeš – osobní web. Navržen Johnnym za nula korun. Otevřít?', url:'https://fanta-hrubes.webnode.cz/' },
+];
+
 const PROFILE_STORAGE_KEY = 'kremze_profiles';
 const ACTIVE_PROFILE_KEY  = 'kremze_active_profile';
 
@@ -39,7 +52,6 @@ function createBlankProfile(username){
     artifacts: {
       screenshot:       false,
       hlasovka:         false,
-      foto_kubatova:    false,
       c2_cert:          false,
       voodoo:           false,
       fig_nuz:          false,
@@ -55,6 +67,7 @@ function createBlankProfile(username){
       cibule:           false,
       membership_vaza:  false,
       foto_figurova:    false,
+      webovky:          false,
     },
 
     endings: {
@@ -235,13 +248,31 @@ async function profileLoginFirebase(username, password){
   }
 }
 
+function makeLbAvatar(src){
+  if(!src) return null;
+  if(!src.startsWith('data:')) return src; // emoji nebo URL – použij přímo
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 48;
+      c.getContext('2d').drawImage(img, 0, 0, 48, 48);
+      res(c.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = () => res(null);
+    img.src = src;
+  });
+}
+
 async function profileSaveProgressFirebase(){
   if(!activeProfile || !activeProfile._uid) return;
   const uid = activeProfile._uid;
 
   // Sestav leaderboard záznam
-  const totalArtifacts = Object.values(activeProfile.artifacts).filter(Boolean).length;
+  const DISPLAY_ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky'];
+  const totalArtifacts = DISPLAY_ART_KEYS.filter(k => activeProfile.artifacts[k]).length;
   const totalEndings   = Object.values(activeProfile.endings).filter(Boolean).length;
+  const lbAvatar = await makeLbAvatar(activeProfile.avatar) || getProfileTier(activeProfile).emoji;
   const lb = {
     username:       activeProfile.username,
     mostMoney:      activeProfile.stats.mostMoney    || 0,
@@ -253,9 +284,7 @@ async function profileSaveProgressFirebase(){
     killCount:      activeProfile.stats.killCount    || 0,
     totalKratom:    activeProfile.stats.totalKratom  || 0,
     tier:           getProfileTier(activeProfile).emoji,
-    // Avatar: ukládáme jen emoji (base64 obrázky jsou příliš velké pro Firestore)
-    avatar:         (activeProfile.avatar && !activeProfile.avatar.startsWith('data:'))
-                      ? activeProfile.avatar : getProfileTier(activeProfile).emoji,
+    avatar:         lbAvatar,
     displayName:    activeProfile.displayName || activeProfile.username,
     updatedAt:      firebase.firestore.FieldValue.serverTimestamp(),
   };
@@ -310,7 +339,7 @@ function _computeStats(){
 
   // Artefakty
   const artMap = {
-    screenshot:'screenshot', hlasovka:'hlasovka', foto_kubatova:'foto_kubatova',
+    screenshot:'screenshot', hlasovka:'hlasovka',
     c2_cert:'c2_cert', voodoo:'voodoo', fig_nuz:'fig_nuz', fig_gun:'fig_gun',
     milan_phone:'milan_phone', zelizka:'zelizka', podprsenka:'podprsenka',
     klice_vila:'klice_vila', klice_fabie:'klice_fabie', saman_hlava:'saman_hlava',
@@ -525,7 +554,7 @@ const LB_CATEGORIES = [
   { key:'mostMoney',      label:'💰 Peníze',    format: v => v + ' Kč'  },
   { key:'bestRep',        label:'⭐ REP',        format: v => v + ''     },
   { key:'totalWins',      label:'👑 Výhry',      format: v => v + 'x'    },
-  { key:'totalArtifacts', label:'🎒 Artefakty',  format: v => v + ' / 15'},
+  { key:'totalArtifacts', label:'🎒 Artefakty',  format: v => v + ' / 10'},
   { key:'totalEndings',   label:'💀 Endingy',    format: v => v + ' / 8' },
   { key:'fastestWin',     label:'⚡ Rychlost',   format: v => v ? formatPlaytime(v) : '—', asc: true },
   { key:'killCount',      label:'🗡️ Zabití',     format: v => v + ''     },
@@ -712,32 +741,15 @@ function renderProfileHome(){
   if(badge) badge.style.display = FB_CONFIGURED ? 'flex' : 'none';
 
   // Artefakty
-  const artDefs = [
-    { key:'screenshot',     emoji:'📱', name:'Screenshot' },
-    { key:'hlasovka',       emoji:'🎙️', name:'Hlasovka' },
-    { key:'foto_kubatova',  emoji:'📸', name:'Fotka' },
-    { key:'c2_cert',        emoji:'📜', name:'C2 Cert.' },
-    { key:'voodoo',         emoji:'🪆', name:'Voodoo' },
-    { key:'fig_nuz',        emoji:'🗡️', name:'Nůž†' },
-    { key:'fig_gun',        emoji:'🔫', name:'Pistole' },
-    { key:'milan_phone',    emoji:'📲', name:'Tel. Milan' },
-    { key:'zelizka',        emoji:'⛓️', name:'Želízka' },
-    { key:'podprsenka',     emoji:'👙', name:'Artefakt' },
-    { key:'klice_vila',     emoji:'🔑', name:'Klíče' },
-    { key:'pytel_cihalova', emoji:'🗑️', name:'Číhalová' },
-    { key:'klice_fabie',    emoji:'🔑', name:'Fábie' },
-    { key:'saman_hlava',    emoji:'🩸', name:'Šam. hlava' },
-    { key:'maturita',       emoji:'🏆', name:'Maturita' },
-    { key:'foto_figurova',  emoji:'📸', name:'Fotka Fig.' },
-  ];
   const artC = document.getElementById('hs-artifacts');
   artC.innerHTML = '';
-  artDefs.forEach((a, i) => {
+  ART_DEFS_DISPLAY.forEach((a, i) => {
     const unlocked = p.artifacts[a.key];
     const d = document.createElement('div');
     d.className = 'hs-art' + (unlocked ? '' : ' locked');
     d.style.animationDelay = (i * 60) + 'ms';
     d.innerHTML = `<span class="hs-art-emoji">${unlocked ? a.emoji : '?'}</span><span class="hs-art-name">${unlocked ? a.name : '???'}</span>`;
+    if(unlocked) d.addEventListener('click', () => showArtDetail(a.emoji, a.name, a.desc, a.url));
     artC.appendChild(d);
   });
 

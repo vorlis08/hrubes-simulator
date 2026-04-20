@@ -84,30 +84,13 @@ function renderPregameVitrines(){
   if(!container || !activeProfile) return;
   container.innerHTML = '';
 
-  const artDefs = [
-    { key:'screenshot',      emoji:'📱', name:'Screenshot' },
-    { key:'hlasovka',        emoji:'🎙️', name:'Hlasovka' },
-    { key:'foto_kubatova',   emoji:'📸', name:'Fotka' },
-    { key:'c2_cert',         emoji:'📜', name:'C2 Cert.' },
-    { key:'voodoo',          emoji:'🪆', name:'Voodoo' },
-    { key:'fig_nuz',         emoji:'🗡️', name:'Nůž†' },
-    { key:'fig_gun',         emoji:'🔫', name:'Pistole' },
-    { key:'milan_phone',     emoji:'📲', name:'Tel. Milan' },
-    { key:'zelizka',         emoji:'⛓️', name:'Želízka' },
-    { key:'podprsenka',      emoji:'👙', name:'Artefakt' },
-    { key:'klice_vila',      emoji:'🔑', name:'Klíče' },
-    { key:'pytel_cihalova',  emoji:'🗑️', name:'Číhalová' },
-    { key:'klice_fabie',     emoji:'🔑', name:'Fábie' },
-    { key:'saman_hlava',     emoji:'🩸', name:'Šam. hlava' },
-    { key:'maturita',        emoji:'🏆', name:'Maturita' },
-  ];
-
-  artDefs.forEach(a => {
+  ART_DEFS_DISPLAY.forEach(a => {
     const unlocked = activeProfile.artifacts[a.key];
     const d = document.createElement('div');
     d.className = 'pregame-vitrine' + (unlocked ? '' : ' empty');
     if(unlocked){
       d.innerHTML = `<div class="pv-emoji">${a.emoji}</div><div class="pv-name">${a.name}</div>`;
+      d.addEventListener('click', () => showArtDetail(a.emoji, a.name, a.desc, a.url));
     } else {
       d.innerHTML = `<div class="pv-emoji pv-void">∅</div><div class="pv-name">???</div>`;
     }
