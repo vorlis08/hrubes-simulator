@@ -75,10 +75,6 @@ function startGame(){
   initObj(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
   requestAnimationFrame(gameLoop);
 
-  addLog('=== KŘEMŽE TĚ VÍTÁ ===', 'ls');
-  addLog('Probouzíš se doma. Prohlédni si sbírku artefaktů.', 'lp');
-  addLog('Vybrat kasičku a jít ven dveřmi.', 'lm');
-  addLog('Cíl: Nastartuj Fábii a jeď domů.', 'lr');
 }
 
 // ─── Pre-game vitrines rendering ─────────────────────────────────────────

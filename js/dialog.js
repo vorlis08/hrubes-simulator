@@ -456,8 +456,8 @@ function showDialog(npc){
   // Figurová – nabídnout propisku (když sahá pro tužku)
   if(npc.id === 'figurova' && gs.story.figurova_omluvenka_asking && gs.inv.propiska > 0)
     choices.push({label:'✏️ "Přinesl jsem propisku ze Švýcarska – musíte zkusit."', cls:'danger', fn:'q_figurova_propiska_offer', sub:'Šoková propiska'});
-  if(npc.id === 'figurova' && gs.story.figurova_omluvenka_asking && !gs.story.figurova_killed)
-    choices.push({label:'(Nechat ji podepsat vlastní)', fn:'q_figurova_omluvenka_no_propiska'});
+  if(npc.id === 'figurova' && gs.story.figurova_omluvenka_asking && !gs.story.figurova_killed && !(gs.inv.propiska > 0))
+    choices.push({label:'📝 Podepsat omluvenku', fn:'q_figurova_omluvenka_no_propiska'});
   // Bezďák – dát cibuli (odkrytí Cibulky)
   if(npc.id === 'bezdak' && (gs.story.bezdak||0) >= 1 && gs.inv.cibule > 0 && !gs.story.bezdak_cibulka)
     choices.push({label:'🧅 Dát cibuli', cls:'special', fn:'q_bezdak_give_cibule'});
