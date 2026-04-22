@@ -55,6 +55,7 @@ function toggleMusic(){
 function startGame(){
   resetGameState();
   document.getElementById('start').style.display = 'none';
+  document.getElementById('lpanel').style.display = '';
   // Zavři overlaye z předchozí hry
   ['death','win','stab-death','dov','riddle-ov','kgb-ov'].forEach(id => {
     const el = document.getElementById(id);

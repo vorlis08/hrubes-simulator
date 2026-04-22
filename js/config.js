@@ -643,7 +643,7 @@ const ROOMS = {
              fireplace:{rx:.50, ry:.18} },
   ulice:   { name:'Ulice',           icon:'🌆', sub:'Pravá Křemže',         bg:'#050508', npcs:['bezdak','paja'],                 spawns:{} },
   kremze:  { name:'Křemže – náměstí',icon:'🏠', sub:'Domov',               bg:'#060b18', npcs:['honza','mikulas','milan'],        spawns:{},
-             fabie:{rx:.88, ry:.75} },
+             fabie:{rx:.56, ry:.54} },
   doma:    { name:'Doma',            icon:'🏡', sub:'Tvůj byt',            bg:'#0a0a12', npcs:[],                                spawns:{} },
   sklep:   { name:'Mikulášův sklep', icon:'🕯️', sub:'Pentagram. Červená. Ticho.',             bg:'#020202', npcs:['kubatova'],                    spawns:{} },
   johnny_vila: { name:'Johnnyho vila', icon:'🏠', sub:'Soukromý. Příliš soukromý.', bg:'#0d0a14', npcs:['johnny_vila','jana_vila'], spawns:{} },

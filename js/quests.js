@@ -455,7 +455,7 @@ const QF = {
       if(idx !== -1) currentNPCs.splice(idx, 1);
     };
     // Pokud hráč odhalil Bezďáka jako Cibulku a Mikuláš přiznal krádež – dát detektor před odchodem
-    if(gs.story.paja_mik_confessed && !gs.story.paja_cibulka_detector){
+    if(gs.story.bezdak_cibulka && !gs.story.paja_cibulka_detector){
       showNPCLine('bezdak',
         '"Ještě jedna věc, než odejdu..." *sáhne pod pult a vytáhne krabičku* "Vzal sis risiko, že jsi mě odhalil. Zasluhuju splatit dluh." *podá ti přístroj* "Detektor KGB a GRU agentů. Dvacet let práce. Prohledej každou místnost – zezelená: čistý, zčervená: agent."',
         () => {

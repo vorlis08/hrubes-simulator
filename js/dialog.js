@@ -501,6 +501,10 @@ function showDialog(npc){
     else if(!gs.story.bezdak_cibulka)
       choices.push({label:'🔍 "Posílal jsi Mikuláše?"', cls:'special', fn:'q_paja_ask_bezdak'});
   }
+  // Bezďák – rozlučka po KGB vítězství
+  if(npc.id === 'bezdak' && gs.story.kgb_won && !gs.story.cibulka_left)
+    choices.push({label:'🚶 "Díky za vše, Petře. Co teď?"', cls:'prim', fn:'q_cibulka_farewell'});
+
   // Krejčí – konfrontovat po skenování
   if(npc.id === 'krejci' && gs.story.paja_krejci_red && !gs.story.paja_pytel_taken)
     choices.push({label:'🔴 "Odhalil jsem vás, Krejčí."', cls:'danger', fn:'q_paja_confront_krejci'});

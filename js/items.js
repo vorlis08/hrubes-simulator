@@ -60,18 +60,6 @@ function useZemle(){
 // ─── Blend – konzumace (intenzivnější kratom trip) ───────────────────────
 function useBlend(){
   if(gs.inv.blend <= 0){ addLog('Nemáš žádný blend.','lw'); return; }
-  // Potvrzovací dialog – pokud je blend potřeba pro Janu
-  if(gs.story.jana_rande_asked && !gs.story.jana_rande_ok){
-    document.getElementById('dav').textContent   = '🍃';
-    document.getElementById('dname').textContent = 'BLEND';
-    document.getElementById('drole').textContent = 'speciální mix';
-    document.getElementById('dtxt').textContent  = 'Jana tenhle blend čeká. Fakt ho chceš zkouřit sám?';
-    document.getElementById('dchoices').innerHTML =
-      `<button class="db danger" onclick="closeDialog();_consumeBlend()">🔥 Vykouřit (Jana se nedozví)</button>` +
-      `<button class="db prim" onclick="closeDialog()">Nechat pro Janu</button>`;
-    document.getElementById('dov').classList.add('on');
-    return;
-  }
   _consumeBlend();
 }
 

@@ -1544,7 +1544,7 @@ function drawKremze(W,H,t){
   }
 
   // Fábie – červená, zaparkovaná u Johnnyho baráku
-  if(gs.story.fabie_promised){
+  {
     const fx=W*0.56, fy=H*0.54;
     // Stín
     ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(fx+7,fy+10,48,12,0,0,Math.PI*2); ctx.fill();
