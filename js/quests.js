@@ -447,11 +447,33 @@ const QF = {
   },
   q_cibulka_farewell(){
     gs.story.cibulka_left = true;
-    addLog('Petr Cibulka odešel do tmy. Překvapivě ti bude chybět.', 'ls');
-    fnotif('Cibulka odešel 🚶', 'rep');
     closeDialog();
-    const idx = currentNPCs.findIndex(n => n.id === 'bezdak');
-    if(idx !== -1) currentNPCs.splice(idx, 1);
+    const removeCibulka = () => {
+      addLog('Petr Cibulka odešel do tmy. Překvapivě ti bude chybět.', 'ls');
+      fnotif('Cibulka odešel 🚶', 'rep');
+      const idx = currentNPCs.findIndex(n => n.id === 'bezdak');
+      if(idx !== -1) currentNPCs.splice(idx, 1);
+    };
+    // Pokud hráč odhalil Bezďáka jako Cibulku a Mikuláš přiznal krádež – dát detektor před odchodem
+    if(gs.story.paja_mik_confessed && !gs.story.paja_cibulka_detector){
+      showNPCLine('bezdak',
+        '"Ještě jedna věc, než odejdu..." *sáhne pod pult a vytáhne krabičku* "Vzal sis risiko, že jsi mě odhalil. Zasluhuju splatit dluh." *podá ti přístroj* "Detektor KGB a GRU agentů. Dvacet let práce. Prohledej každou místnost – zezelená: čistý, zčervená: agent."',
+        () => {
+          gs.story.paja_cibulka_detector = true;
+          gs.inv.kgb_detector = 1; updateInv();
+          addObj('quest_paja_scan');
+          addLog('Cibulka ti dal detektor KGB/GRU jako rozlučkový dar. Prohledej Křemži!', 'lm');
+          fnotif('🔍 KGB Detektor +1', 'itm');
+          if(activeProfile){
+            activeProfile.artifacts.kgb_detector = true;
+            profileSaveProgress();
+          }
+          removeCibulka();
+        }
+      );
+    } else {
+      removeCibulka();
+    }
   },
   q_bezdak_pill(){
     gs.story.bezdak_pill = true;
@@ -625,6 +647,11 @@ const QF = {
         gs.story.paja_in_hospoda = true;
         addLog('📱 SMS od Páji: "FANDAAA! JACKPOT 5000 Kč!! Jsem v hospodě, slavím!!"', 'lm');
         fnotif('Pája vyhrál JACKPOT! 🎰', 'pos');
+        // Hráč je právě v hospodě – přidat Páju bez re-initRoom
+        if(gs.room === 'hospoda' && !currentNPCs.find(n => n.id === 'paja')){
+          const pNPC = NPCS['paja'];
+          currentNPCs.push({...pNPC, id:'paja', x:pNPC.rx*canvas.width*0.55, y:pNPC.ry*canvas.height*1.4, bob:0, bobDir:1});
+        }
       }, 15000);
     }, 35000);
     closeDialog();
@@ -640,6 +667,175 @@ const QF = {
     addLog('Pája: "Heslo pro šamana je FÁBIE. Dávej bacha na něj!"', 'ls');
     fnotif('Heslo: FÁBIE 🔑', 'itm');
     closeDialog();
+  },
+
+  // ─── Pája – krádež quest ──────────────────────────────────────────────
+  q_paja_investigate(){
+    gs.story.paja_investigating = true;
+    addLog('Prošetříš krádež v hospodě. Zkus mluvit s Matesem nebo Johnnym.', 'ls');
+    addObj('quest_paja_theft');
+    closeDialog();
+  },
+
+  q_paja_ask_johnny(){
+    gs.story.paja_johnny_asked = true;
+    closeDialog();
+    setTimeout(() => {
+      screenShake(400);
+      addLog('*Johnny tě bez varování praštil pěstí do oka* "NEZLOB MĚ, HRUBEŠI."', 'lw');
+      addLog('*Bolest. Oko se dere. Monokl jako z učebnice.*', 'lw');
+      fnotif('👁 Monokl!', 'lw');
+      gs.story.player_monokl = true;
+      setTimeout(() => showNPCLine('johnny', '"Chceš říct, že jsem zloděj?!" *nahlédne na tebe* "Táhni, dokud ti zbývají zuby."'), 600);
+    }, 300);
+  },
+
+  q_paja_ask_mates(){
+    closeDialog();
+    showNPCLine('mates',
+      '"Pájovy prachy?" *odloží sklenici* "Ty vole, ten dneska rozhazoval jak šílenec. Kupoval všem démony, vychloubal se výhrou... kurvy, chlast, chlebíčky – celá hospoda žila z jeho kapsy."',
+      () => {
+        document.getElementById('dav').textContent   = '😌';
+        document.getElementById('dname').textContent = 'MATES';
+        document.getElementById('drole').textContent = 'Kamarád / Chill guy';
+        document.getElementById('dtxt').textContent  = '*Mates se odmlčel a pohlédl na tebe.*';
+        document.getElementById('dchoices').innerHTML =
+          `<button class="db special" onclick="runQF('q_paja_mates_ask_who')">🤔 "Kdo si myslíš, že to vzal?"</button>` +
+          `<button class="db danger" onclick="runQF('q_paja_mates_accuse')">"Ty sis to vzal!"</button>`;
+        document.getElementById('dov').classList.add('on');
+      }
+    );
+  },
+
+  q_paja_mates_ask_who(){
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('mates',
+        '"Kdo?" *zamyslí se* "Hele... viděl jsem Mikuláše, jak se motá kolem Pájovy bundy. Dvakrát. Přišlo mi to divný, ale říkal jsem si – Mikuláš prostě má divné koníčky." *pokrčí rameny* "No ale teď ti nevím..."',
+        () => {
+          gs.story.paja_mates_done = true;
+          addLog('Mates viděl Mikuláše u Pájovy bundy. Jdi za Mikulášem v Křemži.', 'ls');
+          fnotif('Stopa: Mikuláš 🌿', 'pos');
+        }
+      );
+    }, 200);
+  },
+
+  q_paja_mates_accuse(){
+    closeDialog();
+    showNPCLine('mates',
+      '"CO?! TY SI MYSLÍŠ, ŽE JÁ?!" *vstane, pak se zase posadí* "...Dobře. Chápu, proč bys to řekl. Ale ne, Fando. Přísahám." *položí ruce na stůl* "Byl jsem tu celou dobu. Ale víš co jsem viděl? Mikuláše. Jak se točí kolem Pájovy bundy. Podruhé."',
+      () => {
+        gs.story.paja_mates_done = true;
+        addLog('Mates viděl Mikuláše u Pájovy bundy. Jdi za Mikulášem v Křemži.', 'ls');
+        fnotif('Stopa: Mikuláš 🌿', 'pos');
+      }
+    );
+  },
+
+  q_paja_confront_mik(){
+    closeDialog();
+    showNPCLine('mikulas',
+      '"Já?!" *otočí se* "Co blázníš, Fando. Stál jsem tam chvíli a šel dál. Nic jsem nevzal."',
+      () => showPlayerLine('"Mates tě viděl. Dvakrát. Přestaň to hrát."',
+        () => showNPCLine('mikulas',
+          '"A co? I kdybych tam byl, neznamená to nic." *zaujme defenzivní postoj*',
+          () => showPlayerLine('"Nechci se bavit o teorii."',
+            () => {
+              screenShake(500);
+              addLog('*Fanda praštil Mikuláše. Dvakrát. Mikuláš sklouznul ke zdi.*', 'lw');
+              addLog('*Mikuláš klečí. Ruka na tváři.*', 'lw');
+              setTimeout(() => {
+                showNPCLine('mikulas',
+                  '"Dost! Dost..." *zvedne ruku* "Dobře. Já... já to vzal. Ale neposlal jsem si to do kapsy." *dýchá ztěžka* "Bezďák mě o to požádal. Řekl, že peníze potřebuje na důležitou věc. Dostal jsem za to blend."',
+                  () => {
+                    gs.story.paja_mik_confronted = true;
+                    gs.story.paja_mik_confessed = true;
+                    addLog('Mikuláš přiznal: Bezďák ho poslal ukrást peníze. Jdi za Bezďákem na ulici.', 'ls');
+                    fnotif('Bezďák za vším stojí! 🧥', 'lw');
+                  }
+                );
+              }, 800);
+            }
+          )
+        )
+      )
+    );
+  },
+
+  q_paja_ask_bezdak(){
+    closeDialog();
+    showNPCLine('bezdak',
+      '"Mikuláš?" *zastaví se* "Nevím, o čem mluvíš. Já nikoho na nic neposílám." *přetáhne si kapuci* "Odejdi, Hrubši. Dneska obchodovat nebudu."',
+      () => { addLog('Bezďák popírá vše. Jestli víš, kdo doopravdy je...', 'ls'); }
+    );
+  },
+
+  q_paja_ask_cibulka(){
+    if(!gs.story.bezdak_cibulka){ closeDialog(); return; }
+    closeDialog();
+    showNPCLine('bezdak',
+      '"Ty... ty víš." *Cibulka sundá kapuci* "Jo. Poslal jsem Mikuláše. Potřeboval jsem rychlé finance." *zaváhá* "Ne pro sebe, Hrubši. Na projekt."',
+      () => showNPCLine('bezdak',
+        '"Těmi penězi jsem si koupil součástky. Tři měsíce práce v garáži." *sáhne pod pult a vytáhne krabičku* "Detektor KGB a GRU agentů infiltrovaných do Křemže. Dvacet let sbírám data. Tohle je výsledek."',
+        () => showNPCLine('bezdak',
+          '"Přijmi ho." *podá ti krabičku* "Prohledej každou místnost. Zezelená – normální člověk. Zčervená..." *přiblíží se* "...agent. A tehdy musíš jednat."',
+          () => {
+            gs.story.paja_cibulka_detector = true;
+            gs.inv.kgb_detector = 1; updateInv();
+            addObj('quest_paja_scan');
+            addLog('Cibulka ti dal detektor KGB/GRU. Prohledej celou Křemži!', 'lm');
+            fnotif('🔍 KGB Detektor +1', 'itm');
+            if(activeProfile){
+              activeProfile.artifacts.kgb_detector = true;
+              profileSaveProgress();
+            }
+          }
+        )
+      )
+    );
+  },
+
+  q_paja_confront_krejci(){
+    closeDialog();
+    showNPCLine('krejci',
+      '"Hrubeši..." *Krejčí si všimne přístroje v tvé ruce* "Jak jste..."',
+      () => showPlayerLine('"Detektor KGB/GRU. Vy jste agent, Krejčí."',
+        () => showNPCLine('krejci',
+          '"..." *dlouhé ticho* "Dobře." *otevře zásuvku stolu* "Vezměte si tohle a jděte. A nikomu – nikomu – neříkejte, co jste viděli." *podá pytel* "V tom pytli je víc, než váš přítel ztratil. Zbytek je... řekněme odměna za mlčení."',
+          () => {
+            gs.story.paja_pytel_taken = true;
+            gs.inv.pytel_penez = 1; updateInv();
+            doneObj('quest_paja_scan');
+            addLog('Krejčí ti dala pytel peněz. Odhalena jako agent!', 'lm');
+            fnotif('💰 Pytel peněz +1', 'itm');
+          }
+        )
+      )
+    );
+  },
+
+  q_paja_give_pytel(){
+    if(!gs.inv.pytel_penez){ addLog('Nemáš pytel peněz!','lw'); closeDialog(); return; }
+    gs.inv.pytel_penez = 0; updateInv();
+    closeDialog();
+    showNPCLine('paja',
+      '"Pytel peněz?" *Pája se podívá dovnitř* "Ty vole, Fando... je tu víc než jsem měl." *počítá* "Moc víc."',
+      () => showNPCLine('paja',
+        '"Já nevím, jak ses k tomu dostal, ale..." *zavrtí hlavou a uculí se* "Tady máš tisícovku. Jsi frajer, Fando. Normálně frajer."',
+        () => {
+          gs.story.paja_quest_done = true;
+          gs.story.paja_pytel_given = true;
+          gs.story.paja_in_hospoda = false; // vrátit Páju zpátky na ulici
+          gs.money += 1000; updateHUD();
+          gainRep(10, 'Vrátil Pájovi ukradené peníze');
+          doneObj('quest_paja_theft');
+          addLog('Pája ti dal 1000 Kč odměnu! +10 REP 💰', 'lm');
+          fnotif('+1 000 Kč 💰', 'pos');
+          fnotif('+10 REP', 'rep');
+        }
+      )
+    );
   },
   // ─── Honza – Číhalová quest ──────────────────────────────────────────────
   q_honza_not_done(){

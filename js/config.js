@@ -45,7 +45,6 @@ const NPCS = {
         text:'"Tak už to máš? Už jsem se začínala klepat. No tak dělej, na co čekáš? Davaj!"',
         choices:[
           {label:'💊 Předat zásilku Číhalové', cls:'prim',   fn:'q_cihalova_deliver'},
-          {label:'☠️ "Tady máš celou dávku."', cls:'danger', fn:'q_cihalova_overdose', sub:'Předávkuje se'},
           {label:'💊 Vzít si piko sám',        cls:'danger', fn:'q_piko_self', sub:'Číhalová kouká'},
           {label:'Ještě ho nemám',             cls:'danger', fn:'close'},
         ]
@@ -300,9 +299,9 @@ const NPCS = {
         ]
       },
       {
-        text:'"*Cibulka se tiše usmívá a podá ti ruku* Věděl jsem, že jsi správný člověk, Hrubši. Křemže je teď v bezpečí... aspoň na chvíli." *pohlédne ke dveřím* "Musím zmizet. Příliš mnoho lidí ví, kde jsem. Byl to honor." *vytáhne si kapuci, otočí se a kráčí ke dveřím bez ohlédnutí*',
+        text:'"*Cibulka se tiše usmívá a podá ti ruku* Věděl jsem, že jsi správný člověk, Hrubši. Křemže je teď o trochu bezpečnější... aspoň dočasně." *poplácá tě po rameni* "Budeš vědět, kde mě najít, jestli budeš potřebovat."',
         choices:[
-          {label:'(Nechat ho odejít)', cls:'prim', fn:'q_cibulka_farewell'},
+          {label:'(Odejít)', fn:'close'},
         ]
       }
     ]
@@ -330,6 +329,19 @@ const NPCS = {
           {label:'OK, dojdu za šamanem', cls:'prim', fn:'q_paja_fabie_info'},
           {label:'(Odejít)', fn:'close'},
         ]
+      },
+      // stage 3 – peníze ukradeny
+      {
+        text:'"Fando..." *Pája rozhazuje ruce* "Ty vole, někdo mi ukradl prachy! Měl jsem je v bundě a teď – nic. Pět tisíc v hotovosti!" *polkne* "Vím, vím – rozhazoval jsem. Ale tohle je jiný. Někdo mi je fakt vzal." *přimhouří oči* "Prošetři to v hospodě, víš?"',
+        choices:[
+          {label:'🔍 Prošetřím to', cls:'prim', fn:'q_paja_investigate'},
+          {label:'(Odejít)', fn:'close'},
+        ]
+      },
+      // stage 4 – quest hotový
+      {
+        text:'"Díky, Fando. Vážně." *Pája si přesedne* "Kdybys ne ty, tak bych o tom nikdy nevěděl." *škytne* "Buď zdravej, brácho."',
+        choices:[{label:'(Odejít)', fn:'close'}]
       }
     ]
   },
@@ -675,6 +687,8 @@ const ITEM_DESCS = {
   membership_vaza: 'Vaza Systems membership kartička. Ultimátní členství – neomezený počet webů.',
   propiska:     'Speciální propiska z Temu. Stisk = elektrický šok. Původně koupená Honzou a Mikulášem na Fandu.',
   foto_figurova:'Fotografie Figurové. Pochroumané tělo v Mikulášově sklepě. Trochu morbidní, ale co naplat.',
+  kgb_detector: 'Detektor KGB/GRU agentů. Technologie Petra Cibulky. Stiskni v inventáři a sleduj barevné výsledky.',
+  pytel_penez:  'Pytel peněz od Krejčí. Víc, než Pája ztratil. Dej mu ho – nebo si ho nech.',
 };
 
 // ─── Definice úkolů ──────────────────────────────────────────────────────────
@@ -700,4 +714,6 @@ const OBJ_DEFS = [
   {id:'quest_figurova_milan',    tag:'Temné',     text:'Zlikviduj Milana pro Figurovou'},
   {id:'quest_fabie',             tag:'Hlavní',    text:'Získej klíče od Fábie a jeď domů'},
   {id:'quest_platenikova',       tag:'Speciální', text:'Řekni Pláteníkové o celé akci'},
+  {id:'quest_paja_theft',        tag:'Vedlejší',  text:'Vyšetři krádež Pájových peněz'},
+  {id:'quest_paja_scan',         tag:'Tajné',     text:'Prohledej Křemži detektorem KGB'},
 ];

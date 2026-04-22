@@ -3262,6 +3262,28 @@ function render(){
     }
   });
 
+  // KGB detektor – scan overlay (5s barevné aury nad NPC)
+  if(gs.detector_scanning && gs.ts < gs.detector_scan_t){
+    currentNPCs.forEach(n => {
+      if(n.id === 'kubatova') return;
+      const bY2 = n.y + Math.sin(t * 0.003 + n.x * 0.01) * 3.5;
+      const sz2 = n.size || 1;
+      const isAgent = (n.id === 'krejci');
+      const pulse = 0.35 + 0.25 * Math.sin(gs.ts * 0.015);
+      ctx.fillStyle = isAgent ? `rgba(220,40,40,${pulse})` : `rgba(40,220,80,${pulse})`;
+      ctx.beginPath(); ctx.arc(n.x, bY2, 28 * sz2, 0, Math.PI * 2); ctx.fill();
+      if(isAgent){
+        ctx.strokeStyle = `rgba(255,60,60,${0.7 + 0.3 * Math.sin(gs.ts * 0.025)})`;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(n.x, bY2, 36 * sz2, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,60,60,0.95)';
+        ctx.font = 'bold 11px JetBrains Mono,monospace';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+        ctx.fillText('▲ AGENT', n.x, bY2 - 55 * sz2);
+      }
+    });
+  }
+
   // Kaluž spermatu
   if(gs.semen_puddle && gs.semen_puddle.room === gs.room){
     const sp = gs.semen_puddle;
@@ -3294,6 +3316,14 @@ function render(){
   ctx.fillStyle='#fff';
   ctx.beginPath(); ctx.arc(px+ef*5.5,    py-20,1.8,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(px+ef*5.5+11, py-20,1.8,0,Math.PI*2); ctx.fill();
+
+  // Monokl – hráč dostal po hubě od Johnnyho
+  if(gs.story.player_monokl){
+    ctx.fillStyle = 'rgba(60,10,120,0.70)';
+    ctx.beginPath(); ctx.ellipse(px + ef*12, py - 15, 7, 4, 0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(90,30,160,0.40)';
+    ctx.beginPath(); ctx.ellipse(px + ef*11, py - 16, 5, 3, 0.2, 0, Math.PI * 2); ctx.fill();
+  }
 
   if(gs.kratom_on&&gs.kratom_t>0){
     const kpct=gs.kratom_t/gs.kratom_max;

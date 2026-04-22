@@ -90,7 +90,7 @@ function renderPregameVitrines(){
     d.className = 'pregame-vitrine' + (unlocked ? '' : ' empty');
     if(unlocked){
       d.innerHTML = `<div class="pv-emoji">${a.emoji}</div><div class="pv-name">${a.name}</div>`;
-      d.addEventListener('click', () => showArtDetail(a.emoji, a.name, a.desc, a.url));
+      d.addEventListener('click', () => showArtDetail(a.emoji, a.name, a.desc, a.url, a.img, a.audio));
     } else {
       d.innerHTML = `<div class="pv-emoji pv-void">∅</div><div class="pv-name">???</div>`;
     }

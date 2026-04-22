@@ -20,12 +20,12 @@ canvas{display:block;width:100vw;height:100vh}
   100%{filter:hue-rotate(360deg) saturate(4)contrast(1.55)brightness(1.2)}
 }
 @keyframes tripCanvasBlend{
-  0%  {filter:hue-rotate(0deg)   saturate(8) contrast(2.2)brightness(1.5) blur(0.4px)}
-  20% {filter:hue-rotate(130deg) saturate(12)contrast(2.9)brightness(1.9) blur(0.9px)}
-  40% {filter:hue-rotate(220deg) saturate(10)contrast(3.3)brightness(2.4) blur(0.6px)}
-  60% {filter:hue-rotate(310deg) saturate(14)contrast(2.8)brightness(2.1) blur(1.1px)}
-  80% {filter:hue-rotate(60deg)  saturate(9) contrast(3.0)brightness(1.7) blur(0.5px)}
-  100%{filter:hue-rotate(360deg) saturate(8) contrast(2.2)brightness(1.5) blur(0.4px)}
+  0%  {filter:hue-rotate(0deg)   saturate(3) contrast(1.4)brightness(1.15)}
+  20% {filter:hue-rotate(130deg) saturate(4) contrast(1.6)brightness(1.25)}
+  40% {filter:hue-rotate(220deg) saturate(3.5)contrast(1.7)brightness(1.3)}
+  60% {filter:hue-rotate(310deg) saturate(4.5)contrast(1.6)brightness(1.2)}
+  80% {filter:hue-rotate(60deg)  saturate(3.5)contrast(1.5)brightness(1.15)}
+  100%{filter:hue-rotate(360deg) saturate(3) contrast(1.4)brightness(1.15)}
 }
 @keyframes tripShake{
   0%,100%{transform:translate(0,0)}
@@ -180,12 +180,12 @@ canvas.kratom-blend,#kgb-canvas.kratom-blend{animation:tripCanvasBlend 1.1s infi
 /* ── Artifact detail overlay ────────────────────────────────────────── */
 #art-detail-ov{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
-  align-items:center;justify-content:center;z-index:700;cursor:pointer}
+  align-items:center;justify-content:center;z-index:2000;cursor:pointer}
 #art-detail-ov.on{display:flex;animation:fdin .2s ease}
 #art-detail-card{
   background:rgba(20,12,32,.97);border:1px solid rgba(180,120,255,.25);
   border-radius:14px;padding:36px 44px;text-align:center;
-  box-shadow:0 8px 60px rgba(0,0,0,.8);pointer-events:none;max-width:320px}
+  box-shadow:0 8px 60px rgba(0,0,0,.8);pointer-events:none;max-width:480px;width:90vw}
 #art-detail-emoji{font-size:52px;margin-bottom:12px;line-height:1}
 #art-detail-name{font-family:var(--fm);font-size:13px;letter-spacing:2px;
   color:#e2c6ff;text-transform:uppercase;margin-bottom:10px}
@@ -643,7 +643,7 @@ canvas.kratom-blend,#kgb-canvas.kratom-blend{animation:tripCanvasBlend 1.1s infi
 .hs-art .hs-art-name{font-family:var(--fm);font-size:7px;letter-spacing:1px;
   color:var(--muted2);text-transform:uppercase}
 .hs-art:not(.locked){animation:artFloat 3s ease infinite;
-  box-shadow:0 0 15px rgba(240,192,64,.1)}
+  box-shadow:0 0 15px rgba(240,192,64,.1);cursor:pointer}
 .hs-art:not(.locked):hover{transform:translateY(-6px);
   box-shadow:0 8px 28px rgba(240,192,64,.2);border-color:var(--gold)}
 .hs-art:not(.locked):hover .hs-art-emoji{transform:scale(1.2)}
