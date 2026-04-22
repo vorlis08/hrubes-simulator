@@ -79,7 +79,7 @@ function initRoom(spawnX, spawnY){
   // Pája v hospodě – nezobrazuj na ulici
   if(gs.story.paja_in_hospoda) currentNPCs = currentNPCs.filter(n => n.id !== 'paja');
   // Pája v hospodě – přidat ho tam
-  if(gs.room === 'hospoda' && gs.story.paja_in_hospoda && !gs.story.paja_fabie_told){
+  if(gs.room === 'hospoda' && gs.story.paja_in_hospoda && !gs.story.paja_quest_done){
     const pNPC = NPCS['paja'];
     if(!currentNPCs.find(n => n.id === 'paja'))
       currentNPCs.push({...pNPC, id:'paja', x:pNPC.rx*canvas.width*0.55, y:pNPC.ry*canvas.height*1.4, bob:0, bobDir:1});
@@ -314,7 +314,7 @@ function checkProx(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky'];
+    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky','kgb_detector'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){
@@ -574,7 +574,7 @@ function interact(){
 
   // Artefakty na bustách doma
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky'];
+    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky','kgb_detector'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
     for(let i = 0; i < ART_KEYS.length; i++){

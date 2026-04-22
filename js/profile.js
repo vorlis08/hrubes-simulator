@@ -5,16 +5,17 @@
 // ═══════════════════════════════════════════
 
 const ART_DEFS_DISPLAY = [
-  { key:'c2_cert',         emoji:'📜', name:'C2 Cert.',         desc:'Zfalšovaný certifikát C2 z angličtiny. Mistrovské dílo byrokracie.' },
+  { key:'c2_cert',         emoji:'📜', name:'C2 Cert.',         desc:'Zfalšovaný certifikát C2 z angličtiny. Mistrovské dílo byrokracie.',         img:'img/cert_c2.png' },
   { key:'milan_phone',     emoji:'📲', name:'Tel. Milan',        desc:'Milanův telefon. Plný důkazů, které by Figurovou pohřbily.' },
   { key:'podprsenka',      emoji:'👙', name:'Janina podprsenka', desc:'Janina podprsenka. Dala ti ji za odvahu. Vzácný artefakt.' },
   { key:'klice_vila',      emoji:'🔑', name:'Klíče od vily',     desc:'Klíče od Johnnyho vily. Teď se tam dostaneš kdykoliv.' },
   { key:'klice_fabie',     emoji:'🔑', name:'Fábie',             desc:'Klíčky od Fandovy staré Fábie. Nasedni a vypadni z Křemže.' },
   { key:'saman_hlava',     emoji:'🩸', name:'Šam. hlava',        desc:'Šamanova hlava. Celá od krve. Proč ji vlastně máš?' },
-  { key:'maturita',        emoji:'🏆', name:'Maturita',          desc:'Maturitní vysvědčení. Konečně. I Křemže má svůj Harvard.' },
+  { key:'maturita',        emoji:'🏆', name:'Maturita',          desc:'Maturitní vysvědčení. Konečně. I Křemže má svůj Harvard.',                   img:'img/maturita.png' },
   { key:'foto_figurova',   emoji:'📸', name:'Fotka Fig.',        desc:'Fotografie Figurové v Mikulášově sklepě. Trochu morbidní, ale co naplat.' },
   { key:'membership_vaza', emoji:'💳', name:'Vaza Systems',      desc:'Vaza Systems membership kartička. Ultimátní členství – neomezený počet webů.' },
   { key:'webovky',         emoji:'🌐', name:'Webovky od Johnnyho', desc:'Fanta Hrubeš – osobní web. Navržen Johnnym za nula korun. Otevřít?', url:'https://fanta-hrubes.webnode.cz/' },
+  { key:'kgb_detector',   emoji:'🔍', name:'KGB Detektor',         desc:'Cibulkův detektor KGB/GRU agentů. Dvacet let práce v garáži. Odhalil Krejčí.' },
 ];
 
 const PROFILE_STORAGE_KEY = 'kremze_profiles';
@@ -68,6 +69,7 @@ function createBlankProfile(username){
       membership_vaza:  false,
       foto_figurova:    false,
       webovky:          false,
+      kgb_detector:     false,
     },
 
     endings: {
@@ -406,12 +408,15 @@ async function updateProfile(changes){
   // Ulož
   if(FB_CONFIGURED && activeProfile._uid){
     try {
-      const profileData = Object.assign({}, activeProfile);
-      delete profileData._uid;
       await fbDb.collection('profiles').doc(activeProfile._uid).update({
         displayName: activeProfile.displayName,
         avatar: activeProfile.avatar,
       });
+      const lbAvatar = await makeLbAvatar(activeProfile.avatar) || getProfileTier(activeProfile).emoji;
+      await fbDb.collection('leaderboard').doc(activeProfile._uid).set({
+        displayName: activeProfile.displayName,
+        avatar: lbAvatar,
+      }, { merge: true });
     } catch(e){
       console.warn('[Firebase] updateProfile failed:', e.message);
     }
@@ -749,7 +754,7 @@ function renderProfileHome(){
     d.className = 'hs-art' + (unlocked ? '' : ' locked');
     d.style.animationDelay = (i * 60) + 'ms';
     d.innerHTML = `<span class="hs-art-emoji">${unlocked ? a.emoji : '?'}</span><span class="hs-art-name">${unlocked ? a.name : '???'}</span>`;
-    if(unlocked) d.addEventListener('click', () => showArtDetail(a.emoji, a.name, a.desc, a.url));
+    if(unlocked) d.addEventListener('click', () => showArtDetail(a.emoji, a.name, a.desc, a.url, a.img, a.audio));
     artC.appendChild(d);
   });
 

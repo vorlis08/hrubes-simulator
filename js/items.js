@@ -77,7 +77,7 @@ function useBlend(){
 
 function _consumeBlend(){
   if(gs.inv.blend <= 0) return;
-  closeDialog();
+  document.getElementById('dov').classList.remove('on');
   gs.inv.blend -= 1; updateInv();
   gs.story.blend_consumed = (gs.story.blend_consumed || 0) + 1;
   addLog('🍃 Zkouřil jsi blend. Geometrie tančí, stěny dýchají...', 'lw');
@@ -117,6 +117,31 @@ function usePikoSelf(){
     'Vzal sis piko sám. Bylo to čisté. Pak přišla tma.\nAni Křemže tě neoplakala.',
     'SMRT Z PIKA', 'KONEC HRY · KŘEMŽE PLÁČE', 'death_piko'
   ), 500);
+}
+
+// ─── KGB Detektor ─────────────────────────────────────────────────────────
+
+function useKGBDetector(){
+  if(!gs.inv.kgb_detector){ addLog('Nemáš detektor!','lw'); return; }
+  if(gs.detector_scanning){ addLog('Skenování právě probíhá!','lw'); return; }
+
+  gs.detector_scanning = true;
+  gs.detector_scan_t   = gs.ts + 5000;
+  addLog('🔍 Detektor aktivní – skenuju místnost...', 'ls');
+  fnotif('🔍 Skenování...', 'itm');
+
+  setTimeout(() => {
+    gs.detector_scanning = false;
+    const krejciPresent = currentNPCs.find(n => n.id === 'krejci');
+    if(gs.room === 'ucebna' && krejciPresent){
+      gs.story.paja_krejci_red = true;
+      addLog('⚠️ AGENT DETEKOVÁN: Krejčí. Jdi ji konfrontovat v učebně.', 'lw');
+      fnotif('🔴 AGENT!', 'lw');
+    } else {
+      addLog('✅ Skenování dokončeno – v této místnosti jsou normální lidé.', 'ls');
+      fnotif('✅ Místnost čistá', 'pos');
+    }
+  }, 5000);
 }
 
 // ─── Číhalová v pytli ─────────────────────────────────────────────────────
@@ -224,7 +249,7 @@ function startKGBMinigame(){
   const W = mc.width, H = mc.height;
   const kctx = mc.getContext('2d');
 
-  const KILL_WIN = 30, MAX_PASS = 0;
+  const KILL_WIN = 15, MAX_PASS = 2;
   const AGENT_TYPES = [
     {label:'KGB', color:'#c0392b', hat:'#6a0000'},
     {label:'GRU', color:'#1a2a4a', hat:'#0a1020'},
@@ -241,7 +266,7 @@ function startKGBMinigame(){
   let agents=[], bullets=[], particles=[], flashAlpha=0;
   let kills=0, passed=0, gameOver=false, won=false;
   let ts2=0, lastT=0, spawnTimer=0;
-  let ammo=35;
+  let ammo=45;
   // trippy effect state
   let hueShift=0, warpT=0;
 
@@ -250,7 +275,7 @@ function startKGBMinigame(){
     const lane = H*(0.22 + Math.random()*0.56);
     agents.push({
       x: W+55, y: lane,
-      spd: 1.2 + Math.random()*0.6 + kills*0.25,
+      spd: 0.9 + Math.random()*0.5 + kills*0.14,
       color: tp.color, hat: tp.hat, label: tp.label,
       w:40, h:58, hit:false, hitT:0, id: Math.random(),
     });
@@ -613,7 +638,7 @@ function startKGBMinigame(){
 
     // Spawn – every 1.4–2.2s, gets faster
     spawnTimer -= dt;
-    const interval = Math.max(800, 2200 - kills*28);
+    const interval = Math.max(900, 2600 - kills*22);
     if(spawnTimer<=0){ spawnAgent(); spawnTimer=interval*(0.8+Math.random()*0.4); }
 
     drawBG(ts);

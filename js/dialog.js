@@ -270,6 +270,8 @@ function getStage(id){
       return 0;
     case 'kratom_buh': return s.god_line || 0;
     case 'paja':
+      if(s.paja_quest_done) return 4;
+      if(s.paja_stolen) return 3;
       if(s.paja_in_hospoda) return 2;
       if(s.paja === 2) return 1;
       return 0;
@@ -353,6 +355,18 @@ function showDialog(npc){
 
   // ─ Nastavit milan_met při prvním setkání ──────────────────────────────
   if(npc.id === 'milan' && !gs.story.milan_met) gs.story.milan_met = true;
+
+  // ─ Pája v hospodě – spustit 180s timer na krádež ──────────────────────
+  if(npc.id === 'paja' && stage === 2 && !gs.story.paja_jackpot_timer_started){
+    gs.story.paja_jackpot_timer_started = true;
+    setTimeout(() => {
+      if(!gs.story.paja_stolen){
+        gs.story.paja_stolen = true;
+        addLog('📱 SMS od Páji: "Fando, dojdi za mnou prosím, stalo se něco."', 'lw');
+        fnotif('Pája volá! 📱', 'lw');
+      }
+    }, 180000);
+  }
 
   // ─ Dynamické volby ────────────────────────────────────────────────────
   if(npc.id === 'milan'){
@@ -467,6 +481,30 @@ function showDialog(npc){
   if(npc.id === 'milan' && gs.story.figurova_dark_contract && gs.story.mates_dead && gs.inv.fig_gun && !gs.story.milan_shot)
     choices.push({label:'🔫 (Použít zbraň)', cls:'danger', fn:'q_milan_shoot', sub:'Kontrakt od Figurové'});
 
+  // ─ Pája theft quest – dynamické volby ─────────────────────────────────
+  // Pája – dát pytel peněz
+  if(npc.id === 'paja' && gs.inv.pytel_penez > 0 && gs.story.paja_stolen && !gs.story.paja_quest_done)
+    choices.push({label:'💰 Dát Pájovi pytel peněz', cls:'prim', fn:'q_paja_give_pytel'});
+  // Johnny – zeptat se na krádež
+  if(npc.id === 'johnny' && gs.story.paja_stolen && !gs.story.paja_johnny_asked)
+    choices.push({label:'🤔 "Víš náhodou o Pájových penězích?"', cls:'special', fn:'q_paja_ask_johnny'});
+  // Mates – zeptat se o Pájových penězích
+  if(npc.id === 'mates' && gs.story.paja_stolen && !gs.story.paja_mates_done && !gs.story.mates_dead)
+    choices.push({label:'🍺 "Víš o Pájových penězích?"', cls:'special', fn:'q_paja_ask_mates'});
+  // Mikuláš – konfrontovat o bundě
+  if(npc.id === 'mikulas' && gs.story.paja_mates_done && !gs.story.paja_mik_confronted)
+    choices.push({label:'👊 "Viděli tě u Pájovy bundy."', cls:'danger', fn:'q_paja_confront_mik'});
+  // Bezďák – zeptat se o Mikulášovi
+  if(npc.id === 'bezdak' && gs.story.paja_mik_confessed && !gs.story.paja_cibulka_detector){
+    if(gs.story.bezdak_cibulka && !gs.story.cibulka_left)
+      choices.push({label:'🔍 "Posílal jsi Mikuláše krást Pájovy prachy."', cls:'danger', fn:'q_paja_ask_cibulka'});
+    else if(!gs.story.bezdak_cibulka)
+      choices.push({label:'🔍 "Posílal jsi Mikuláše?"', cls:'special', fn:'q_paja_ask_bezdak'});
+  }
+  // Krejčí – konfrontovat po skenování
+  if(npc.id === 'krejci' && gs.story.paja_krejci_red && !gs.story.paja_pytel_taken)
+    choices.push({label:'🔴 "Odhalil jsem vás, Krejčí."', cls:'danger', fn:'q_paja_confront_krejci'});
+
   document.getElementById('dchoices').innerHTML = choices.map(c => `
     <button class="db ${c.cls || ''}" onclick="runQF('${c.fn}')">
       ${c.label}${c.sub ? `<span class="dc">${c.sub}</span>` : ''}
@@ -535,10 +573,22 @@ function closePlayerLine(){
 function showNote(){ document.getElementById('note-ov').classList.add('on'); }
 function closeNote(){ document.getElementById('note-ov').classList.remove('on'); }
 
-function showArtDetail(emoji, name, desc, url){
+function showArtDetail(emoji, name, desc, url, imgSrc, audioSrc){
   document.getElementById('art-detail-emoji').textContent = emoji;
   document.getElementById('art-detail-name').textContent = name;
   document.getElementById('art-detail-desc').textContent = desc;
+
+  // Obrázek
+  const img = document.getElementById('art-detail-img');
+  if(imgSrc){ img.src = imgSrc; img.style.display = 'block'; img.onclick = e => e.stopPropagation(); }
+  else { img.style.display = 'none'; img.src = ''; }
+
+  // Audio nahrávka
+  const aud = document.getElementById('art-detail-audio');
+  if(audioSrc){ aud.src = audioSrc; aud.style.display = 'block'; aud.onclick = e => e.stopPropagation(); }
+  else { aud.style.display = 'none'; aud.src = ''; if(aud.pause) aud.pause(); }
+
+  // Webový odkaz
   const btn = document.getElementById('art-detail-open-btn');
   if(url){
     btn.style.display = 'inline-block';
@@ -548,7 +598,11 @@ function showArtDetail(emoji, name, desc, url){
   }
   document.getElementById('art-detail-ov').classList.add('on');
 }
-function closeArtDetail(){ document.getElementById('art-detail-ov').classList.remove('on'); }
+function closeArtDetail(){
+  const aud = document.getElementById('art-detail-audio');
+  if(aud && aud.pause) aud.pause();
+  document.getElementById('art-detail-ov').classList.remove('on');
+}
 
 function showScreenshot(){ document.getElementById('screenshot-ov').classList.add('on'); }
 function closeScreenshot(){ document.getElementById('screenshot-ov').classList.remove('on'); }

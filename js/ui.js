@@ -76,6 +76,7 @@ function updateInv(){
     zelizka:'ic-zelizka', prasek:'ic-prasek', klice_vila:'ic-klice_vila', podprsenka:'ic-podprsenka',
     klice_fabie:'ic-klice_fabie', klice_fabie_fig:'ic-klice_fabie_fig', saman_hlava:'ic-saman_hlava',
     membership_vaza:'ic-membership_vaza', propiska:'ic-propiska', masturbator:'ic-masturbator',
+    kgb_detector:'ic-kgb_detector', pytel_penez:'ic-pytel_penez',
   };
   for(const [k, id] of Object.entries(map)){
     const cnt = gs.inv[k] || 0;
@@ -100,14 +101,25 @@ function updateInv(){
   // Oddělovače – schovat pokud jsou obě sousední skupiny prázdné
   const g1 = ['kratom','blend','zemle'];
   const g2 = ['piko','fake_kratom','pytel'];
-  const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','klice_fabie','klice_fabie_fig','podprsenka','membership_vaza','propiska','masturbator'];
+  const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','klice_fabie','klice_fabie_fig','podprsenka','membership_vaza','propiska','masturbator','kgb_detector','pytel_penez'];
   function grpVisible(keys){ return keys.some(k => (gs.inv[k]||0) > 0 || (k==='pytel' && gs.cihalova_in_bag)); }
   const seps = document.querySelectorAll('.isep');
   if(seps[0]) seps[0].style.display = (grpVisible(g1) && grpVisible(g2)) ? '' : 'none';
   if(seps[1]) seps[1].style.display = (grpVisible(g2) && grpVisible(g3)) ? '' : 'none';
 }
 
-function addLog(txt, cls = ''){ /* log disabled */ }
+function addLog(txt, cls = ''){
+  const c   = document.getElementById('logc');
+  if(!c) return;
+  const d   = document.createElement('div');
+  const now = new Date();
+  const ts  = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  d.className = 'le' + (cls ? ' ' + cls : '');
+  d.innerHTML = `<span class="lts">${ts}</span>${txt}`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+  while(c.children.length > 50) c.removeChild(c.firstChild);
+}
 
 function fnotif(txt, type = 'pos'){
   // Zápis do deníku místo levitujících notifikací
