@@ -494,8 +494,8 @@ function showDialog(npc){
   // Mikuláš – konfrontovat o bundě
   if(npc.id === 'mikulas' && gs.story.paja_mates_done && !gs.story.paja_mik_confronted)
     choices.push({label:'👊 "Viděli tě u Pájovy bundy."', cls:'danger', fn:'q_paja_confront_mik'});
-  // Bezďák – zeptat se o Mikulášovi
-  if(npc.id === 'bezdak' && gs.story.paja_mik_confessed && !gs.story.paja_cibulka_detector){
+  // Bezďák – zeptat se o Mikulášovi (jen pokud je hotová KGB minihra – Cibulka ti věří až po testu)
+  if(npc.id === 'bezdak' && gs.story.paja_mik_confessed && gs.story.kgb_won && !gs.story.paja_cibulka_detector){
     if(gs.story.bezdak_cibulka)
       choices.push({label:'🔍 "Posílal jsi Mikuláše krást Pájovy prachy."', cls:'danger', fn:'q_paja_ask_cibulka'});
     else

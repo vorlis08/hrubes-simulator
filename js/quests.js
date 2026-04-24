@@ -450,27 +450,9 @@ const QF = {
   q_cibulka_farewell(){
     gs.story.kgb_cibulka_talked = true;
     closeDialog();
-    // Pokud hráč odhalil Bezďáka jako Cibulku a detektor ještě nedostal – dát detektor
-    if(gs.story.bezdak_cibulka && !gs.story.paja_cibulka_detector){
-      showNPCLine('bezdak',
-        '"Hele..." *sáhne pod pult a vytáhne krabičku* "Vzal sis risiko, že jsi mě odhalil. Zasluhuju splatit dluh." *podá ti přístroj* "Detektor KGB a GRU agentů. Dvacet let práce. Prohledej každou místnost – zezelená: čistý, zčervená: agent."',
-        () => {
-          gs.story.paja_cibulka_detector = true;
-          gs.inv.kgb_detector = 1; updateInv();
-          addObj('quest_paja_scan');
-          addLog('Cibulka ti dal detektor KGB/GRU. Prohledej Křemži!', 'lm');
-          fnotif('🔍 KGB Detektor +1', 'itm');
-          if(activeProfile){
-            activeProfile.artifacts.kgb_detector = true;
-            profileSaveProgress();
-          }
-        }
-      );
-    } else {
-      showNPCLine('bezdak',
-        '"Ten KGB minigame? Normální práce." *přikývne* "Pár agentů míň v Křemži. Ani si to nevšimnou." *přetáhne si kapuci* "Zůstávám tu. Vždycky tu budu."'
-      );
-    }
+    showNPCLine('bezdak',
+      '"Ten prášek byl test." *Cibulka se opře o zeď* "Reflexy, paměť, reakce pod tlakem. Všechno." *přikývne pomalu* "To, cos viděl v tý hře – to nejsou jen halucinace, Hrubši. Křemže je plná agentů. Sleduju to dvacet let." *stáhne kapuci níž* "Ale víc ti zatím neřeknu. Musím nejdřív vědět, jestli ti můžu věřit."'
+    );
   },
   q_bezdak_pill(){
     gs.story.bezdak_pill = true;
@@ -775,22 +757,25 @@ const QF = {
     if(!gs.story.bezdak_cibulka){ closeDialog(); return; }
     closeDialog();
     showNPCLine('bezdak',
-      '"Ty... ty víš." *Cibulka sundá kapuci* "Jo. Poslal jsem Mikuláše. Potřeboval jsem rychlé finance." *zaváhá* "Ne pro sebe, Hrubši. Na projekt."',
+      '"Ty... ty víš." *Cibulka sundá kapuci, chvíli mlčí* "Jo. Poslal jsem Mikuláše. Ale poslechni mě."',
       () => showNPCLine('bezdak',
-        '"Těmi penězi jsem si koupil součástky. Tři měsíce práce v garáži." *sáhne pod pult a vytáhne krabičku* "Detektor KGB a GRU agentů infiltrovaných do Křemže. Dvacet let sbírám data. Tohle je výsledek."',
+        '"Potřeboval jsem jeden čip. Sovětský signálový filtr – КТ-361Б. Našel jsem ho na Bazoši. Chlap z Prachatic, 300 Kč hotovost, vyzvednutí ten samej den nebo konec. Půlnoc za tři hodiny."',
         () => showNPCLine('bezdak',
-          '"Přijmi ho." *podá ti krabičku* "Prohledej každou místnost. Zezelená – normální člověk. Zčervená..." *přiblíží se* "...agent. A tehdy musíš jednat."',
-          () => {
-            gs.story.paja_cibulka_detector = true;
-            gs.inv.kgb_detector = 1; updateInv();
-            addObj('quest_paja_scan');
-            addLog('Cibulka ti dal detektor KGB/GRU. Prohledej celou Křemži!', 'lm');
-            fnotif('🔍 KGB Detektor +1', 'itm');
-            if(activeProfile){
-              activeProfile.artifacts.kgb_detector = true;
-              profileSaveProgress();
+          '"Jenomže já zrovna neměl hotovost. Vložil jsem všechno do solárního panelu pro laboratoř." *zakašle* "Mikuláš byl u mě v garáži. Sám řekl, že Pája vyhrál jackpot a chlubí se v hospodě." *ticho* "Věděl jsem, že je to špatně. Ale ten čip byl poslední, co jsem potřeboval. Dvacet let práce."',
+          () => showNPCLine('bezdak',
+            '"Čip seděl. Detektor funguje." *sáhne pod pult a vytáhne krabičku* "A ty jsi prošel mým testem – ten prášek nebyl jen pro srandu. Chtěl jsem vědět, jestli ti to funguje." *podá ti přístroj* "Detektor KGB a GRU agentů infiltrovaných do Křemže. Dvacet let sbírám data. Zezelená: čistý. Zčervená: agent."',
+            () => {
+              gs.story.paja_cibulka_detector = true;
+              gs.inv.kgb_detector = 1; updateInv();
+              addObj('quest_paja_scan');
+              addLog('Cibulka ti dal detektor KGB/GRU. Prohledej celou Křemži!', 'lm');
+              fnotif('🔍 KGB Detektor +1', 'itm');
+              if(activeProfile){
+                activeProfile.artifacts.kgb_detector = true;
+                profileSaveProgress();
+              }
             }
-          }
+          )
         )
       )
     );
