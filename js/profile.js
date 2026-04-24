@@ -896,8 +896,6 @@ function showHomescreen(){
 
 function hideHomescreenAndPlay(){
   document.getElementById('home-ov').classList.remove('on');
-  document.getElementById('start').style.display = '';
-  renderPregameVitrines();
 }
 
 function returnToHomescreen(){
@@ -1160,6 +1158,7 @@ function initProfileUI(){
   // Play – rovnou do hry (artefakty jsou v místnosti doma)
   document.getElementById('hs-play').addEventListener('click', () => {
     hideHomescreenAndPlay();
+    if(typeof startGame === 'function') startGame();
   });
 }
 

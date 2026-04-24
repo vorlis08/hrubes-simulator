@@ -327,7 +327,9 @@ const QF = {
     addLog('Johnny: "Konečně! Bude tady za chvíli." *uhladí si sako*', 'lm');
     closeDialog();
     // Za 30 sekund Jana dorazí do hospody
+    const _g = gs._gen;
     setTimeout(() => {
+      if(gs._gen !== _g) return; // game was restarted, ignore stale timer
       gs.story.jana_in_hospoda = true;
       addLog('Jana dorazila do hospody... Cítíš, že něco není úplně v pořádku.', 'lw');
       fnotif('Jana v hospodě 💅', 'pos');
@@ -446,33 +448,28 @@ const QF = {
     ), 600);
   },
   q_cibulka_farewell(){
-    gs.story.cibulka_left = true;
+    gs.story.kgb_cibulka_talked = true;
     closeDialog();
-    const removeCibulka = () => {
-      addLog('Petr Cibulka odešel do tmy. Překvapivě ti bude chybět.', 'ls');
-      fnotif('Cibulka odešel 🚶', 'rep');
-      const idx = currentNPCs.findIndex(n => n.id === 'bezdak');
-      if(idx !== -1) currentNPCs.splice(idx, 1);
-    };
-    // Pokud hráč odhalil Bezďáka jako Cibulku a Mikuláš přiznal krádež – dát detektor před odchodem
+    // Pokud hráč odhalil Bezďáka jako Cibulku a detektor ještě nedostal – dát detektor
     if(gs.story.bezdak_cibulka && !gs.story.paja_cibulka_detector){
       showNPCLine('bezdak',
-        '"Ještě jedna věc, než odejdu..." *sáhne pod pult a vytáhne krabičku* "Vzal sis risiko, že jsi mě odhalil. Zasluhuju splatit dluh." *podá ti přístroj* "Detektor KGB a GRU agentů. Dvacet let práce. Prohledej každou místnost – zezelená: čistý, zčervená: agent."',
+        '"Hele..." *sáhne pod pult a vytáhne krabičku* "Vzal sis risiko, že jsi mě odhalil. Zasluhuju splatit dluh." *podá ti přístroj* "Detektor KGB a GRU agentů. Dvacet let práce. Prohledej každou místnost – zezelená: čistý, zčervená: agent."',
         () => {
           gs.story.paja_cibulka_detector = true;
           gs.inv.kgb_detector = 1; updateInv();
           addObj('quest_paja_scan');
-          addLog('Cibulka ti dal detektor KGB/GRU jako rozlučkový dar. Prohledej Křemži!', 'lm');
+          addLog('Cibulka ti dal detektor KGB/GRU. Prohledej Křemži!', 'lm');
           fnotif('🔍 KGB Detektor +1', 'itm');
           if(activeProfile){
             activeProfile.artifacts.kgb_detector = true;
             profileSaveProgress();
           }
-          removeCibulka();
         }
       );
     } else {
-      removeCibulka();
+      showNPCLine('bezdak',
+        '"Ten KGB minigame? Normální práce." *přikývne* "Pár agentů míň v Křemži. Ani si to nevšimnou." *přetáhne si kapuci* "Zůstávám tu. Vždycky tu budu."'
+      );
     }
   },
   q_bezdak_pill(){
@@ -637,12 +634,15 @@ const QF = {
     gainRep(3,'Půjčil kamarádovi peníze');
     addLog('Půjčil jsi Pájovi 300 Kč. Za 35s vrátí 500 Kč.','ls');
     addObj('side_paja');
+    const _g = gs._gen;
     setTimeout(() => {
+      if(gs._gen !== _g) return; // game was restarted, ignore stale timer
       gs.story.paja = 2;
       addLog('Pája tě hledá – vrátil peníze! Jdi na ulici.','lm');
       fnotif('Pája volá! 📞','pos');
       // Po 15s navíc – Pája vyhraje jackpot a jde do hospody
       setTimeout(() => {
+        if(gs._gen !== _g) return; // game was restarted, ignore stale timer
         gs.story.paja_jackpot = true;
         gs.story.paja_in_hospoda = true;
         addLog('📱 SMS od Páji: "FANDAAA! JACKPOT 5000 Kč!! Jsem v hospodě, slavím!!"', 'lm');

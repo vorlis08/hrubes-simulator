@@ -160,6 +160,8 @@ function resetGameState(){
   gs.semen_puddle  = null;
   gs.detector_scanning = false;
   gs.detector_scan_t   = 0;
+  // Invalidate stale setTimeout callbacks from previous game runs
+  gs._gen = (gs._gen || 0) + 1;
 }
 
 function gainRep(amount, reason){

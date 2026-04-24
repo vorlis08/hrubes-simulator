@@ -496,14 +496,14 @@ function showDialog(npc){
     choices.push({label:'👊 "Viděli tě u Pájovy bundy."', cls:'danger', fn:'q_paja_confront_mik'});
   // Bezďák – zeptat se o Mikulášovi
   if(npc.id === 'bezdak' && gs.story.paja_mik_confessed && !gs.story.paja_cibulka_detector){
-    if(gs.story.bezdak_cibulka && !gs.story.cibulka_left)
+    if(gs.story.bezdak_cibulka)
       choices.push({label:'🔍 "Posílal jsi Mikuláše krást Pájovy prachy."', cls:'danger', fn:'q_paja_ask_cibulka'});
-    else if(!gs.story.bezdak_cibulka)
+    else
       choices.push({label:'🔍 "Posílal jsi Mikuláše?"', cls:'special', fn:'q_paja_ask_bezdak'});
   }
-  // Bezďák – rozlučka po KGB vítězství
-  if(npc.id === 'bezdak' && gs.story.kgb_won && !gs.story.cibulka_left)
-    choices.push({label:'🚶 "Díky za vše, Petře. Co teď?"', cls:'prim', fn:'q_cibulka_farewell'});
+  // Bezďák – promluvit po KGB vítězství (jen jednou)
+  if(npc.id === 'bezdak' && gs.story.kgb_won && !gs.story.kgb_cibulka_talked)
+    choices.push({label:'🤝 "Co ty na to KGB, Cibulka?"', cls:'prim', fn:'q_cibulka_farewell'});
 
   // Krejčí – konfrontovat po skenování
   if(npc.id === 'krejci' && gs.story.paja_krejci_red && !gs.story.paja_pytel_taken)
