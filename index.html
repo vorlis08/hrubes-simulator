@@ -981,6 +981,133 @@
   </div>
 </div>
 
+<!-- ── ADMIN PANEL ─────────────────────────────────────────────────────── -->
+<div id="admin-ov">
+  <div id="admin-box">
+    <div class="adm-header">
+      <span class="adm-header-title">⚙️ ADMIN PANEL</span>
+      <button id="admin-close" class="adm-close-btn">✕</button>
+    </div>
+
+    <!-- Seznam profilů -->
+    <div id="admin-list-view">
+      <div class="adm-section-title">Lokální profily</div>
+      <div id="admin-profile-list"></div>
+    </div>
+
+    <!-- Editor profilu -->
+    <div id="admin-edit-view" style="display:none">
+      <div class="adm-edit-header">
+        <button id="adm-back-btn" class="adm-back">← Zpět</button>
+        <span id="adm-edit-title" class="adm-edit-title-label">Editace profilu</span>
+        <button id="adm-save-btn" class="adm-save">💾 Uložit</button>
+      </div>
+
+      <!-- Zobrazované jméno -->
+      <div class="adm-group">
+        <div class="adm-group-label">Zobrazované jméno</div>
+        <input id="adm-displayname" type="text" class="adm-input" maxlength="24"/>
+      </div>
+
+      <!-- Statistiky -->
+      <div class="adm-group">
+        <div class="adm-group-label">Statistiky</div>
+        <div class="adm-stats-grid">
+          <label>Her celkem<input id="adm-stat-totalGames"  type="number" min="0" class="adm-input-sm"/></label>
+          <label>Smrtí<input       id="adm-stat-totalDeaths" type="number" min="0" class="adm-input-sm"/></label>
+          <label>Výher<input       id="adm-stat-totalWins"   type="number" min="0" class="adm-input-sm"/></label>
+          <label>Nejlepší REP<input id="adm-stat-bestRep"    type="number" min="0" class="adm-input-sm"/></label>
+          <label>Max peníze<input  id="adm-stat-mostMoney"   type="number" min="0" class="adm-input-sm"/></label>
+          <label>Kratom (g)<input  id="adm-stat-totalKratom" type="number" min="0" class="adm-input-sm"/></label>
+          <label>Zabití<input      id="adm-stat-killCount"   type="number" min="0" class="adm-input-sm"/></label>
+          <label>Nejrychlejší výhra (s)<input id="adm-stat-fastestWin" type="number" min="0" class="adm-input-sm" placeholder="prázdné = žádná"/></label>
+        </div>
+      </div>
+
+      <!-- Artefakty -->
+      <div class="adm-group">
+        <div class="adm-group-label">
+          Artefakty
+          <button class="adm-toggle-all" data-section="art" data-state="on">✓ vše</button>
+          <button class="adm-toggle-all" data-section="art" data-state="off">✗ vše</button>
+        </div>
+        <div class="adm-check-grid">
+          <label><input type="checkbox" id="adm-art-screenshot"      class="adm-chk" data-section="art"/> Screenshot</label>
+          <label><input type="checkbox" id="adm-art-hlasovka"        class="adm-chk" data-section="art"/> Hlasovka</label>
+          <label><input type="checkbox" id="adm-art-c2_cert"         class="adm-chk" data-section="art"/> C2 Cert.</label>
+          <label><input type="checkbox" id="adm-art-voodoo"          class="adm-chk" data-section="art"/> Voodoo</label>
+          <label><input type="checkbox" id="adm-art-fig_nuz"         class="adm-chk" data-section="art"/> Figurové nůž</label>
+          <label><input type="checkbox" id="adm-art-fig_gun"         class="adm-chk" data-section="art"/> Figurové pistole</label>
+          <label><input type="checkbox" id="adm-art-milan_phone"     class="adm-chk" data-section="art"/> Tel. Milan</label>
+          <label><input type="checkbox" id="adm-art-zelizka"         class="adm-chk" data-section="art"/> Železka</label>
+          <label><input type="checkbox" id="adm-art-podprsenka"      class="adm-chk" data-section="art"/> Janina podprsenka</label>
+          <label><input type="checkbox" id="adm-art-klice_vila"      class="adm-chk" data-section="art"/> Klíče od vily</label>
+          <label><input type="checkbox" id="adm-art-pytel_cihalova"  class="adm-chk" data-section="art"/> Pytel Číhalová</label>
+          <label><input type="checkbox" id="adm-art-klice_fabie"     class="adm-chk" data-section="art"/> Klíče Fábie</label>
+          <label><input type="checkbox" id="adm-art-saman_hlava"     class="adm-chk" data-section="art"/> Šam. hlava</label>
+          <label><input type="checkbox" id="adm-art-maturita"        class="adm-chk" data-section="art"/> Maturita</label>
+          <label><input type="checkbox" id="adm-art-cibule"          class="adm-chk" data-section="art"/> Cibule</label>
+          <label><input type="checkbox" id="adm-art-membership_vaza" class="adm-chk" data-section="art"/> Vaza Systems</label>
+          <label><input type="checkbox" id="adm-art-foto_figurova"   class="adm-chk" data-section="art"/> Fotka Fig.</label>
+          <label><input type="checkbox" id="adm-art-webovky"         class="adm-chk" data-section="art"/> Webovky</label>
+          <label><input type="checkbox" id="adm-art-kgb_detector"    class="adm-chk" data-section="art"/> KGB Detektor</label>
+        </div>
+      </div>
+
+      <!-- Endingy -->
+      <div class="adm-group">
+        <div class="adm-group-label">
+          Endingy
+          <button class="adm-toggle-all" data-section="end" data-state="on">✓ vše</button>
+          <button class="adm-toggle-all" data-section="end" data-state="off">✗ vše</button>
+        </div>
+        <div class="adm-check-grid">
+          <label><input type="checkbox" id="adm-end-win_fabie"               class="adm-chk" data-section="end"/> 🚗 Odjel Fábií</label>
+          <label><input type="checkbox" id="adm-end-death_energy"            class="adm-chk" data-section="end"/> 💀 Smrt hladem</label>
+          <label><input type="checkbox" id="adm-end-death_kratom_od"         class="adm-chk" data-section="end"/> 🌿 Předávkování</label>
+          <label><input type="checkbox" id="adm-end-death_piko"              class="adm-chk" data-section="end"/> 💊 Piko sebevražda</label>
+          <label><input type="checkbox" id="adm-end-death_cihalova"          class="adm-chk" data-section="end"/> 🔫 Popravila Číhalová</label>
+          <label><input type="checkbox" id="adm-end-death_stab"              class="adm-chk" data-section="end"/> 🔪 Bodnutí</label>
+          <label><input type="checkbox" id="adm-end-death_saman_throat"      class="adm-chk" data-section="end"/> 🩸 Podříznut šamanem</label>
+          <label><input type="checkbox" id="adm-end-death_figurova_shootout" class="adm-chk" data-section="end"/> 💥 Hospitace masakr</label>
+          <label><input type="checkbox" id="adm-end-death_johnny_shot"       class="adm-chk" data-section="end"/> 🔫 Johnny zastřelen</label>
+        </div>
+      </div>
+
+      <!-- Questy -->
+      <div class="adm-group">
+        <div class="adm-group-label">
+          Questy splněné
+          <button class="adm-toggle-all" data-section="qst" data-state="on">✓ vše</button>
+          <button class="adm-toggle-all" data-section="qst" data-state="off">✗ vše</button>
+        </div>
+        <div class="adm-check-grid">
+          <label><input type="checkbox" id="adm-qst-main_money"            class="adm-chk" data-section="qst"/> Vydělej 2 000 Kč</label>
+          <label><input type="checkbox" id="adm-qst-main_rep"              class="adm-chk" data-section="qst"/> Dosáhni 90 rep</label>
+          <label><input type="checkbox" id="adm-qst-main_cihalova"         class="adm-chk" data-section="qst"/> Zásilka pro Číhalovou</label>
+          <label><input type="checkbox" id="adm-qst-side_krejci"           class="adm-chk" data-section="qst"/> Krejčí vydírání</label>
+          <label><input type="checkbox" id="adm-qst-side_figurova"         class="adm-chk" data-section="qst"/> Špehovat Milana</label>
+          <label><input type="checkbox" id="adm-qst-side_jana"             class="adm-chk" data-section="qst"/> Jana kratom</label>
+          <label><input type="checkbox" id="adm-qst-side_johnny"           class="adm-chk" data-section="qst"/> Johnny rande</label>
+          <label><input type="checkbox" id="adm-qst-side_paja"             class="adm-chk" data-section="qst"/> Pája Betán</label>
+          <label><input type="checkbox" id="adm-qst-side_honza_ukol"       class="adm-chk" data-section="qst"/> Honza komot</label>
+          <label><input type="checkbox" id="adm-qst-quest_cihalova_burn"   class="adm-chk" data-section="qst"/> Číhalová krb</label>
+          <label><input type="checkbox" id="adm-qst-quest_honza_cibule"    class="adm-chk" data-section="qst"/> Honza cibule odměna</label>
+          <label><input type="checkbox" id="adm-qst-side_bezdak_cibule"    class="adm-chk" data-section="qst"/> Bezďák + cibule</label>
+          <label><input type="checkbox" id="adm-qst-quest_kgb"             class="adm-chk" data-section="qst"/> KGB minihra</label>
+          <label><input type="checkbox" id="adm-qst-quest_milan_protiutok" class="adm-chk" data-section="qst"/> Milan sabotáž</label>
+          <label><input type="checkbox" id="adm-qst-quest_figurova_vyres"  class="adm-chk" data-section="qst"/> Figurová vyřeš</label>
+          <label><input type="checkbox" id="adm-qst-quest_mraz"            class="adm-chk" data-section="qst"/> Mráz osud</label>
+          <label><input type="checkbox" id="adm-qst-quest_figurova_mates"  class="adm-chk" data-section="qst"/> Zlikviduj Matese</label>
+          <label><input type="checkbox" id="adm-qst-quest_figurova_milan"  class="adm-chk" data-section="qst"/> Zlikviduj Milana</label>
+          <label><input type="checkbox" id="adm-qst-quest_fabie"           class="adm-chk" data-section="qst"/> Získej Fábii</label>
+          <label><input type="checkbox" id="adm-qst-quest_platenikova"     class="adm-chk" data-section="qst"/> Pláteníková pravda</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Firebase SDK (compat verze – funguje jako klasické scripty) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -999,6 +1126,7 @@
 <script src="js/render.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
+<script src="js/admin.js"></script>
 
 <script>
 /* NPC + auta na login obrazovce */
