@@ -3457,45 +3457,13 @@ function render(){
   // ══════════════════════════════════════════════════════════════════════════
   //  BLEND × KRATOM – extra vizuály (pulzující fraktály, vlny, oči)
   // ══════════════════════════════════════════════════════════════════════════
+  // Blend – intenzivnější kratom trip (bez extra efektů které způsobovaly zásekání)
   if(gs.kratom_on && gs.kratom_blend_on){
     const bt = t * 0.001;
-    // Pulzující barevný overlay – intenzivnější blend
-    const pulse = 0.5 + 0.5*Math.sin(bt*1.6);
-    ctx.fillStyle = `rgba(${120+80*Math.sin(bt*0.7)},${60+40*Math.sin(bt*1.1)},${200-40*Math.cos(bt*0.9)},${0.08+0.06*pulse})`;
+    // Intenzivnější barevný pulz a vibrace
+    const pulse = 0.5 + 0.5*Math.sin(bt*1.8);
+    ctx.fillStyle = `rgba(${140+70*Math.sin(bt*0.6)},${80+50*Math.sin(bt*1.2)},${220-30*Math.cos(bt*0.8)},${0.12+0.08*pulse})`;
     ctx.fillRect(0,0,W,H);
-    // Soustředné kruhy vibrace kolem hráče (jen 3, méně výpočtů)
-    const pp = gs.player;
-    ctx.save();
-    ctx.globalCompositeOperation = 'screen';
-    for(let r=0; r<3; r++){
-      const rr = 100 + r*70 + 15*Math.sin(bt*2 + r*0.8);
-      const al = 0.10 - r*0.02;
-      ctx.strokeStyle = `rgba(${160+20*r},${100+25*r},${230-15*r},${al})`;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(pp.x, pp.y, rr, 0, Math.PI*2); ctx.stroke();
-    }
-    ctx.restore();
-    // Plovoucí divoké oči (jen 2, zůstane efekt bez seče)
-    for(let i=0;i<2;i++){
-      const ex = W*(0.2 + i*0.6 + Math.sin(bt*0.5+i*1.5)*0.12);
-      const ey = H*(0.3 + Math.sin(bt*0.6+i*2)*0.15);
-      const es = 8 + 4*Math.sin(bt*1.5+i);
-      const ea = 0.35 + 0.2*Math.sin(bt*0.8+i);
-      ctx.fillStyle = `rgba(255,${180-i*40},${100+i*50},${ea})`;
-      ctx.beginPath(); ctx.ellipse(ex, ey, es*2.5, es*1.5, 0.3*Math.sin(bt+i), 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = `rgba(10,5,25,${ea*1.3})`;
-      ctx.beginPath(); ctx.arc(ex, ey, es*0.6, 0, Math.PI*2); ctx.fill();
-    }
-    // Jemné vlnové linie (méně, snazší výpočty)
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    for(let y=20; y<H; y+=40){
-      const wobble = Math.sin(bt*2.2 + y*0.02)*10;
-      ctx.strokeStyle = `rgba(${200+30*Math.sin(y*0.008+bt)},${90},${240},0.06)`;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(0,y+wobble); ctx.lineTo(W,y-wobble); ctx.stroke();
-    }
-    ctx.restore();
   }
 
 }
