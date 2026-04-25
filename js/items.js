@@ -237,10 +237,11 @@ function startKGBMinigame(){
   const W = mc.width, H = mc.height;
   const kctx = mc.getContext('2d');
 
-  const KILL_WIN = 15, MAX_PASS = 2;
+  const KILL_WIN = 18, MAX_PASS = 2;
   const AGENT_TYPES = [
     {label:'KGB', color:'#c0392b', hat:'#6a0000'},
     {label:'GRU', color:'#1a2a4a', hat:'#0a1020'},
+    {label:'СВР', color:'#2a5a1a', hat:'#0a2a08'},
   ];
 
   // Hráč pohyb (W/S)
@@ -254,16 +255,16 @@ function startKGBMinigame(){
   let agents=[], bullets=[], particles=[], flashAlpha=0;
   let kills=0, passed=0, gameOver=false, won=false;
   let ts2=0, lastT=0, spawnTimer=0;
-  let ammo=45;
+  let ammo=40;
   // trippy effect state
   let hueShift=0, warpT=0;
 
   function spawnAgent(){
     const tp = AGENT_TYPES[Math.floor(Math.random()*AGENT_TYPES.length)];
-    const lane = H*(0.22 + Math.random()*0.56);
+    const lane = H*(0.18 + Math.random()*0.64);
     agents.push({
       x: W+55, y: lane,
-      spd: 0.9 + Math.random()*0.5 + kills*0.14,
+      spd: 1.1 + Math.random()*0.6 + kills*0.15,
       color: tp.color, hat: tp.hat, label: tp.label,
       w:40, h:58, hit:false, hitT:0, id: Math.random(),
     });
@@ -624,9 +625,9 @@ function startKGBMinigame(){
     playerVY *= 0.85;
     playerY = Math.max(H*0.12, Math.min(H*0.88, playerY+playerVY));
 
-    // Spawn – every 1.4–2.2s, gets faster
+    // Spawn – every 1.2–2.0s, gets faster
     spawnTimer -= dt;
-    const interval = Math.max(900, 2600 - kills*22);
+    const interval = Math.max(750, 2300 - kills*22);
     if(spawnTimer<=0){ spawnAgent(); spawnTimer=interval*(0.8+Math.random()*0.4); }
 
     drawBG(ts);

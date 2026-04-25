@@ -689,6 +689,7 @@ const ITEM_DESCS = {
   foto_figurova:'Fotografie Figurové. Pochroumané tělo v Mikulášově sklepě. Trochu morbidní, ale co naplat.',
   kgb_detector: 'Detektor KGB/GRU agentů. Technologie Petra Cibulky. Stiskni v inventáři a sleduj barevné výsledky.',
   pytel_penez:  'Pytel peněz od Krejčí. Víc, než Pája ztratil. Dej mu ho – nebo si ho nech.',
+  kgb_prukaz:   'Průkaz KGB agenta Krejčí. Série ГБ-7824. Kovová destička s fotografií a číslem operace. Petr Cibulka by to měl vidět.',
 };
 
 // ─── Definice úkolů ──────────────────────────────────────────────────────────

@@ -356,16 +356,18 @@ function showDialog(npc){
   // ─ Nastavit milan_met při prvním setkání ──────────────────────────────
   if(npc.id === 'milan' && !gs.story.milan_met) gs.story.milan_met = true;
 
-  // ─ Pája v hospodě – spustit 180s timer na krádež ──────────────────────
+  // ─ Pája v hospodě – spustit 120s timer na krádež ──────────────────────
   if(npc.id === 'paja' && stage === 2 && !gs.story.paja_jackpot_timer_started){
     gs.story.paja_jackpot_timer_started = true;
+    const _g = gs._gen;
     setTimeout(() => {
+      if(gs._gen !== _g) return;
       if(!gs.story.paja_stolen){
         gs.story.paja_stolen = true;
         addLog('📱 SMS od Páji: "Fando, dojdi za mnou prosím, stalo se něco."', 'lw');
         fnotif('Pája volá! 📱', 'lw');
       }
-    }, 180000);
+    }, 120000);
   }
 
   // ─ Dynamické volby ────────────────────────────────────────────────────
@@ -483,8 +485,8 @@ function showDialog(npc){
 
   // ─ Pája theft quest – dynamické volby ─────────────────────────────────
   // Pája – dát pytel peněz
-  if(npc.id === 'paja' && gs.inv.pytel_penez > 0 && gs.story.paja_stolen && !gs.story.paja_quest_done)
-    choices.push({label:'💰 Dát Pájovi pytel peněz', cls:'prim', fn:'q_paja_give_pytel'});
+  if(npc.id === 'paja' && gs.story.krejci_paid_back && gs.story.paja_stolen && !gs.story.paja_quest_done)
+    choices.push({label:'💰 "Krejčí zaplatila zpátky."', cls:'prim', fn:'q_paja_krejci_back'});
   // Johnny – zeptat se na krádež
   if(npc.id === 'johnny' && gs.story.paja_stolen && !gs.story.paja_johnny_asked)
     choices.push({label:'🤔 "Víš náhodou o Pájových penězích?"', cls:'special', fn:'q_paja_ask_johnny'});
@@ -501,9 +503,9 @@ function showDialog(npc){
     else
       choices.push({label:'🔍 "Posílal jsi Mikuláše?"', cls:'special', fn:'q_paja_ask_bezdak'});
   }
-  // Bezďák – promluvit po KGB vítězství (jen jednou)
-  if(npc.id === 'bezdak' && gs.story.kgb_won && !gs.story.kgb_cibulka_talked)
-    choices.push({label:'🤝 "Co ty na to KGB, Cibulka?"', cls:'prim', fn:'q_cibulka_farewell'});
+  // Bezďák – ukázat průkazku Krejčí
+  if(npc.id === 'bezdak' && gs.inv.kgb_prukaz > 0 && !gs.story.kgb_prukaz_shown)
+    choices.push({label:'🪪 "Krejčí mi dala tohle."', cls:'prim', fn:'q_cibulka_prukaz'});
 
   // Krejčí – konfrontovat po skenování
   if(npc.id === 'krejci' && gs.story.paja_krejci_red && !gs.story.paja_pytel_taken)

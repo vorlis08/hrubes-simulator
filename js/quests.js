@@ -447,11 +447,20 @@ const QF = {
       'PŘEDÁVKOVÁNÍ', 'SMRT NA PRÁŠEK OD PETRA CIBULKY', 'death_kratom_od'
     ), 600);
   },
-  q_cibulka_farewell(){
-    gs.story.kgb_cibulka_talked = true;
+  q_cibulka_prukaz(){
+    gs.story.kgb_prukaz_shown = true;
+    gs.inv.kgb_prukaz = 0; updateInv();
     closeDialog();
     showNPCLine('bezdak',
-      '"Ten prášek byl test." *Cibulka se opře o zeď* "Reflexy, paměť, reakce pod tlakem. Všechno." *přikývne pomalu* "To, cos viděl v tý hře – to nejsou jen halucinace, Hrubši. Křemže je plná agentů. Sleduju to dvacet let." *stáhne kapuci níž* "Ale víc ti zatím neřeknu. Musím nejdřív vědět, jestli ti můžu věřit."'
+      '"ГБ-7824." *Cibulka vezme průkazku, otočí ji, prohlíží* "Krejčí. Přesně jak jsem čekal." *schová ji do kapsy* "To potvrzuje operaci КРЕСТ. Měli tu čtyři agenty. Dva jsi odhalil detektorem. Jeden uprchnul před prohledáním."',
+      () => showNPCLine('bezdak',
+        '"A Krejčí si koupila mlčení průkazkou a pěti sty." *přikývne pomalu* "Chytrý tah od ní. Ví, že průkazka je pro mě cennější než hotovost." *odvrátí se* "Operace КРЕСТ je rozkryta. Aspoň tato buňka."',
+        () => {
+          gainRep(8, 'Předal průkazku Cibulkovi – odhalena operace КРЕСТ');
+          addLog('Cibulka potvrdil: operace КРЕСТ v Křemži rozkryta. +8 REP', 'lm');
+          fnotif('+8 REP 🔍', 'rep');
+        }
+      )
     );
   },
   q_bezdak_pill(){
@@ -748,8 +757,11 @@ const QF = {
   q_paja_ask_bezdak(){
     closeDialog();
     showNPCLine('bezdak',
-      '"Mikuláš?" *zastaví se* "Nevím, o čem mluvíš. Já nikoho na nic neposílám." *přetáhne si kapuci* "Odejdi, Hrubši. Dneska obchodovat nebudu."',
-      () => { addLog('Bezďák popírá vše. Jestli víš, kdo doopravdy je...', 'ls'); }
+      '"Mikuláš..." *Bezďák se otočí pomalu, přimhouří oči* "A co ti řekl přesně?" *ticho* "Bez ohledu na to – pokud se něco stalo, stalo se to ze správných důvodů. Důvodů, kterým nerozumíš."',
+      () => showNPCLine('bezdak',
+        '"Tady v Křemži se dějou věci. Věci, o kterých se neučí ve škole." *přikrčí se, hlas se sníží* "Tvůj kamarád o ty prachy nepřijde. Mám to vyřešené." *otočí se zpět* "Teď táhni. A jestli víš víc než říkáš – dej mi vědět."',
+        () => { addLog('Bezďák popírá vše, ale naznačuje víc. Možná o něm víš víc...', 'ls'); }
+      )
     );
   },
 
@@ -757,13 +769,13 @@ const QF = {
     if(!gs.story.bezdak_cibulka){ closeDialog(); return; }
     closeDialog();
     showNPCLine('bezdak',
-      '"Ty... ty víš." *Cibulka sundá kapuci, chvíli mlčí* "Jo. Poslal jsem Mikuláše. Ale poslechni mě."',
+      '"Ty... ty víš." *Cibulka sundá kapuci, chvíli mlčí* "Jo. Poslal jsem Mikuláše. Ale neposlouchej Páju – poslouchej mě."',
       () => showNPCLine('bezdak',
-        '"Potřeboval jsem jeden čip. Sovětský signálový filtr – КТ-361Б. Našel jsem ho na Bazoši. Chlap z Prachatic, 300 Kč hotovost, vyzvednutí ten samej den nebo konec. Půlnoc za tři hodiny."',
+        '"Potřeboval jsem КТ-361Б. Sovětský bipolární transkonduktor s diferenciální kvadraturní demodulací. Jediný komponent schopný zpracovat фазовую инверсию GRU frekvenčního pásma." *zaklepe si na spánek* "Bez něj byl detektor zaseknutý v pasivním SIGINT bypass módu – k ničemu pro real-time HUMINT detekci živých agentů."',
         () => showNPCLine('bezdak',
-          '"Jenomže já zrovna neměl hotovost. Vložil jsem všechno do solárního panelu pro laboratoř." *zakašle* "Mikuláš byl u mě v garáži. Sám řekl, že Pája vyhrál jackpot a chlubí se v hospodě." *ticho* "Věděl jsem, že je to špatně. Ale ten čip byl poslední, co jsem potřeboval. Dvacet let práce."',
+          '"A víš proč jsem nepočkal?" *narovná se* "Protože jsem POTŘEBOVAL chaos. Finanční disturbance v lokálním HUMINT uzlu aktivuje GRU Omega-3 protokol – agenti se začnou pohybovat, komunikovat, vystavují se." *přikývne* "Bez toho chaosu by detektor neměl co detekovat. Ta krádež nebyla krádež. Byl to spouštěč."',
           () => showNPCLine('bezdak',
-            '"Čip seděl. Detektor funguje." *sáhne pod pult a vytáhne krabičku* "A ty jsi prošel mým testem – ten prášek nebyl jen pro srandu. Chtěl jsem vědět, jestli ti to funguje." *podá ti přístroj* "Detektor KGB a GRU agentů infiltrovaných do Křemže. Dvacet let sbírám data. Zezelená: čistý. Zčervená: agent."',
+            '"Šumann-Kamenev resonátor kalibrován. Zpětná subharmonická emise stabilní. Detektor je funkční." *sáhne pod pult* "A ty jsi prošel práškovým testem – kognitivní rezistence pod plnou SIGINT saturací v normě." *podá ti krabičku* "Prohledej každou místnost. Zezelená: čistý. Zčervená: GRU nebo KGB agent."',
             () => {
               gs.story.paja_cibulka_detector = true;
               gs.inv.kgb_detector = 1; updateInv();
@@ -787,14 +799,21 @@ const QF = {
       '"Hrubeši..." *Krejčí si všimne přístroje v tvé ruce* "Jak jste..."',
       () => showPlayerLine('"Detektor KGB/GRU. Vy jste agent, Krejčí."',
         () => showNPCLine('krejci',
-          '"..." *dlouhé ticho* "Dobře." *otevře zásuvku stolu* "Vezměte si tohle a jděte. A nikomu – nikomu – neříkejte, co jste viděli." *podá pytel* "V tom pytli je víc, než váš přítel ztratil. Zbytek je... řekněme odměna za mlčení."',
-          () => {
-            gs.story.paja_pytel_taken = true;
-            gs.inv.pytel_penez = 1; updateInv();
-            doneObj('quest_paja_scan');
-            addLog('Krejčí ti dala pytel peněz. Odhalena jako agent!', 'lm');
-            fnotif('💰 Pytel peněz +1', 'itm');
-          }
+          '"..." *dlouhé ticho, pak si sedne* "Dobře." *otevře šuplík, vytáhne kovovou destičku* "Toto je série ГБ-7824. Moje identifikace. Vezmete si ji a půjdete." *položí ji na stůl* "A 500 Kč zpátky pro vašeho přítele. Tohle nikam nenesete."',
+          () => showNPCLine('krejci',
+            '"Jsem tu přes osm let. Nikomu jsem neublížila. Jen... sledovala jsem. Hlásila." *zapne kabát, vstane* "Pokud to odnesete výš, víte, co se stane." *míří ke dveřím* "Operace КРЕСТ se vás netýká. Nikdy netýkala."',
+            () => {
+              gs.story.paja_pytel_taken = true;
+              gs.story.krejci_paid_back = true;
+              gs.inv.kgb_prukaz = 1; updateInv();
+              gs.money += 500; updateHUD();
+              doneObj('quest_paja_scan');
+              addLog('Krejčí ti dala svou KGB průkazku (ГБ-7824) a 500 Kč. Odhalena jako agent!', 'lm');
+              addLog('Zmínila operaci КРЕСТ. Cibulka by to měl vědět...', 'ls');
+              fnotif('🪪 KGB průkazka +1', 'itm');
+              fnotif('+500 Kč 💰', 'pos');
+            }
+          )
         )
       )
     );
@@ -811,7 +830,7 @@ const QF = {
         () => {
           gs.story.paja_quest_done = true;
           gs.story.paja_pytel_given = true;
-          gs.story.paja_in_hospoda = false; // vrátit Páju zpátky na ulici
+          gs.story.paja_in_hospoda = false;
           gs.money += 1000; updateHUD();
           gainRep(10, 'Vrátil Pájovi ukradené peníze');
           doneObj('quest_paja_theft');
@@ -819,6 +838,27 @@ const QF = {
           fnotif('+1 000 Kč 💰', 'pos');
           fnotif('+10 REP', 'rep');
         }
+      )
+    );
+  },
+  q_paja_krejci_back(){
+    closeDialog();
+    showNPCLine('paja',
+      '"Krejčí?" *Pája zamrká* "Tahle učitelka eko? Proč by mi vracela prachy?!" *rozevře ruce*',
+      () => showPlayerLine('"Přesvědčil jsem ji. Zaplatila 500 Kč zpátky – tady jsou."',
+        () => showNPCLine('paja',
+          '"...Ty vole, Fando." *počítá* "Je to fakt." *zavrtí hlavou a uculí se* "Já fakt nevím, jak tohle děláš. Tady máš 200 Kč – zbyl mi bonus z jackpotu. Jsi frajer."',
+          () => {
+            gs.story.paja_quest_done = true;
+            gs.story.paja_in_hospoda = false;
+            gs.money += 200; updateHUD();
+            gainRep(8, 'Vrátil Pájovi ukradené peníze');
+            doneObj('quest_paja_theft');
+            addLog('Pájův quest splněn. +200 Kč, +8 REP 💰', 'lm');
+            fnotif('+200 Kč 💰', 'pos');
+            fnotif('+8 REP', 'rep');
+          }
+        )
       )
     );
   },
