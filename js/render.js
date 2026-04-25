@@ -3459,40 +3459,40 @@ function render(){
   // ══════════════════════════════════════════════════════════════════════════
   if(gs.kratom_on && gs.kratom_blend_on){
     const bt = t * 0.001;
-    // Pulzující barevný overlay
+    // Pulzující barevný overlay – intenzivnější blend
     const pulse = 0.5 + 0.5*Math.sin(bt*1.6);
-    ctx.fillStyle = `rgba(${120+80*Math.sin(bt*0.7)},${60+40*Math.sin(bt*1.1)},${200-40*Math.cos(bt*0.9)},${0.06+0.05*pulse})`;
+    ctx.fillStyle = `rgba(${120+80*Math.sin(bt*0.7)},${60+40*Math.sin(bt*1.1)},${200-40*Math.cos(bt*0.9)},${0.08+0.06*pulse})`;
     ctx.fillRect(0,0,W,H);
-    // Soustředné kruhy vibrace kolem hráče
+    // Soustředné kruhy vibrace kolem hráče (jen 3, méně výpočtů)
     const pp = gs.player;
     ctx.save();
     ctx.globalCompositeOperation = 'screen';
-    for(let r=0; r<6; r++){
-      const rr = 80 + r*60 + 18*Math.sin(bt*2 + r*0.8);
-      const al = 0.08 - r*0.012;
-      ctx.strokeStyle = `rgba(${150+20*r},${80+30*r},${220-20*r},${al})`;
-      ctx.lineWidth = 2 + Math.sin(bt*3+r)*0.8;
+    for(let r=0; r<3; r++){
+      const rr = 100 + r*70 + 15*Math.sin(bt*2 + r*0.8);
+      const al = 0.10 - r*0.02;
+      ctx.strokeStyle = `rgba(${160+20*r},${100+25*r},${230-15*r},${al})`;
+      ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.arc(pp.x, pp.y, rr, 0, Math.PI*2); ctx.stroke();
     }
     ctx.restore();
-    // Plovoucí fraktální oči
-    for(let i=0;i<5;i++){
-      const ex = W*(0.15 + (i*0.18 + Math.sin(bt*0.4+i*1.3)*0.08));
-      const ey = H*(0.22 + Math.sin(bt*0.7+i*2.1)*0.12 + i*0.05);
-      const es = 6 + 3*Math.sin(bt*1.2+i);
-      const ea = 0.25 + 0.15*Math.sin(bt*0.9+i*1.7);
-      ctx.fillStyle = `rgba(255,${200-i*20},${80+i*30},${ea})`;
-      ctx.beginPath(); ctx.ellipse(ex, ey, es*2, es, 0, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = `rgba(20,10,40,${ea*1.2})`;
-      ctx.beginPath(); ctx.arc(ex, ey, es*0.55, 0, Math.PI*2); ctx.fill();
+    // Plovoucí divoké oči (jen 2, zůstane efekt bez seče)
+    for(let i=0;i<2;i++){
+      const ex = W*(0.2 + i*0.6 + Math.sin(bt*0.5+i*1.5)*0.12);
+      const ey = H*(0.3 + Math.sin(bt*0.6+i*2)*0.15);
+      const es = 8 + 4*Math.sin(bt*1.5+i);
+      const ea = 0.35 + 0.2*Math.sin(bt*0.8+i);
+      ctx.fillStyle = `rgba(255,${180-i*40},${100+i*50},${ea})`;
+      ctx.beginPath(); ctx.ellipse(ex, ey, es*2.5, es*1.5, 0.3*Math.sin(bt+i), 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = `rgba(10,5,25,${ea*1.3})`;
+      ctx.beginPath(); ctx.arc(ex, ey, es*0.6, 0, Math.PI*2); ctx.fill();
     }
-    // Horizontální vlnové deformace (chromatic lines)
+    // Jemné vlnové linie (méně, snazší výpočty)
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    for(let y=0; y<H; y+=28){
-      const wobble = Math.sin(bt*2.3 + y*0.04)*8;
-      ctx.strokeStyle = `rgba(${180+30*Math.sin(y*0.01+bt)},${80},${220},0.05)`;
-      ctx.lineWidth = 1.2;
+    for(let y=20; y<H; y+=40){
+      const wobble = Math.sin(bt*2.2 + y*0.02)*10;
+      ctx.strokeStyle = `rgba(${200+30*Math.sin(y*0.008+bt)},${90},${240},0.06)`;
+      ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(0,y+wobble); ctx.lineTo(W,y-wobble); ctx.stroke();
     }
     ctx.restore();
