@@ -18,6 +18,9 @@ const gs = {
   kratom_history: [],
   kratom_blend_on: false,
   blend_boost_until: 0,
+  blend_max:      20000,  // Delší trvání pro blend trip
+  blend_player_scale: 1,  // Pulzování velikosti hráče
+  blend_gravity_offset: 0, // Gravitační oscilace
 
   // Číhalová timer
   cihalova_deadline: 0,   // timestamp kdy vyprší čas (ms), 0 = neaktivní
@@ -113,6 +116,8 @@ function resetGameState(){
   gs.kratom_history   = [];
   gs.kratom_blend_on  = false;
   gs.blend_boost_until = 0;
+  gs.blend_player_scale = 1;
+  gs.blend_gravity_offset = 0;
 
   gs.cihalova_deadline  = 0;
   gs.cihalova_coming    = false;

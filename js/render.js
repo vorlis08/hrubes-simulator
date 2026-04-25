@@ -1827,9 +1827,10 @@ function drawJohnnyVila(W,H,t){
   }
   ctx.restore();
 
-  // ── Prachové částice v místnosti – mnohem víc a viditelnější ──
+  // ── Prachové částice v místnosti – dynamicky optimalizovány ──
+  const dustCount = getParticleCount(42, fpsMonitor);
   ctx.save();
-  for(let i=0;i<42;i++){
+  for(let i=0;i<dustCount;i++){
     const dx=W*0.05+(Math.sin(i*137.508)*0.5+0.5)*W*0.9+Math.sin(t*0.0004+i)*W*0.015;
     const dy=H*0.05+((t*0.00006+i*0.15)%1)*H*0.82;
     const da=0.22+0.28*Math.abs(Math.sin(t*0.0012+i*1.5));
@@ -2406,9 +2407,10 @@ function drawSklep(W,H,t){
     ctx.restore();
   }
 
-  // ── Kapající voda ze stropu – výraznější, víc kapek ──
+  // ── Kapající voda ze stropu – výraznější, víc kapek – dynamicky optimalizována ──
+  const waterDropCount = getParticleCount(18, fpsMonitor);
   ctx.save();
-  for(let i=0;i<18;i++){
+  for(let i=0;i<waterDropCount;i++){
     const dropX=W*0.04+Math.abs(Math.sin(i*73.7))*W*0.92;
     const dropPhase=((t*0.0009+i*0.13)%1);
     const dropY=dropPhase*H*0.56;
@@ -2419,27 +2421,32 @@ function drawSklep(W,H,t){
     ctx.fillStyle=dG;
     ctx.beginPath(); ctx.ellipse(dropX,dropY,1.6,4.5,0,0,Math.PI*2); ctx.fill();
     // lesk
-    ctx.fillStyle=`rgba(255,255,255,${dropA*0.5})`;
-    ctx.beginPath(); ctx.arc(dropX-0.6,dropY-2,0.6,0,Math.PI*2); ctx.fill();
-    // Splash na podlaze – výraznější
-    if(dropPhase>0.86){
+    if(!fpsMonitor || fpsMonitor.fps > 40){
+      ctx.fillStyle=`rgba(255,255,255,${dropA*0.5})`;
+      ctx.beginPath(); ctx.arc(dropX-0.6,dropY-2,0.6,0,Math.PI*2); ctx.fill();
+    }
+    // Splash na podlaze – výraznější (ale omezit na výkonnější PC)
+    if(dropPhase>0.86 && (!fpsMonitor || fpsMonitor.fps > 45)){
       const splA=(dropPhase-0.86)/0.14;
       ctx.strokeStyle=`rgba(130,150,180,${(1-splA)*0.65})`;
       ctx.lineWidth=1.3;
       ctx.beginPath(); ctx.ellipse(dropX,H*0.56,4+splA*14,1.5+splA*4,0,0,Math.PI*2); ctx.stroke();
-      // krůpěje splash
-      for(let sp=0;sp<4;sp++){
-        const spAng=sp*Math.PI/2+i;
-        ctx.fillStyle=`rgba(130,160,190,${(1-splA)*0.55})`;
-        ctx.beginPath(); ctx.arc(dropX+Math.cos(spAng)*(4+splA*6),H*0.56-splA*3+Math.sin(spAng)*1.5,0.8,0,Math.PI*2); ctx.fill();
+      // krůpěje splash – jen někde
+      if(i % 2 === 0){
+        for(let sp=0;sp<4;sp++){
+          const spAng=sp*Math.PI/2+i;
+          ctx.fillStyle=`rgba(130,160,190,${(1-splA)*0.55})`;
+          ctx.beginPath(); ctx.arc(dropX+Math.cos(spAng)*(4+splA*6),H*0.56-splA*3+Math.sin(spAng)*1.5,0.8,0,Math.PI*2); ctx.fill();
+        }
       }
     }
   }
   ctx.restore();
 
-  // ── Stoupající popel/prach z pentagramu – mnohem viditelnější ──
+  // ── Stoupající popel/prach z pentagramu – dynamicky optimalizován ──
+  const ashCount = getParticleCount(38, fpsMonitor);
   ctx.save();
-  for(let i=0;i<38;i++){
+  for(let i=0;i<ashCount;i++){
     const ashLife=((t*0.00040+i*0.08)%1);
     const ax=pcx+Math.sin(i*7.3+t*0.0008)*pr*(0.5+ashLife*0.4);
     const ay=pcy-ashLife*H*0.55;
@@ -2451,8 +2458,8 @@ function drawSklep(W,H,t){
     const b=Math.floor(20+ashLife*30);
     ctx.fillStyle=`rgba(${r},${g},${b},${ashA})`;
     ctx.beginPath(); ctx.arc(ax,ay,ashSz,0,Math.PI*2); ctx.fill();
-    // glow kolem žhavých částic
-    if(ashLife<0.4){
+    // glow kolem žhavých částic – renderuj jen všechny N-té částice na slabých PC
+    if(ashLife<0.4 && (!fpsMonitor || fpsMonitor.fps > 40 || i % 2 === 0)){
       const gG=ctx.createRadialGradient(ax,ay,0,ax,ay,ashSz*4);
       gG.addColorStop(0,`rgba(255,120,30,${ashA*0.35})`); gG.addColorStop(1,'transparent');
       ctx.fillStyle=gG;
@@ -2461,9 +2468,10 @@ function drawSklep(W,H,t){
   }
   ctx.restore();
 
-  // ── Další jiskry a plamenové částice nad pentagramem ──
+  // ── Další jiskry a plamenové částice nad pentagramem – dynamicky optimalizován ──
+  const sparkCount = getParticleCount(22, fpsMonitor);
   ctx.save();
-  for(let i=0;i<22;i++){
+  for(let i=0;i<sparkCount;i++){
     const skLife=((t*0.00065+i*0.11)%1);
     const skAng=i*0.68+t*0.0003;
     const skR=pr*(0.2+skLife*0.8);
@@ -2472,10 +2480,12 @@ function drawSklep(W,H,t){
     const skA=(1-skLife)*0.90;
     ctx.fillStyle=`rgba(255,${180-Math.floor(skLife*120)},30,${skA})`;
     ctx.beginPath(); ctx.arc(sx,sy,1.4+Math.sin(i*2.3)*0.6,0,Math.PI*2); ctx.fill();
-    // světelná stopa
-    ctx.strokeStyle=`rgba(255,120,20,${skA*0.5})`;
-    ctx.lineWidth=0.8;
-    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx,sy+4); ctx.stroke();
+    // světelná stopa – pouze na výkonnějších PC
+    if(!fpsMonitor || fpsMonitor.fps > 45){
+      ctx.strokeStyle=`rgba(255,120,20,${skA*0.5})`;
+      ctx.lineWidth=0.8;
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx,sy+4); ctx.stroke();
+    }
   }
   ctx.restore();
 
@@ -2484,8 +2494,9 @@ function drawSklep(W,H,t){
   const topFog=ctx.createLinearGradient(0,0,0,H*0.25);
   topFog.addColorStop(0,'rgba(20,10,5,0.45)'); topFog.addColorStop(1,'transparent');
   ctx.fillStyle=topFog; ctx.fillRect(0,0,W,H*0.25);
-  // valící se mlha z rohů
-  for(let mi=0;mi<8;mi++){
+  // valící se mlha z rohů – dynamicky optimalizována
+  const fogCount = getParticleCount(8, fpsMonitor);
+  for(let mi=0;mi<fogCount;mi++){
     const mfX=((Math.sin(mi*1.3+ft*0.15)*0.5+0.5))*W;
     const mfY=H*0.04+Math.abs(Math.sin(mi*2.7+ft*0.2))*H*0.10;
     const mfR=W*(0.12+0.06*Math.abs(Math.sin(mi*1.9+ft*0.25)));
@@ -2942,19 +2953,30 @@ function render(){
   const rm=ROOMS[gs.room];
   const W=canvas.width, H=canvas.height;
   const t=gs.ts, p=gs.player;
+
+  // Monitor FPS pro dynamickou optimalizaci
+  if(fpsMonitor) fpsMonitor.update();
+
   drawRoom(rm,W,H,t);
 
   // Voodoo animace (overlay přes Křemži)
   if(gs.voodoo_anim) drawVoodooAnim(W,H);
 
-  // Scanlines
-  ctx.fillStyle='rgba(0,0,0,0.04)';
-  for(let y=0;y<H;y+=3) ctx.fillRect(0,y,W,1);
+  // Scanlines – dynamicky snížit na slabších PC
+  if(!fpsMonitor || !fpsMonitor.shouldReduceEffects()){
+    ctx.fillStyle='rgba(0,0,0,0.04)';
+    for(let y=0;y<H;y+=3) ctx.fillRect(0,y,W,1);
+  }
 
   // Vigneta (všechny místnosti)
   const vigAll=ctx.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,Math.max(W,H)*0.78);
   vigAll.addColorStop(0,'transparent'); vigAll.addColorStop(1,'rgba(0,0,0,0.38)');
   ctx.fillStyle=vigAll; ctx.fillRect(0,0,W,H);
+
+  // Ambient occlusion v rozích pro lepší vzhled
+  if(!fpsMonitor || fpsMonitor.fps > 45){
+    drawAmbientOcclusion(ctx, W, H, 0.08);
+  }
 
   // Items
   currentItems.forEach(item=>{
@@ -3300,13 +3322,40 @@ function render(){
   const px=p.x;
   // Jemný walk-bob (konzistentní s drawNakedSaman / NPC gait)
   const walkBob = p.mv ? Math.abs(Math.sin(t * 0.018)) * 3.2 : 0;
-  const py=p.y - walkBob;
+  let py=p.y - walkBob;
   let pc = '#7c6ff7';
-  if(gs.kratom_on) pc = gs.kratom_blend_on ? `hsl(${(t*0.2)%360},90%,58%)` : '#10b981';
+  let pcAura = '#7c6ff74a';
+  let playerScale = 1;
+
+  if(gs.kratom_on){
+    if(gs.kratom_blend_on){
+      const hue = Math.floor((t*0.2)%360);
+      pc = `hsl(${hue},90%,58%)`;
+      pcAura = `hsla(${hue},90%,58%,0.29)`;
+      // Blend mechaniky – bláznivé efekty
+      const blendProgress = Math.max(0, 1 - gs.kratom_t / gs.blend_max);
+      // Pulzování velikosti hráče
+      playerScale = 1 + Math.sin(t * 0.006) * 0.15;
+      // Gravitační oscilace – hráč se vznáší nahoru a dolů
+      py += Math.sin(t * 0.004) * 12;
+      // Laterální vibrace (šílenství se zesiluje ke konci)
+      py += Math.sin(t * 0.011 + blendProgress * 10) * (3 + blendProgress * 8);
+    } else {
+      pc = '#10b981'; pcAura = '#10b9814a';
+    }
+  }
+  if(playerScale !== 1){
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.scale(playerScale, playerScale);
+    ctx.translate(-px, -py);
+  }
   ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(px,py+29,17,7,0,0,Math.PI*2); ctx.fill();
-  const pg=ctx.createRadialGradient(px,py,0,px,py,42);
-  pg.addColorStop(0,pc+'4a'); pg.addColorStop(1,'transparent');
-  ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(px,py,42,0,Math.PI*2); ctx.fill();
+  if(!gs.kratom_on){
+    const pg=ctx.createRadialGradient(px,py,0,px,py,42);
+    pg.addColorStop(0,pcAura); pg.addColorStop(1,'transparent');
+    ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(px,py,42,0,Math.PI*2); ctx.fill();
+  }
   ctx.fillStyle=pc; ctx.beginPath(); ctx.arc(px,py,23,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(px,py-17,18,0,Math.PI*2); ctx.fill();
   const ef=p.face==='l'?-1:1;
@@ -3316,6 +3365,7 @@ function render(){
   ctx.fillStyle='#fff';
   ctx.beginPath(); ctx.arc(px+ef*5.5,    py-20,1.8,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(px+ef*5.5+11, py-20,1.8,0,Math.PI*2); ctx.fill();
+  if(playerScale !== 1) ctx.restore();
 
   // Monokl – hráč dostal po hubě od Johnnyho
   if(gs.story.player_monokl){
@@ -3455,16 +3505,38 @@ function render(){
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  //  BLEND × KRATOM – extra vizuály (pulzující fraktály, vlny, oči)
+  //  BLEND × KRATOM – CSS animace je postačující
   // ══════════════════════════════════════════════════════════════════════════
-  // Blend – intenzivnější kratom trip (bez extra efektů které způsobovaly zásekání)
-  if(gs.kratom_on && gs.kratom_blend_on){
-    const bt = t * 0.001;
-    // Intenzivnější barevný pulz a vibrace
-    const pulse = 0.5 + 0.5*Math.sin(bt*1.8);
-    ctx.fillStyle = `rgba(${140+70*Math.sin(bt*0.6)},${80+50*Math.sin(bt*1.2)},${220-30*Math.cos(bt*0.8)},${0.12+0.08*pulse})`;
-    ctx.fillRect(0,0,W,H);
+  // Blend – CSS tripCanvasBlend animace zajišťuje efekt bez lag
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  NOVÉ EFEKTY – BLOOM A AMBIENT EFFECTS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Bloom efekt na světlech – pouze na výkonnějších zařízeních
+  if(!fpsMonitor || fpsMonitor.fps > 50){
+    if(gs.room === 'johnny_vila'){
+      // Bloom na lampě
+      drawBloom(ctx, W*0.05, H*0.54, 'rgba(255,200,120,0.2)', 40, t);
+      // Bloom na TV
+      drawBloom(ctx, W*0.74, H*0.14, 'rgba(80,140,220,0.15)', 35, t);
+    }
+    if(gs.room === 'hospoda'){
+      // Bloom na svíčce (ze sklepa jsem si zkopíroval coordinates)
+      drawBloom(ctx, W*0.36, H*0.69, 'rgba(255,180,80,0.18)', 50, t);
+    }
   }
+
+  // Nové vizuální efekty na speciální prvky
+  if(gs.story.figurova_following && !gs.story.figurova_at_door){
+    // Electric aura kolem Figurové (subtilní)
+    const fig = currentNPCs.find(n => n.id === 'figurova');
+    if(fig && (!fpsMonitor || fpsMonitor.fps > 45)){
+      drawPulsingAura(ctx, fig.x, fig.y, 35, 'rgba(100,200,255,0.3)', t, 0.004);
+    }
+  }
+
+  // Pulsující aura vypnuta během blend – CSS animace je postačující
 
 }
 

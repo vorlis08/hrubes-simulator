@@ -71,10 +71,10 @@ function _consumeBlend(){
   addLog('🍃 Zkouřil jsi blend. Geometrie tančí, stěny dýchají...', 'lw');
   fnotif('🌿🔥 BLEND TRIP', 'itm');
 
-  // Spustí rovnou intenzivní kratom trip (stejná délka jako klasický kratom)
+  // Spustí rovnou intenzivní kratom trip (delší trvání)
   gs.kratom_on = true;
   gs.kratom_blend_on = true;
-  gs.kratom_t = gs.kratom_max;
+  gs.kratom_t = gs.blend_max;
   gs.kratom_freeze = 0;
   canvas.classList.add('kratom-on');
   canvas.classList.add('kratom-blend');
