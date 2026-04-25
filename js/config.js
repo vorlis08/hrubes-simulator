@@ -663,7 +663,6 @@ const ITEM_DESCS = {
   zemle:        'Pizza žemle z Billy. Obnoví 30% energie. Základ přežití v Křemži.',
   piko:         'Pervitin pro Číhalovou. Snad nebudeš hloupý a nevezmeš si ho sám.',
   pivo:         'Démon – energetický nápoj. Mates ho miluje.',
-  fake_kratom:  'Fejkový kratom. Pozor komu ho dáš – mohl by to poznat.',
   cibule:       'Cibule od Honzy. Bezďák za Billou ji prý potřebuje.',
   kratom_kava:  'Kratom zamíchaný do kafe. Speciální příprava.',
   cert:         'Certifikát. Úřední papír.',

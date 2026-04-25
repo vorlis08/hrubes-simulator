@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(gh pr create --title 'Login: fullscreen OA scéna, formulář vpravo, NPC tagy + auta' --body ' *)",
+      "Bash(gh pr create --title 'Login redesign: den, poster texty, UX po konci hry' --body ' *)",
+      "Bash(gh auth *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}

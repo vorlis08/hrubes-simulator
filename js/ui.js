@@ -68,7 +68,7 @@ function updateInv(){
   const map = {
     kratom:'ic-kratom', blend:'ic-blend', zemle:'ic-zemle', piko:'ic-piko',
     pivo:'ic-pivo', kratom_kava:'ic-kava', cert:'ic-cert',
-    pytel:'ic-pytel', fake_kratom:'ic-fake', cibule:'ic-cibule',
+    pytel:'ic-pytel', cibule:'ic-cibule',
     voodoo:'ic-voodoo', nuz:'ic-nuz',
     screenshot:'ic-screenshot', hlasovka:'ic-hlasovka',
     c2_cert:'ic-c2_cert',
@@ -83,7 +83,7 @@ function updateInv(){
     const el  = document.getElementById(id);
     const pytelSpec = k === 'pytel' && gs.cihalova_in_bag;
     const visible = cnt > 0 || pytelSpec;
-    if(el) el.textContent = (k === 'kratom' || k === 'fake_kratom') ? cnt + 'g' : (pytelSpec ? '👩‍🏫' : cnt);
+    if(el) el.textContent = (k === 'kratom') ? cnt + 'g' : (pytelSpec ? '👩‍🏫' : cnt);
     const sl = document.getElementById('sl-' + k);
     if(sl){
       const wasHidden = sl.style.display === 'none';
@@ -100,7 +100,7 @@ function updateInv(){
 
   // Oddělovače – schovat pokud jsou obě sousední skupiny prázdné
   const g1 = ['kratom','blend','zemle'];
-  const g2 = ['piko','fake_kratom','pytel'];
+  const g2 = ['piko','pytel'];
   const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','klice_fabie','klice_fabie_fig','podprsenka','membership_vaza','propiska','masturbator','kgb_detector','pytel_penez'];
   function grpVisible(keys){ return keys.some(k => (gs.inv[k]||0) > 0 || (k==='pytel' && gs.cihalova_in_bag)); }
   const seps = document.querySelectorAll('.isep');

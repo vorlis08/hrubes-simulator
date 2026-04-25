@@ -235,13 +235,6 @@ const QF = {
   q_lenka_kde_jana(){
     showNPCLine('lenka', '"Jana? Je v hospodě s tím Johnnym. Nevypadala šťastně, když odcházela. Kdybys ji viděl, pozdravuj." *podává ti účtenku*');
   },
-  q_jana_fake(){
-    if(!gs.inv.fake_kratom){ addLog('Nemáš fejkový kratom!','lw'); closeDialog(); return; }
-    gs.inv.fake_kratom = 0; updateInv();
-    addLog('Podal jsi Janě fejkový kratom...', 'lw');
-    closeDialog();
-    setTimeout(() => triggerStabDeath(), 800);
-  },
 
   // ─── Mates ────────────────────────────────────────────────────────────────
   q_mates_kill(){
@@ -975,15 +968,19 @@ const QF = {
     setTimeout(() => {
       showNPCLine('figurova', '"Dobrou zprávu?" *přimhouří oči* "O čem mluvíte, Hrubeši?"',
         () => {
-          addLog('"Špicloval jsem Milana. Našel jsem skrytou místnost – schovává tam zboží. Hory kratomu, šňupací tabák, nakradené počítače od Boxanový." *říkáš potichu*', 'ls');
-          setTimeout(() => showNPCLine('figurova',
-            '"Evidence..." *vstane, přehodí tašku* "Nechci to slyšet. Chci to vidět. Ukažte mi tu místnost." *skládá papíry*',
+          setTimeout(() => showPlayerLine(
+            '"Špicloval jsem Milana. Našel jsem skrytou místnost – schovává tam zboží. Hory kratomu, šňupací tabák, nakradené počítače od Boxanový."',
             () => {
-              gs.story.figurova_following = true;
-              addLog('Figurová tě následuje. Zaveď ji ke sklepu v Bille.', 'ls');
-              fnotif('Figurová tě sleduje 🧐', 'pos');
+              setTimeout(() => showNPCLine('figurova',
+                '"Evidence..." *vstane, přehodí tašku* "Nechci to slyšet. Chci to vidět. Ukažte mi tu místnost." *skládá papíry*',
+                () => {
+                  gs.story.figurova_following = true;
+                  addLog('Figurová tě následuje. Zaveď ji ke sklepu v Bille.', 'ls');
+                  fnotif('Figurová tě sleduje 🧐', 'pos');
+                }
+              ), 300);
             }
-          ), 400);
+          ), 200);
         }
       );
     }, 200);
