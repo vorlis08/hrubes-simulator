@@ -472,6 +472,12 @@ function showDialog(npc){
   // Villa – požádat o webovky (jen stage 3, kartička v inventáři, ještě nepožádáno)
   if(npc.id === 'johnny_vila' && gs.story.johnny_return_visit && gs.inv.membership_vaza && !gs.story.johnny_webovka_asked && !gs.story.johnny_webovka_done)
     choices.push({label:'💻 "Johny, udělej mi webovky."', cls:'special', fn:'q_johnny_webovka', sub:'Vaza Systems membership'});
+  // Hospoda – požádat Johnnyho o webovky (ještě nepožádáno)
+  if(npc.id === 'johnny' && !gs.story.hospoda_webovka_asked && !gs.story.hospoda_webovka_timer_done && !gs.story.hospoda_webovka_done)
+    choices.push({label:'💻 "Johny, udělal bys mi webovky?"', cls:'special', fn:'q_johnny_hospoda_webovka'});
+  // Hospoda – vyzvednout hotové webovky (timer vypršel)
+  if(npc.id === 'johnny' && gs.story.hospoda_webovka_timer_done && !gs.story.hospoda_webovka_done)
+    choices.push({label:'🌐 "Tak co, máš ty webovky?"', cls:'prim', fn:'q_johnny_hospoda_webovka_done'});
 
   // Milan – 1. varování (dynamic, zobrazí se jen při stage 0/1)
   if(npc.id === 'milan' && gs.story.kubatova_quest && !gs.story.milan_warn_count && !gs.story.mraz_done && !gs.story.milan_voodoo_dead)

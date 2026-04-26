@@ -586,6 +586,57 @@ const QF = {
     closeDialog();
     addLog('Odešel jsi z Johnnyho vily.', 'ls');
   },
+
+  // ─── Webovky – hospoda ────────────────────────────────────────────────────
+  q_johnny_hospoda_webovka(){
+    gs.story.hospoda_webovka_asked = true;
+    closeDialog();
+    showNPCLine('johnny',
+      '"Webovky?!" *usrkne pivo* "Fando, já nejsem tvůj ajťák. Mám business, mám schůzky, mám lidi na drátě. Táhni." *odvrátí se k baru*',
+      () => {
+        if(!gs.inv.membership_vaza) return;
+        showPlayerLine('"Moment—" *vytáhne kartičku* "Mám tenhle lístek od tebe."',
+          () => {
+            showNPCLine('johnny',
+              '"Co to je?" *vezme kartičku, otočí ji* "...Vaza Systems Gold Membership." *pozvedne obočí, téměř vstane ze stoličky* "Ty máš TOHLE?" *zamrká* "Fando... OK. Udělám ti to. Dej mi půl hodiny." *usadí se zpátky*',
+              () => {
+                addLog('Johnny souhlasí. Vrať se za ním za chvíli. ⏳', 'lm');
+                fnotif('💻 Johnny to dělá!', 'pos');
+                const gen = gs._gen;
+                setTimeout(() => {
+                  if(gs._gen !== gen) return;
+                  gs.story.hospoda_webovka_timer_done = true;
+                  addLog('💡 Webovky jsou hotové! Jdi za Johnnym do hospody.', 'lm');
+                  fnotif('🌐 Webovky hotové!', 'itm');
+                }, 30000);
+              }
+            );
+          }
+        );
+      }
+    );
+  },
+  q_johnny_hospoda_webovka_done(){
+    gs.story.hospoda_webovka_done = true;
+    if(activeProfile){ activeProfile.artifacts.webovky = true; profileSaveProgress(); }
+    closeDialog();
+    showNPCLine('johnny',
+      '"Fando!" *otočí laptop* "fanta-hrubes.webnode.cz – live od dneška. Responsive design, dark theme, SEO optimalizovaný." *poklepe ti na rameno* "Fifty grand by tě to stálo jinak. Pro tebe? Zadarmo."',
+      () => {
+        const npc = NPCS.johnny;
+        document.getElementById('dav').textContent   = npc.emoji;
+        document.getElementById('dname').textContent = npc.name.toUpperCase();
+        document.getElementById('drole').textContent = npc.role;
+        document.getElementById('dtxt').textContent  = '"Tak co, chceš si to prohlédnout?"';
+        document.getElementById('dchoices').innerHTML =
+          `<button class="db prim" onclick="window.open('https://fanta-hrubes.webnode.cz','_blank')">🌐 Otevřít fanta-hrubes.webnode.cz</button>` +
+          `<button class="db" onclick="closeDialog()">(Zavřít)</button>`;
+        document.getElementById('dov').classList.add('on');
+        addLog('Dostal jsi webovky od Johnnyho. 🌐', 'lm');
+        fnotif('🌐 Webovky live!', 'itm');
+      }
+    );
+  },
   // Koupelna – šuplík se želízky
   q_koupelna_drawer(){
     if(gs.story.koupelna_drawer_opened){ addLog('Šuplík je prázdný.','lw'); return; }
