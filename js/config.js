@@ -161,7 +161,6 @@ const NPCS = {
         text:'"Tak co, máš ten kratom? Fakt tu umírám."',
         choices:[
           {label:'🌿 Předat 20g kratomu',      cls:'prim',   fn:'q_jana_deliver'},
-          {label:'💀 Dát fejkový kratom',       cls:'danger', fn:'q_jana_fake', sub:'Velmi špatný nápad'},
           {label:'Ještě nemám',                 cls:'danger', fn:'close'}
         ]
       },

@@ -486,6 +486,14 @@ function interact(){
     const dx = canvas.width * 0.63, dy = canvas.height * 0.72;
     if(dist2(gs.player, {x:dx, y:dy}) < PROX_R * 2){ runQF('q_figurova_arrive_door'); return; }
   }
+  // Figurová váhá u průchodu – znovu zobrazit volbu (i po "Nechat ji, ať se rozmyslí")
+  if(gs.room === 'billa' && gs.story.figurova_at_door && !gs.story.figurova_kicked){
+    const fig = currentNPCs.find(n => n.id === 'figurova');
+    if(fig && dist2(gs.player, {x:fig.x, y:fig.y}) < PROX_R * 1.5){
+      if(document.getElementById('dov').classList.contains('on')) return;
+      QF._figurova_door_choices(); return;
+    }
+  }
   // Figurová leží v učebně – výboj propisky
   if(gs.room === 'ucebna' && gs.story.figurova_propiska_kill){
     const fx = canvas.width * 0.50, fy = canvas.height * 0.68;

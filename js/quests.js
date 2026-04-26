@@ -1040,23 +1040,27 @@ const QF = {
     gs.story.figurova_at_door = true;
     gs.story.figurova_following = false;
     const fig = currentNPCs.find(n => n.id === 'figurova');
-    if(fig){ fig.x = canvas.width * 0.63; fig.y = canvas.height * 0.55; }
+    // Figurová stojí vedle průchodu, ne na místě regálu mléka (0.63,0.55)
+    if(fig){ fig.x = canvas.width * 0.58; fig.y = canvas.height * 0.68; }
     closeDialog();
     setTimeout(() => {
       showNPCLine('figurova',
         '"Zde?" *kouká na tmavý průchod za regálem, přišlápne nohu* "Je tam... strašná tma." *stojí na prahu, nehýbe se* "Já se... sklepů bojím."',
         () => {
-          document.getElementById('dav').textContent   = '🧐';
-          document.getElementById('dname').textContent = 'FIGUROVÁ';
-          document.getElementById('drole').textContent = 'stojí na prahu';
-          document.getElementById('dtxt').textContent  = 'Figurová se zastavila. Nervy. Přesně jak jsi čekal.';
-          document.getElementById('dchoices').innerHTML =
-            `<button class="db danger" onclick="runQF('q_figurova_kick')">👟 Skopnout ji dolů</button>` +
-            `<button class="db" onclick="closeDialog()">Nechat ji, ať se rozmyslí</button>`;
-          document.getElementById('dov').classList.add('on');
+          QF._figurova_door_choices();
         }
       );
     }, 300);
+  },
+  _figurova_door_choices(){
+    document.getElementById('dav').textContent   = '🧐';
+    document.getElementById('dname').textContent = 'FIGUROVÁ';
+    document.getElementById('drole').textContent = 'stojí na prahu';
+    document.getElementById('dtxt').textContent  = 'Figurová se zastavila. Nervy. Přesně jak jsi čekal.';
+    document.getElementById('dchoices').innerHTML =
+      `<button class="db danger" onclick="runQF('q_figurova_kick')">👟 Skopnout ji dolů</button>` +
+      `<button class="db" onclick="closeDialog()">Nechat ji, ať se rozmyslí</button>`;
+    document.getElementById('dov').classList.add('on');
   },
   q_figurova_kick(){
     gs.story.figurova_kicked = true;
@@ -1139,7 +1143,6 @@ const QF = {
     }
     closeDialog();
   },
-  // q_mik_fake – odstraněno, fejkový kratom už Mikuláš neprodává
   q_mik_free(){
     gs.inv.kratom += 50; updateInv(); updateHUD();
     gainRep(2,'Dostal kratom zdarma');
