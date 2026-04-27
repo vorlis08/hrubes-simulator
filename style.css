@@ -184,6 +184,42 @@ canvas.kratom-blend,#kgb-canvas.kratom-blend{animation:tripCanvasBlend 1.0s infi
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
   align-items:center;justify-content:center;z-index:2000;cursor:pointer}
 #art-detail-ov.on{display:flex;animation:fdin .2s ease}
+
+/* ── Cibulkův papírek (jednorázové heslo) ── */
+#cibulka-papirek-ov{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  align-items:center;justify-content:center;z-index:2001;cursor:pointer}
+#cibulka-papirek-ov.on{display:flex;animation:fdin .2s ease}
+.cibulka-papirek-paper{
+  background:linear-gradient(180deg,#fdf6e3 0%,#f0e8d0 50%,#e8dec0 100%);
+  border:1px solid #c0a060;border-radius:4px;
+  padding:32px 36px;width:380px;max-width:90vw;
+  box-shadow:0 12px 40px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.4);
+  font-family:'Courier New',monospace;color:#2a1f0e;
+  cursor:default;text-align:center;
+  transform:rotate(-1.2deg);
+  position:relative}
+.cibulka-papirek-paper::before{
+  content:'';position:absolute;inset:0;border:1px dashed rgba(80,60,20,.18);
+  border-radius:3px;margin:8px;pointer-events:none}
+.cp-header{font-size:14px;font-weight:bold;letter-spacing:1px;
+  margin-bottom:14px;color:#5a3a10;text-transform:uppercase;
+  border-bottom:1px solid rgba(80,60,20,.25);padding-bottom:8px}
+.cp-instructions{font-size:11px;line-height:1.5;color:#3a2a10;
+  margin-bottom:18px;font-style:italic}
+.cp-pwd{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:bold;
+  background:rgba(255,250,230,.6);border:1px dashed #8a6020;
+  padding:14px 12px;letter-spacing:2px;margin-bottom:16px;
+  color:#1a1006;user-select:all;cursor:text}
+.cp-actions{display:flex;gap:10px;justify-content:center;margin-bottom:10px}
+.cp-btn{font-family:var(--fm);font-size:11px;padding:8px 14px;
+  background:#5a3a10;color:#fdf6e3;border:1px solid #8a6020;
+  border-radius:3px;cursor:pointer;letter-spacing:1px;
+  text-transform:uppercase;transition:all .15s}
+.cp-btn:hover{background:#6a4a20;transform:translateY(-1px)}
+.cp-used{font-size:10px;color:#a02020;margin-top:8px;font-style:italic}
+.cp-fresh{font-size:10px;color:#2a7a30;margin-top:8px;font-style:italic}
+
 #art-detail-card{
   background:rgba(20,12,32,.97);border:1px solid rgba(180,120,255,.25);
   border-radius:14px;padding:36px 44px;text-align:center;

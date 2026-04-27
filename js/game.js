@@ -12,6 +12,12 @@ window.addEventListener('resize', () => { resize(); if(gs.running) initRoom(); }
 
 let currentNPCs = [], currentItems = [], keys = {}, lastTime = 0;
 
+// ─── Artefakty na trofejní stěně doma ────────────────────────────────────
+// Všechny artefakty zobrazené v kruhu doma (i ty, co se nedají vzít):
+const ART_KEYS_DISPLAY = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky','kgb_detector','klic_supliku'];
+// Pouze tyto artefakty si lze vzít před hrou do inventáře:
+const PICKABLE_ART_KEYS = new Set(['saman_hlava','milan_phone','podprsenka','foto_figurova','membership_vaza','maturita','klic_supliku']);
+
 // ─── Utilitky ─────────────────────────────────────────────────────────────
 
 function rr(a, b){ return a + Math.random() * (b - a); }
@@ -312,21 +318,21 @@ function checkProx(){
     if(dist2(p, {x:doorCX, y:doorCY}) < PROX_R * 1.5){ best = {isDoor:true}; }
   }
 
-  // Artefakty na bustách doma
+  // Artefakty na bustách doma – zobrazuj proximity hint jen pro vzatelné
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky','kgb_detector'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
-    for(let i = 0; i < ART_KEYS.length; i++){
-      const key = ART_KEYS[i];
+    for(let i = 0; i < ART_KEYS_DISPLAY.length; i++){
+      const key = ART_KEYS_DISPLAY[i];
       const unlocked = activeProfile.artifacts[key];
       const taken = gs.pregame_artifacts && gs.pregame_artifacts[key];
+      const pickable = PICKABLE_ART_KEYS.has(key);
       if(unlocked && !taken){
-        const angle = (i / ART_KEYS.length) * Math.PI * 2 - Math.PI / 2;
+        const angle = (i / ART_KEYS_DISPLAY.length) * Math.PI * 2 - Math.PI / 2;
         const ax = acx + Math.cos(angle) * arx;
         const ay = acy + Math.sin(angle) * ary;
         if(dist2(p, {x:ax, y:ay}) < PROX_R * 0.9){
-          best = {isArtifact:true, artKey:key, artIndex:i};
+          best = {isArtifact:true, artKey:key, artIndex:i, pickable};
           break;
         }
       }
@@ -379,8 +385,9 @@ function checkProx(){
     } else if(best.isDoor){
       document.getElementById('ptxt').textContent = 'Otevřít dveře – jít ven';
     } else if(best.isArtifact){
-      const artNames = {c2_cert:'C2 Cert.',milan_phone:'Tel. Milan',podprsenka:'Janina podprsenka',klice_vila:'Klíče od vily',klice_fabie:'Fábie',saman_hlava:'Šam. hlava',maturita:'Maturita',foto_figurova:'Fotka Fig.',membership_vaza:'Vaza Systems',webovky:'Webovky'};
-      document.getElementById('ptxt').textContent = 'Vzít ' + (artNames[best.artKey] || best.artKey);
+      const artNames = {c2_cert:'C2 Cert.',milan_phone:'Tel. Milan',podprsenka:'Janina podprsenka',klice_vila:'Klíče od vily',klice_fabie:'Fábie',saman_hlava:'Šam. hlava',maturita:'Maturita',foto_figurova:'Fotka Fig.',membership_vaza:'Vaza Systems',webovky:'Webovky',kgb_detector:'KGB Detektor',klic_supliku:'Klíček od šuplíku'};
+      const nm = artNames[best.artKey] || best.artKey;
+      document.getElementById('ptxt').textContent = best.pickable ? ('Vzít ' + nm) : ('🔒 ' + nm + ' (nelze vzít)');
     } else if(best.isSamanBody){
       document.getElementById('ptxt').textContent = 'Vzít šamanovu hlavu';
     } else if(best.isItem){
@@ -580,26 +587,29 @@ function interact(){
     }
   }
 
-  // Artefakty na bustách doma
+  // Artefakty na bustách doma – pouze vzatelné lze přenést do hry
   if(gs.room === 'doma' && activeProfile){
-    const ART_KEYS = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky','kgb_detector'];
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
     const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
-    for(let i = 0; i < ART_KEYS.length; i++){
-      const key = ART_KEYS[i];
+    for(let i = 0; i < ART_KEYS_DISPLAY.length; i++){
+      const key = ART_KEYS_DISPLAY[i];
       const unlocked = activeProfile.artifacts[key];
       const taken = gs.pregame_artifacts && gs.pregame_artifacts[key];
       if(unlocked && !taken){
-        const angle = (i / ART_KEYS.length) * Math.PI * 2 - Math.PI / 2;
+        const angle = (i / ART_KEYS_DISPLAY.length) * Math.PI * 2 - Math.PI / 2;
         const ax = acx + Math.cos(angle) * arx;
         const ay = acy + Math.sin(angle) * ary;
         if(dist2(gs.player, {x:ax, y:ay}) < PROX_R * 0.9){
+          // Nevzatelné artefakty – jen trofej, jednorázová hláška
+          if(!PICKABLE_ART_KEYS.has(key)){
+            const artNames = {c2_cert:'C2 Certifikát',klice_vila:'Klíče od vily',klice_fabie:'Klíčky Fábie',webovky:'Webovky',kgb_detector:'KGB Detektor'};
+            addLog(`🔒 ${artNames[key] || key} – tenhle artefakt si do hry vzít nemůžeš.`, 'ls');
+            return;
+          }
           gs.pregame_artifacts[key] = true;
           // Přenést artefakt do inventáře
-          const artNames = {c2_cert:'C2 Certifikát',voodoo:'Voodoo panenka',fig_nuz:'Nůž od Figurové',fig_gun:'Pistole od Figurové',milan_phone:'Telefon Milana',zelizka:'Želízka',podprsenka:'Podprsenka',klice_vila:'Klíče od vily',pytel_cihalova:'Pytel s Číhalovou',klice_fabie:'Klíčky Fandovy Fábie',saman_hlava:'Šamanova hlava',maturita:'Maturita',cibule:'Cibule',membership_vaza:'Členská karta Vaza'};
-          if(key === 'pytel_cihalova'){
-            gs.inv.pytel = 1; gs.cihalova_in_bag = true;
-          } else if(gs.inv[key] !== undefined){
+          const artNames = {milan_phone:'Telefon Milana',podprsenka:'Podprsenka',saman_hlava:'Šamanova hlava',maturita:'Maturita',foto_figurova:'Fotka Figurové',membership_vaza:'Členská karta Vaza',klic_supliku:'Klíček od šuplíku'};
+          if(gs.inv[key] !== undefined){
             gs.inv[key] = 1;
           }
           updateInv();

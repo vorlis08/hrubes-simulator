@@ -16,6 +16,7 @@ const ART_DEFS_DISPLAY = [
   { key:'membership_vaza', emoji:'💳', name:'Vaza Systems',      desc:'Vaza Systems membership kartička. Ultimátní členství – neomezený počet webů.' },
   { key:'webovky',         emoji:'🌐', name:'Webovky od Johnnyho', desc:'Fanta Hrubeš – osobní web. Navržen Johnnym za nula korun. Otevřít?', url:'https://fanta-hrubes.webnode.cz/' },
   { key:'kgb_detector',   emoji:'🔍', name:'KGB Detektor',         desc:'Cibulkův detektor KGB/GRU agentů. Dvacet let práce v garáži. Odhalil Krejčí.' },
+  { key:'klic_supliku',   emoji:'🗝️', name:'Klíček od šuplíku',    desc:'Malý klíček od šuplíku v Cibulkově tajné laboratoři. Pája ho dostal s nějakým motivem.' },
 ];
 
 const PROFILE_STORAGE_KEY = 'kremze_profiles';
@@ -70,6 +71,7 @@ function createBlankProfile(username){
       foto_figurova:    false,
       webovky:          false,
       kgb_detector:     false,
+      klic_supliku:     false,
     },
 
     endings: {
@@ -346,6 +348,8 @@ function _computeStats(){
     milan_phone:'milan_phone', zelizka:'zelizka', podprsenka:'podprsenka',
     klice_vila:'klice_vila', klice_fabie:'klice_fabie', saman_hlava:'saman_hlava',
     membership_vaza:'membership_vaza', cibule:'cibule',
+    klic_supliku:'klic_supliku', kgb_detector:'kgb_detector',
+    maturita:'maturita', foto_figurova:'foto_figurova',
   };
   for(const [invKey, artKey] of Object.entries(artMap)){
     if(gs.inv[invKey] > 0) activeProfile.artifacts[artKey] = true;

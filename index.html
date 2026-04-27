@@ -785,6 +785,15 @@
     <div class="isl" id="sl-membership_vaza" title="💳 Vaza Systems Membership" style="display:none">
       <span class="ii">💳</span><span class="ic" id="ic-membership_vaza">1</span><span class="ilbl">Vaza</span>
     </div>
+    <div class="isl" id="sl-maturita" title="🏆 Maturitní vysvědčení" style="display:none">
+      <span class="ii">🏆</span><span class="ic" id="ic-maturita">1</span><span class="ilbl">Maturita</span>
+    </div>
+    <div class="isl" id="sl-klic_supliku" title="🗝️ Klíček od šuplíku Petra Cibulky" style="display:none">
+      <span class="ii">🗝️</span><span class="ic" id="ic-klic_supliku">1</span><span class="ilbl">Klíček</span>
+    </div>
+    <div class="isl" id="sl-cibulka_papirek" onclick="showCibulkaPapirek()" title="📄 Papírek od Cibulky – klikni pro zobrazení hesla" style="display:none">
+      <span class="ik">👁</span><span class="ii">📄</span><span class="ic" id="ic-cibulka_papirek">1</span><span class="ilbl">Papírek</span>
+    </div>
   </div></div>
 
   <div id="prox"><kbd>E</kbd> <span id="ptxt">Interagovat</span></div>
@@ -845,6 +854,11 @@
 <div id="maturita-ov" onclick="closeMaturita()">
   <img id="maturita-img" src="img/maturita.png" alt="Maturitní vysvědčení"/>
   <div id="note-hint">klikni pro zavření</div>
+</div>
+
+<!-- Cibulkův papírek overlay -->
+<div id="cibulka-papirek-ov" onclick="this.classList.remove('on')">
+  <div id="cibulka-papirek-inner" class="cibulka-papirek-paper" onclick="event.stopPropagation()"></div>
 </div>
 
 <!-- Artifact detail overlay -->

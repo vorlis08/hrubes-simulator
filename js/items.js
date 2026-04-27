@@ -222,6 +222,73 @@ function showWin(){
 }
 
 
+// ─── Cibulkův papírek – jednorázové heslo ────────────────────────────────
+
+const CIBULKA_PWD_WORDS = [
+  'medvědí','tichý','rudý','šedý','půlnoční','východní','tajný','poslední','starý','severní',
+  'jasný','rychlý','horský','lesní','křemžský','zlatý','černý','bílý','divoký','nový',
+];
+const CIBULKA_PWD_NOUNS = [
+  'fenykl','obušek','vodopád','jelen','úsvit','kosatec','prach','svit','potok','vítr',
+  'oheň','kámen','vlk','kruh','sníh','déšť','mráz','vlna','strom','kovář',
+];
+function generateCibulkaPassword(){
+  const w = CIBULKA_PWD_WORDS[Math.floor(Math.random()*CIBULKA_PWD_WORDS.length)];
+  const n = CIBULKA_PWD_NOUNS[Math.floor(Math.random()*CIBULKA_PWD_NOUNS.length)];
+  const num = Math.floor(Math.random()*90 + 10); // dvouciferné číslo
+  return `${w}-${n}-${num}`;
+}
+
+function showCibulkaPapirek(){
+  if(!gs.inv.cibulka_papirek || !gs.cibulka_password) return;
+  const pwd = gs.cibulka_password;
+  const used = gs.cibulka_used;
+  const ov = document.getElementById('cibulka-papirek-ov');
+  const inner = document.getElementById('cibulka-papirek-inner');
+  if(!ov || !inner){
+    // Fallback – vytvoř overlay dynamicky pokud chybí v HTML
+    let dyn = document.getElementById('cibulka-papirek-ov');
+    if(!dyn){
+      dyn = document.createElement('div');
+      dyn.id = 'cibulka-papirek-ov';
+      dyn.className = 'art-detail-ov';
+      dyn.innerHTML = `<div id="cibulka-papirek-inner" class="cibulka-papirek-paper" onclick="event.stopPropagation()"></div>`;
+      dyn.addEventListener('click', () => dyn.classList.remove('on'));
+      document.body.appendChild(dyn);
+    }
+    return showCibulkaPapirek();
+  }
+  inner.innerHTML = `
+    <div class="cp-header">📄 Papírek od Petra Cibulky</div>
+    <div class="cp-instructions">"Šeptej tohle heslo Šamanovi v hospodě.<br>Funguje JEN JEDNOU. Nezapomeň."</div>
+    <div class="cp-pwd" id="cp-pwd-text">${pwd}</div>
+    <div class="cp-actions">
+      <button class="cp-btn" onclick="copyCibulkaPwd()">📋 Zkopírovat</button>
+      <button class="cp-btn" onclick="document.getElementById('cibulka-papirek-ov').classList.remove('on')">Schovat</button>
+    </div>
+    ${used ? '<div class="cp-used">⚠️ Tohle heslo už bylo použito.</div>' : '<div class="cp-fresh">✨ Heslo zatím nebylo použito.</div>'}
+  `;
+  ov.classList.add('on');
+}
+
+function copyCibulkaPwd(){
+  if(!gs.cibulka_password) return;
+  const txt = gs.cibulka_password;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(
+      () => fnotif('📋 Heslo zkopírováno!', 'pos'),
+      () => fnotif('Kopírování se nezdařilo', 'neg')
+    );
+  } else {
+    // Fallback pro starší prohlížeče
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    fnotif('📋 Heslo zkopírováno!', 'pos');
+  }
+}
+
 // ─── KGB Minihra ──────────────────────────────────────────────────────────
 
 function startKGBMinigame(){
@@ -698,6 +765,16 @@ function endKGBMinigame(won){
     fnotif('+20 REP 🔫','rep');
     doneObj('quest_kgb');
     gs.story.kgb_won = true;
+    // Cibulka dá hráči papírek s jednorázovým heslem
+    if(!gs.cibulka_password){
+      gs.cibulka_password = generateCibulkaPassword();
+      gs.inv.cibulka_papirek = 1;
+      updateInv();
+      setTimeout(() => {
+        addLog('📄 Cibulka ti vstrčil do kapsy malý papírek. "Schovej to. Až to budeš potřebovat, budeš vědět."', 'lm');
+        fnotif('📄 Papírek od Cibulky', 'itm');
+      }, 1200);
+    }
     initRoom();
     lastTime = performance.now(); // resetuj timer aby dt nezaskoček
     requestAnimationFrame(gameLoop); // restartuj smyčku (zastavila se při KGB)

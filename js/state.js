@@ -9,7 +9,7 @@ const gs = {
   money: 150,
   energy: 100,
   rep: 0,
-  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0, propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0, kgb_prukaz:0 },
+  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0, propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0, kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0 },
 
   kratom_on:      false,
   kratom_t:       0,
@@ -90,6 +90,12 @@ const gs = {
   // KGB detektor
   detector_scanning: false,
   detector_scan_t:   0,
+
+  // Cibulka jednorázové heslo (vygenerováno po výhře v KGB minihře)
+  cibulka_password: null,    // string – heslo
+  cibulka_used:     false,   // true = heslo už bylo použito u šamana
+  saman_to_krb:     null,    // animace šamana ke krbu { phase, x, y, t }
+  krb_open:         false,   // krb je otevřený – přístup do tajné místnosti
 };
 
 function resetGameState(){
@@ -106,7 +112,7 @@ function resetGameState(){
     milan_phone:0, zelizka:0, prasek:0, klice_vila:0, klice_fabie:0,
     klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0,
     propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0,
-    kgb_prukaz:0,
+    kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0,
   });
 
   gs.kratom_on        = false;
@@ -166,6 +172,10 @@ function resetGameState(){
   gs.semen_puddle  = null;
   gs.detector_scanning = false;
   gs.detector_scan_t   = 0;
+  gs.cibulka_password  = null;
+  gs.cibulka_used      = false;
+  gs.saman_to_krb      = null;
+  gs.krb_open          = false;
   // Invalidate stale setTimeout callbacks from previous game runs
   gs._gen = (gs._gen || 0) + 1;
 }

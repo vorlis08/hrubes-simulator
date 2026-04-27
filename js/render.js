@@ -2823,6 +2823,7 @@ function drawDoma(W,H,t){
 
   // ── Artefakty na bustách v kruhu (střed místnosti) ─────────────────────
   if(activeProfile){
+    // Pořadí MUSÍ odpovídat ART_KEYS_DISPLAY v game.js (kvůli pickup logice)
     const ART_DEFS = [
       { key:'c2_cert',         emoji:'📜', name:'C2 Cert.' },
       { key:'milan_phone',     emoji:'📲', name:'Tel. Milan' },
@@ -2834,6 +2835,8 @@ function drawDoma(W,H,t){
       { key:'foto_figurova',   emoji:'📸', name:'Fotka Fig.' },
       { key:'membership_vaza', emoji:'💳', name:'Vaza Systems' },
       { key:'webovky',         emoji:'🌐', name:'Webovky' },
+      { key:'kgb_detector',    emoji:'🔍', name:'KGB Detektor' },
+      { key:'klic_supliku',    emoji:'🗝️', name:'Klíček' },
     ];
     const cx = W * 0.42, cy = H * 0.38;
     const radiusX = Math.min(W * 0.22, 200);
@@ -2880,17 +2883,25 @@ function drawDoma(W,H,t){
       ctx.fillRect(ax - bustW / 2 - 1, ay - bustH / 2 - 3, bustW + 2, 5);
 
       if(unlocked && !taken){
-        // Záře kolem artefaktu
+        // Vzatelné = zlatá, Nevzatelné = stříbrná (jen trofej)
+        const pickable = typeof PICKABLE_ART_KEYS !== 'undefined' && PICKABLE_ART_KEYS.has(art.key);
         const glow = 0.3 + 0.2 * Math.sin(t * 0.003 + i * 0.8);
+        const glowCol = pickable ? `rgba(240,192,64,${glow})` : `rgba(180,200,220,${glow*0.7})`;
         const ag = ctx.createRadialGradient(ax, ay - bustH / 2 - 10, 0, ax, ay - bustH / 2 - 10, 22);
-        ag.addColorStop(0, `rgba(240,192,64,${glow})`); ag.addColorStop(1, 'transparent');
+        ag.addColorStop(0, glowCol); ag.addColorStop(1, 'transparent');
         ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(ax, ay - bustH / 2 - 10, 22, 0, Math.PI * 2); ctx.fill();
         // Emoji artefaktu – vznáší se nad bustou
         const hover = Math.sin(t * 0.003 + i * 1.2) * 3;
         ctx.font = '16px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(art.emoji, ax, ay - bustH / 2 - 12 + hover);
+        // Zámeček nad nevzatelnými artefakty
+        if(!pickable){
+          ctx.font = '8px serif';
+          ctx.fillText('🔒', ax + 8, ay - bustH / 2 - 18 + hover);
+        }
         // Jméno
-        ctx.fillStyle = 'rgba(240,192,64,0.7)'; ctx.font = '7px JetBrains Mono,monospace';
+        ctx.fillStyle = pickable ? 'rgba(240,192,64,0.7)' : 'rgba(180,200,220,0.55)';
+        ctx.font = '7px JetBrains Mono,monospace';
         ctx.textBaseline = 'alphabetic';
         ctx.fillText(art.name, ax, ay + bustH / 2 + 12);
       } else if(taken){
