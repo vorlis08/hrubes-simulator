@@ -997,6 +997,11 @@ function gameLoop(ts){
     if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
   } catch(e) {
     console.error('[gameLoop] chyba:', e);
+    // Zobrazit chybu v herním deníku – pomáhá ladit bez otvírání konzole
+    try {
+      const msg = e && e.message ? e.message : String(e);
+      if(typeof addLog === 'function') addLog('🔴 CHYBA: ' + msg.slice(0, 120), 'lw');
+    } catch(_){}
   }
   requestAnimationFrame(gameLoop);
 }
