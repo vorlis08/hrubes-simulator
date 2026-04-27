@@ -106,9 +106,13 @@ function drawPulsingAura(ctx, x, y, maxRadius, color, t, freq = 0.003) {
   const radius = maxRadius * (0.7 + pulse * 0.3);
   const alpha = pulse * 0.6;
 
+  // Extrahuj RGB složky bezpečně – .replace() na rgba() by přidalo 5. parametr (invalid CSS)
+  const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  const [r, g, b] = m ? [m[1], m[2], m[3]] : [100, 200, 255];
+
   const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-  grad.addColorStop(0, color.replace(')', `, ${alpha})`));
-  grad.addColorStop(0.7, color.replace(')', `, ${alpha * 0.3})`));
+  grad.addColorStop(0,   `rgba(${r},${g},${b},${alpha})`);
+  grad.addColorStop(0.7, `rgba(${r},${g},${b},${alpha * 0.3})`);
   grad.addColorStop(1, 'rgba(0,0,0,0)');
 
   ctx.fillStyle = grad;

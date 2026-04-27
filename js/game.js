@@ -987,12 +987,16 @@ function updateVoodooAnim(dt){
 let _lastRenderTs = 0;
 function gameLoop(ts){
   if(!gs.running && !gs.ca_active && !gs.voodoo_anim) return;
-  const dt = Math.min(ts - lastTime, 50);
-  lastTime = ts;
-  if(gs.ca_active && gs.ca) updateCihalovaCA(dt);
-  if(gs.voodoo_anim) updateVoodooAnim(dt);
-  if(gs.running) update(dt);
-  // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
-  if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
+  try {
+    const dt = Math.min(ts - lastTime, 50);
+    lastTime = ts;
+    if(gs.ca_active && gs.ca) updateCihalovaCA(dt);
+    if(gs.voodoo_anim) updateVoodooAnim(dt);
+    if(gs.running) update(dt);
+    // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
+    if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
+  } catch(e) {
+    console.error('[gameLoop] chyba:', e);
+  }
   requestAnimationFrame(gameLoop);
 }

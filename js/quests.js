@@ -1026,6 +1026,9 @@ const QF = {
                 '"Evidence..." *vstane, přehodí tašku* "Nechci to slyšet. Chci to vidět. Ukažte mi tu místnost." *skládá papíry*',
                 () => {
                   gs.story.figurova_following = true;
+                  if(!gs.dead) gs.running = true;
+                  // Jistota: zavři dialog overlay pokud by zůstal otevřený
+                  document.getElementById('dov').classList.remove('on');
                   addLog('Figurová tě následuje. Zaveď ji ke sklepu v Bille.', 'ls');
                   fnotif('Figurová tě sleduje 🧐', 'pos');
                 }
