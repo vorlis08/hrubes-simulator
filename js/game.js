@@ -82,6 +82,8 @@ function initRoom(spawnX, spawnY){
   if(!gs.platenikova_in) currentNPCs = currentNPCs.filter(n => n.id !== 'platenikova');
   // Šaman mrtvý nebo právě běhá nahý – nezobrazuj normální verzi
   if(gs.saman_dead || gs.saman_naked_anim) currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
+  // Šaman jde / stojí u krbu (Cibulkův příkaz) – budeme ho renderovat sami
+  if(gs.saman_to_krb) currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
   // Pája v hospodě – nezobrazuj na ulici
   if(gs.story.paja_in_hospoda) currentNPCs = currentNPCs.filter(n => n.id !== 'paja');
   // Pája v hospodě – přidat ho tam
@@ -345,6 +347,24 @@ function checkProx(){
     if(dist2(p, {x:sx, y:sy}) < PROX_R){ best = {isSamanBody:true}; }
   }
 
+  // Krb v hospodě – vstup do Cibulkovy laboratoře
+  if(gs.room === 'hospoda' && gs.krb_open){
+    const fp = ROOMS.hospoda.fireplace;
+    const kx = fp.rx * canvas.width, ky = fp.ry * canvas.height + canvas.height * 0.16;
+    if(dist2(p, {x:kx, y:ky}) < PROX_R * 1.5){ best = {isKrbEntry:true}; }
+  }
+
+  // Cibulkova laboratoř – návrat krbem (nahoře uprostřed)
+  if(gs.room === 'cibulka_lab'){
+    const krbX = canvas.width * 0.50, krbY = canvas.height * 0.45;
+    if(dist2(p, {x:krbX, y:krbY}) < PROX_R * 1.3){ best = {isLabExit:true}; }
+    // Šuplík
+    const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
+    if(!gs.story.kgb_detector_from_lab && dist2(p, {x:supX, y:supY}) < PROX_R * 1.2){
+      best = {isCibulkaSuplik:true};
+    }
+  }
+
   const ph = document.getElementById('prox');
   if(best){
     ph.classList.add('show');
@@ -390,6 +410,12 @@ function checkProx(){
       document.getElementById('ptxt').textContent = best.pickable ? ('Vzít ' + nm) : ('🔒 ' + nm + ' (nelze vzít)');
     } else if(best.isSamanBody){
       document.getElementById('ptxt').textContent = 'Vzít šamanovu hlavu';
+    } else if(best.isKrbEntry){
+      document.getElementById('ptxt').textContent = '🔬 Vstoupit do Cibulkovy laboratoře';
+    } else if(best.isLabExit){
+      document.getElementById('ptxt').textContent = '🔥 Zpět do hospody';
+    } else if(best.isCibulkaSuplik){
+      document.getElementById('ptxt').textContent = gs.inv.klic_supliku ? '🗝️ Otevřít šuplík klíčkem' : '🔒 Šuplík (potřebuješ klíček)';
     } else if(best.isItem){
       document.getElementById('ptxt').textContent = best.type === 'kratom' ? 'Sebrat kratom' : 'Sebrat pizza žemli';
     } else {
@@ -621,6 +647,49 @@ function interact(){
     }
   }
 
+  // Vstup do Cibulkovy laboratoře (krb v hospodě, otevřený)
+  if(gs.room === 'hospoda' && gs.krb_open){
+    const fp = ROOMS.hospoda.fireplace;
+    const kx = fp.rx * canvas.width, ky = fp.ry * canvas.height + canvas.height * 0.16;
+    if(dist2(gs.player, {x:kx, y:ky}) < PROX_R * 1.5){
+      gs.room = 'cibulka_lab';
+      initRoom(canvas.width * 0.50, canvas.height * 0.55);
+      addLog('*Projdeš plameny. Cítíš jen chlad. Vstoupil jsi do tajné laboratoře.*', 'lm');
+      return;
+    }
+  }
+
+  // Návrat z laboratoře krbem
+  if(gs.room === 'cibulka_lab'){
+    const krbX = canvas.width * 0.50, krbY = canvas.height * 0.45;
+    if(dist2(gs.player, {x:krbX, y:krbY}) < PROX_R * 1.3){
+      gs.room = 'hospoda';
+      const fp = ROOMS.hospoda.fireplace;
+      initRoom(fp.rx * canvas.width, fp.ry * canvas.height + canvas.height * 0.30);
+      return;
+    }
+    // Šuplík – odemknout klíčkem
+    const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
+    if(!gs.story.kgb_detector_from_lab && dist2(gs.player, {x:supX, y:supY}) < PROX_R * 1.2){
+      if(!gs.inv.klic_supliku){
+        addLog('🔒 Šuplík je zamčený. Potřebuješ klíček.', 'lw');
+        return;
+      }
+      gs.story.kgb_detector_from_lab = true;
+      gs.inv.kgb_detector = 1;
+      // Klíček spotřebován
+      gs.inv.klic_supliku = 0;
+      updateInv();
+      addLog('*Otočíš klíčkem v zámku. Šuplík povolí.* 🗝️', 'lm');
+      setTimeout(() => {
+        addLog('Uvnitř leží KGB Detektor. Cibulkův mistrovský kus. Bereš ho.', 'lm');
+        fnotif('🔍 KGB Detektor!', 'itm');
+        if(activeProfile){ activeProfile.artifacts.kgb_detector = true; }
+      }, 600);
+      return;
+    }
+  }
+
   // Šamanova mrtvola – vzít hlavu
   if(gs.room === 'hospoda' && gs.saman_dead && gs.saman_death_anim && !gs.inv.saman_hlava){
     const sx = gs.saman_death_anim.x, sy = gs.saman_death_anim.y;
@@ -674,6 +743,19 @@ function update(dt){
         fig.x += (dx / d) * spd;
         fig.y += (dy / d) * spd;
       }
+    }
+  }
+
+  // Šaman jde ke krbu (Cibulkův příkaz)
+  if(gs.saman_to_krb && gs.room === 'hospoda' && gs.saman_to_krb.phase === 'walking'){
+    const a = gs.saman_to_krb;
+    const dx = a.targetX - a.x, dy = a.targetY - a.y;
+    const d = Math.hypot(dx, dy);
+    if(d > 4){
+      const spd = 2.2 * dt / 16.667;
+      a.x += (dx / d) * spd;
+      a.y += (dy / d) * spd;
+      a.flipX = dx < 0 ? -1 : 1;
     }
   }
 
@@ -768,6 +850,11 @@ function update(dt){
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
     if(p.y > H2) { changeRoom('down'); return; }
+  } else if(gs.room === 'cibulka_lab'){
+    // Cibulkova laboratoř – pohyb omezen, exit pouze krbem (interakce)
+    const W2 = canvas.width, H2 = canvas.height;
+    p.x = Math.max(30, Math.min(W2 - 30, p.x));
+    p.y = Math.max(canvas.height * 0.52, Math.min(H2 - 30, p.y));
   } else if(gs.room === 'doma'){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));

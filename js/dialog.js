@@ -76,6 +76,19 @@ function submitPassword(){
     return;
   }
 
+  // === Cibulkovo jednorázové heslo ===
+  if(gs.cibulka_password && !gs.cibulka_used){
+    // Normalizace: lowercase, ignorovat mezery navíc, ale zachovat pomlčky
+    const normalize = s => s.toLowerCase().replace(/\s+/g, '').trim();
+    if(normalize(ans) === normalize(gs.cibulka_password)){
+      gs.cibulka_used = true;
+      closeRiddle();
+      closeDialog();
+      triggerCibulkaSequence();
+      return;
+    }
+  }
+
   const pw = SAMAN_PASSWORDS[ans];
   if(!pw){
     // Špatné heslo – eskalace
@@ -217,6 +230,80 @@ function triggerObidek(){
     }
   }
   setTimeout(nextLine, 700);
+}
+
+// === CIBULKOVO HESLO – šaman jde ke krbu, řekne zaklínadlo, krb se otevře ===
+function triggerCibulkaSequence(){
+  // Hráč musí být v hospodě
+  if(gs.room !== 'hospoda'){
+    addLog('Šaman tu teď není.', 'lw');
+    return;
+  }
+
+  addLog('*Šaman zbledne. Pomalu vstane.* "...takže Cibulka tě poslal..." *přikývne s respektem*', 'lm');
+
+  // Najdi šamana a krb pozice
+  const samanNPC = currentNPCs.find(n => n.id === 'kratom_saman');
+  const startX = samanNPC ? samanNPC.x : canvas.width * 0.80;
+  const startY = samanNPC ? samanNPC.y : canvas.height * 0.62;
+  const krbX = canvas.width * 0.36;
+  const krbY = canvas.height * 0.74; // o trochu níže než ohniště, aby stál PŘED krbem
+
+  // Odeber šamana z NPC – budeme ho vykreslovat sami
+  currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
+
+  gs.saman_to_krb = {
+    phase: 'walking',           // walking → incantation → opening → done
+    x: startX, y: startY,
+    targetX: krbX, targetY: krbY,
+    flipX: krbX < startX ? -1 : 1,
+    startTime: gs.ts,
+    phaseStart: gs.ts,
+    speech: null,
+  };
+
+  // Začni hudební/textovou sekvenci po krátkém čekání
+  const seq = [
+    { delay: 3500, action: 'arrive',     log: '*Šaman dojde ke krbu, položí ruce na kameny* "Tichý je hlas Cibulkův..."', cls: 'lm' },
+    { delay: 1800, action: 'incant1',    log: '"OBÍDEK... OBÍDEK..." *šeptá pomalu*', cls: 'lw',
+      speech: 'OBÍDEK... OBÍDEK...' },
+    { delay: 2200, action: 'incant2',    log: '"FRANTIŠEK JE MŮJ MEDVÍDEK!" *plameny zaplápolají*', cls: 'lw',
+      speech: 'FRANTIŠEK JE MŮJ MEDVÍDEK!' },
+    { delay: 1800, action: 'open',       log: '*Plameny uprostřed krbu se rozdělí jako Mojžíšovo Rudé moře. Otevře se průchod.*', cls: 'lm' },
+    { delay: 1200, action: 'done',       log: '*Šaman ustoupí stranou.* "Vstup, Hrubeši. Cibulka tě čeká."', cls: 'lm' },
+  ];
+
+  let i = 0;
+  function nextLine(){
+    if(!gs.saman_to_krb){ return; }
+    if(i < seq.length){
+      const ln = seq[i];
+      addLog(ln.log, ln.cls);
+      if(ln.speech) gs.saman_to_krb.speech = { text: ln.speech, t: gs.ts };
+      if(ln.action === 'arrive'){
+        // Šaman dorazil ke krbu – zastav pohyb
+        gs.saman_to_krb.phase = 'incantation';
+        gs.saman_to_krb.phaseStart = gs.ts;
+        gs.saman_to_krb.x = gs.saman_to_krb.targetX;
+        gs.saman_to_krb.y = gs.saman_to_krb.targetY;
+      }
+      if(ln.action === 'open'){
+        gs.saman_to_krb.phase = 'opening';
+        gs.saman_to_krb.phaseStart = gs.ts;
+        gs.krb_open = true;
+        screenShake(400);
+        fnotif('🔥 Krb se otevřel!', 'pos');
+      }
+      if(ln.action === 'done'){
+        gs.saman_to_krb.phase = 'done';
+        gs.saman_to_krb.speech = null;
+        addLog('Vejdi do krbu pro vstup do Cibulkovy laboratoře 🔥', 'lm');
+      }
+      i++;
+      setTimeout(nextLine, ln.delay);
+    }
+  }
+  setTimeout(nextLine, 800);
 }
 
 // ─── getStage ─────────────────────────────────────────────────────────────

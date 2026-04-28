@@ -649,6 +649,7 @@ const ROOMS = {
   koupelna:    { name:'Koupelna',      icon:'🚿', sub:'Johnnyho koupelna',        bg:'#0e0d12', npcs:[], spawns:{} },
   heaven:      { name:'Nebeské schody', icon:'✨',  sub:'Věčnost',               bg:'#fffef8', npcs:[],              spawns:{} },
   heaven_gate: { name:'Boží brána',     icon:'🌟',  sub:'Vstup do věčnosti',    bg:'#fffef0', npcs:['kratom_buh'],  spawns:{} },
+  cibulka_lab: { name:'Cibulkova laboratoř', icon:'🔬', sub:'Tajná místnost za krbem', bg:'#040810', npcs:[], spawns:{} },
 };
 
 const RORDER = ['ucebna','billa','hospoda','ulice','kremze'];

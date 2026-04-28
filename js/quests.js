@@ -695,7 +695,23 @@ const QF = {
     if(gs.story.paja !== 2){ closeDialog(); return; }
     gs.money += 500; gs.story.paja = 3; updateHUD();
     addLog('Pája vrátil 500 Kč! Zisk +200 Kč 🎉','lm');
-    fnotif('+500 Kč','pos'); doneObj('side_paja'); closeDialog();
+    fnotif('+500 Kč','pos'); doneObj('side_paja');
+    // Pája dá hráči klíček od šuplíku jako bonus (artefakt do dalších her)
+    if(!gs.inv.klic_supliku){
+      gs.inv.klic_supliku = 1; updateInv();
+      if(activeProfile){ activeProfile.artifacts.klic_supliku = true; }
+      setTimeout(() => {
+        showNPCLine('paja',
+          '"Hele... a něco bonusem." *vytáhne z kapsy malý zlatý klíček* "Neptej se, kde jsem ho vzal. Tobě bude k něčemu, mně už ne. Šuplík... budeš vědět."',
+          () => {
+            addLog('🗝️ Dostal jsi od Páji klíček od šuplíku!', 'lm');
+            fnotif('🗝️ Klíček od šuplíku', 'itm');
+          }
+        );
+      }, 600);
+    } else {
+      closeDialog();
+    }
   },
   q_paja_fabie_info(){
     gs.story.paja_fabie_told = true;
