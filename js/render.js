@@ -938,6 +938,50 @@ function drawHospoda(W,H,t){
   }
 }
 
+// ─── Generický pixel render Jany ────────────────────────────────────────────
+function drawJanaPixel(x, bY, t, flip){
+  flip = flip || 1;
+  ctx.save();
+  ctx.translate(x, bY);
+  ctx.scale(flip, 1);
+  // Šaty (růžové)
+  const dressG = ctx.createLinearGradient(0, -10, 0, 28);
+  dressG.addColorStop(0, '#e91e63'); dressG.addColorStop(1, '#9c1148');
+  ctx.fillStyle = dressG;
+  ctx.beginPath();
+  ctx.moveTo(-12, -8);
+  ctx.bezierCurveTo(-18, 8, -16, 22, -14, 28);
+  ctx.lineTo(14, 28);
+  ctx.bezierCurveTo(16, 22, 18, 8, 12, -8);
+  ctx.closePath();
+  ctx.fill();
+  // Hlava
+  ctx.fillStyle = '#fde8c8';
+  ctx.beginPath(); ctx.arc(0, -22, 12, 0, Math.PI * 2); ctx.fill();
+  // Vlasy boky
+  ctx.fillStyle = '#f5d97a';
+  ctx.beginPath();
+  ctx.moveTo(-12, -28); ctx.lineTo(-14, -8); ctx.lineTo(-9, -10); ctx.lineTo(-9, -32);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(12, -28); ctx.lineTo(14, -8); ctx.lineTo(9, -10); ctx.lineTo(9, -32);
+  ctx.closePath(); ctx.fill();
+  // Vlasy nahoře
+  ctx.beginPath();
+  ctx.arc(0, -30, 11, Math.PI, 0); ctx.fill();
+  // Oči
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(-3, -22, 1.2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(3, -22, 1.2, 0, Math.PI * 2); ctx.fill();
+  // Rty
+  ctx.fillStyle = '#c62b6c';
+  ctx.fillRect(-2.5, -17, 5, 1.5);
+  ctx.restore();
+  // Stín
+  ctx.fillStyle = 'rgba(0,0,0,0.32)';
+  ctx.beginPath(); ctx.ellipse(x, bY + 22, 18, 4, 0, 0, Math.PI * 2); ctx.fill();
+}
+
 // ─── Jana u krbu / jde ke krbu ──────────────────────────────────────────────
 function drawJanaAtFireplace(t){
   let x, y, flip = 1, walking = false;
@@ -2078,6 +2122,118 @@ function drawJohnnyVila(W,H,t){
     ctx.beginPath(); ctx.arc(dx,dy,sz,0,Math.PI*2); ctx.fill();
   }
   ctx.restore();
+
+  // ── Bathroom flood – voda zpod dveří koupelny ──
+  if(gs.bathroom_flood_anim){
+    const f = gs.bathroom_flood_anim;
+    const doorX = W * 0.92, doorY = H * 0.40;
+    const progress = f.progress;
+    // Kaluž šíří se od dveří doleva přes podlahu
+    const puddleW = progress * W * 0.95;
+    const puddleH = progress * H * 0.30;
+    // Tělo kaluže
+    const pG = ctx.createRadialGradient(doorX-30, doorY+20, 0, doorX-30, doorY+20, puddleW);
+    pG.addColorStop(0, 'rgba(120,180,220,0.85)');
+    pG.addColorStop(0.4, 'rgba(80,140,200,0.65)');
+    pG.addColorStop(1, 'rgba(60,120,180,0)');
+    ctx.fillStyle = pG;
+    ctx.beginPath();
+    ctx.ellipse(doorX-30, doorY+20, puddleW, puddleH*0.55, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Vlnky / odlesky
+    for(let i=0; i<8; i++){
+      const ang = (i/8) * Math.PI * 2 + t*0.001;
+      const wx = doorX-30 + Math.cos(ang) * puddleW * 0.5 * (0.4+i*0.08);
+      const wy = doorY+20 + Math.sin(ang) * puddleH * 0.30 * (0.4+i*0.08);
+      const wr = 6 + Math.sin(t*0.005+i)*3;
+      ctx.strokeStyle = `rgba(180,220,255,${0.3+0.2*Math.sin(t*0.003+i)})`;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.ellipse(wx, wy, wr, wr*0.4, 0, 0, Math.PI*2); ctx.stroke();
+    }
+    // Pruh vody zpod dveří
+    ctx.fillStyle = 'rgba(120,180,220,0.95)';
+    ctx.fillRect(doorX-50, doorY+25, 50, 4 + progress*8);
+    // Status text
+    if(!f.johnnyBroke){
+      ctx.fillStyle = 'rgba(180,220,255,0.85)';
+      ctx.font = 'bold 11px JetBrains Mono,monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('💧 POVODEŇ – ' + Math.floor(progress*100) + '%', W*0.5, H*0.04);
+    }
+  }
+
+  // ── Jana animace (procházky ve villce) ──
+  if(gs.jana_to_bathroom_anim && gs.room === 'johnny_vila'){
+    const a = gs.jana_to_bathroom_anim;
+    const bob = Math.abs(Math.sin(t*0.012))*4;
+    drawJanaPixel(a.x, a.y - bob, t, a.flipX || 1);
+    // Jméno
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 11px Outfit,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('Jana', a.x, a.y - 38 - bob);
+  }
+  if(gs.jana_to_toilet_anim && gs.room === 'johnny_vila' && gs.jana_to_toilet_anim.phase !== 'in_toilet'){
+    const a = gs.jana_to_toilet_anim;
+    const bob = Math.abs(Math.sin(t*0.012))*4;
+    drawJanaPixel(a.x, a.y - bob, t, a.flipX || 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 11px Outfit,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('Jana', a.x, a.y - 38 - bob);
+  }
+
+  // ── Sklenice na stole (když je Jana na WC) ──
+  if(gs.story.jana_at_toilet && !gs.inv.sklenice_jana){
+    const tx = W*0.50, ty = H*0.62;
+    // Podstavec
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath(); ctx.ellipse(tx, ty+8, 14, 4, 0, 0, Math.PI*2); ctx.fill();
+    // Sklenice
+    ctx.strokeStyle = 'rgba(180,220,255,0.85)'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(tx-9, ty-12, 18, 18);
+    ctx.fillStyle = gs.story.drink_drugged ? 'rgba(140,90,160,0.55)' : 'rgba(80,40,20,0.55)';
+    ctx.fillRect(tx-8, ty-7, 16, 12);
+    // Pěna nahoře
+    ctx.fillStyle = 'rgba(255,255,220,0.55)';
+    ctx.beginPath(); ctx.ellipse(tx, ty-7, 8, 2, 0, 0, Math.PI*2); ctx.fill();
+    // Otrávení indikátor (subtilní)
+    if(gs.story.drink_drugged){
+      const pulse = 0.4 + 0.3*Math.sin(t*0.008);
+      ctx.fillStyle = `rgba(180,80,200,${pulse*0.5})`;
+      ctx.beginPath(); ctx.arc(tx-3, ty-2, 1.5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(tx+4, ty-1, 1.2, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // ── Charm gauč render (Johnny+Jana na gauči) ──
+  if(gs.charm_gauc_anim){
+    const a = gs.charm_gauc_anim;
+    // Render Johnny (jednoduchá modrá silueta)
+    ctx.save();
+    ctx.translate(a.johnny_x, a.johnny_y);
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fde8c8';
+    ctx.beginPath(); ctx.arc(0, -18, 11, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-3, -19, 1.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, -19, 1.2, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Render Jana
+    const sleeping = a.phase === 'asleep' || a.phase === 'done';
+    const janaY = sleeping ? a.jana_y + 5 : a.jana_y;
+    drawJanaPixel(a.jana_x, janaY, t, 1);
+    if(sleeping){
+      // Z's nad Janou
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = 'bold 14px Outfit,sans-serif';
+      ctx.textAlign = 'center';
+      const zOff = (t*0.001) % 1;
+      ctx.fillText('Z', a.jana_x - 14 + zOff*4, a.jana_y - 35 - zOff*8);
+      ctx.fillText('z', a.jana_x - 8 + zOff*3, a.jana_y - 28 - zOff*6);
+    }
+  }
 }
 
 // ─── Koupelna ────────────────────────────────────────────────────────────────
