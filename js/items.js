@@ -330,7 +330,73 @@ function triggerJohnnyDragsJanaToGauc(){
   }, 2500);
 }
 
-// Charm gauč sequence – Johnny baluje Janu, ona usne
+// Jana spoutá Johnnyho – animace
+function triggerJanaHandcuffs(){
+  if(gs.jana_handcuffs_anim) return;
+  gs.jana_handcuffs_anim = { phase:'rush', t0: gs.ts };
+  addLog('*Jana se rozeběhne k Johnnymu!*', 'lw');
+  screenShake(300);
+  setTimeout(() => {
+    addLog('*BUM! Johnny padl k zemi.* Jana ho táhne k radiátoru.', 'lw');
+    screenShake(400);
+  }, 1200);
+  setTimeout(() => {
+    addLog('*CVAK!* Jana spoutala Johnnyho želízkama k radiátoru.', 'lm');
+    fnotif('⛓️ Johnny spoutaný', 'pos');
+    gs.story.jana_handcuffed_johnny = true;
+    gs.story.johnny_cuffed = true; // existující flag pro villa
+    gs.jana_handcuffs_anim = null;
+    // Spusti dialog s Janou (díky + podprsenka) za chvilku
+    setTimeout(() => {
+      const jvNPC = NPCS['jana_vila'];
+      if(jvNPC){
+        const j = {...jvNPC, id:'jana_vila', x:canvas.width*0.5, y:canvas.height*0.65, bob:0, bobDir:1};
+        currentNPCs.push(j);
+        showDialog(j);
+      }
+    }, 1500);
+  }, 2800);
+}
+
+// Bathroom cutscene – Johnny vs Jana hádka, hráč jen poslouchá
+function triggerBathroomCutscene(){
+  if(gs.story.bathroom_cutscene_done) return;
+  gs.story.bathroom_cutscene_done = true;
+  gs.bathroom_cutscene_anim = { phase:'fight', t0: gs.ts };
+
+  const seq = [
+    { delay: 1800, npc:'johnny',
+      text:'"JANO! CO TO MÁŠ ZA ZRŮDNOSTI?! VYSVĚTLI MI TO! KOUKEJ!"' },
+    { delay: 2200, npc:'jana',
+      text:'"Ty... TY MI POŘÁD HARAŠÍŠ! Kámoška měla pravdu, ŘÍKALA MI ABYCH SEM NECHODILA!"' },
+    { delay: 2400, npc:'jana',
+      text:'"A HRUBEŠ JE ZMRD CO MI TO DOHODIL! Nikdy mu to neodpustím!"' },
+    { delay: 1600, choice:true },
+  ];
+
+  let i = 0;
+  function next(){
+    if(i >= seq.length) return;
+    const ln = seq[i++];
+    if(ln.choice){
+      // Hráčova volba – bránit se nebo poslouchat
+      document.getElementById('dav').textContent = '🎒';
+      document.getElementById('dname').textContent = 'FANDA';
+      document.getElementById('drole').textContent = 'co teď?';
+      document.getElementById('dtxt').textContent = '*Stojíš v zatopené koupelně. Johnny+Jana ti křičí přes hlavu.* Co uděláš?';
+      document.getElementById('dchoices').innerHTML =
+        '<button class="db prim" onclick="runQF(\'q_bathroom_listen\')">(Naslouchat dál)</button>' +
+        '<button class="db danger" onclick="runQF(\'q_bathroom_defend\')">💬 "Já jsem chtěl jen pomoct..."</button>';
+      document.getElementById('dov').classList.add('on');
+      return;
+    }
+    showNPCLine(ln.npc, ln.text, () => {
+      setTimeout(next, 200);
+    });
+  }
+  next();
+}
+
 function triggerCharmGauc(){
   if(gs.charm_gauc_anim) return;
   gs.charm_gauc_anim = {

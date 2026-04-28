@@ -468,6 +468,31 @@ const QF = {
     triggerJanaToBathroom();
   },
 
+  // Bathroom cutscene – hráč naslouchá
+  q_bathroom_listen(){
+    closeDialog();
+    setTimeout(() => {
+      addLog('*Necháš je hádat.*', 'ls');
+      setTimeout(() => triggerJanaHandcuffs(), 1200);
+    }, 300);
+  },
+
+  // Bathroom cutscene – hráč se brání → Johnny+Jana ho zařvou
+  q_bathroom_defend(){
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('johnny',
+        '"TEĎ DRŽ HUBU, HRUBEŠ! TADY SE HÁDAJÍ DOSPĚLÍ!"',
+        () => {
+          setTimeout(() => showNPCLine('jana_kosova',
+            '"DRŽ HUBU, HRUBEŠI! TY SE TADY NEPLEŤ!"',
+            () => setTimeout(() => triggerJanaHandcuffs(), 800)
+          ), 600);
+        }
+      );
+    }, 300);
+  },
+
   // Johnny pomoc – konec Johnny path (Jana usnula na gauči)
   q_johnny_help_done(){
     closeDialog();

@@ -153,9 +153,19 @@ function initRoom(spawnX, spawnY){
     setTimeout(() => addLog('*Na podlaze sklepa... Figurová. Pochroumána. Ještě se hýbe.*', 'lw'), 600);
   }
   // Jana v hospodě na rande
-  if(gs.room === 'hospoda' && gs.story.jana_in_hospoda && !gs.story.johnny_took_jana){
+  if(gs.room === 'hospoda' && gs.story.jana_in_hospoda && !gs.story.johnny_took_jana && !gs.story.jana_at_johnny){
     const jn = NPCS['jana_kosova'];
     currentNPCs.push({...jn, id:'jana_kosova', x:jn.rx*canvas.width, y:(jn.ry+0.28)*canvas.height, bob:0, bobDir:1});
+  }
+
+  // Spustit cutscenu v koupelně po prokopnutí dveří
+  if(gs.room === 'koupelna' && gs.story.bathroom_door_broken && !gs.story.bathroom_cutscene_done && !gs.story.jana_handcuffed_johnny){
+    setTimeout(() => triggerBathroomCutscene(), 600);
+  }
+
+  // Render Johnny spoutaný u radiátoru ve villce
+  if(gs.room === 'johnny_vila' && gs.story.jana_handcuffed_johnny){
+    currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
   }
 
   currentItems = [];
@@ -240,10 +250,16 @@ function checkProx(){
     const kx = canvas.width * 0.83, ky = canvas.height * 0.59;
     if(dist2(p, {x:kx, y:ky}) < PROX_R){ best = {isVillaKitchen:true}; }
   }
-  // Villa – dveře do koupelny
-  if(gs.room === 'johnny_vila' && gs.story.jana_hint_given && !gs.story.johnny_cuffed){
+  // Villa – dveře do koupelny (vždy přístupné, kromě když Jana zamčená a dveře nerozbity)
+  if(gs.room === 'johnny_vila' && !gs.story.johnny_cuffed){
     const bx = canvas.width * 0.92, by = canvas.height * 0.35;
-    if(dist2(p, {x:bx, y:by}) < PROX_R){ best = {isVillaBathroom:true}; }
+    if(dist2(p, {x:bx, y:by}) < PROX_R){
+      if(gs.story.jana_in_bathroom_locked && !gs.story.bathroom_door_broken){
+        best = {isVillaBathroomLocked:true};
+      } else {
+        best = {isVillaBathroom:true};
+      }
+    }
   }
   // Ložnice – dveře (pouze vizuální, ne skutečná místnost)
   if(gs.room === 'johnny_vila'){
@@ -394,6 +410,8 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Nasypat prášek do drinku';
     } else if(best.isVillaBathroom){
       document.getElementById('ptxt').textContent = 'Vstoupit do koupelny';
+    } else if(best.isVillaBathroomLocked){
+      document.getElementById('ptxt').textContent = '🔒 Koupelna (zamčeno – Jana je uvnitř)';
     } else if(best.isBathroomDrawer){
       document.getElementById('ptxt').textContent = 'Otevřít šuplík';
     } else if(best.isBathroomSink){
@@ -505,10 +523,14 @@ function interact(){
       runQF('q_villa_drug_drink'); return;
     }
   }
-  // Villa – dveře do koupelny
-  if(gs.room === 'johnny_vila' && gs.story.jana_hint_given && !gs.story.johnny_cuffed){
+  // Villa – dveře do koupelny (vždy přístupné kromě zamčení)
+  if(gs.room === 'johnny_vila' && !gs.story.johnny_cuffed){
     const bx = canvas.width * 0.92, by = canvas.height * 0.35;
     if(dist2(gs.player, {x:bx, y:by}) < PROX_R){
+      if(gs.story.jana_in_bathroom_locked && !gs.story.bathroom_door_broken){
+        addLog('🔒 Koupelna je zamčená. Jana je uvnitř.', 'lw');
+        return;
+      }
       gs.room = 'koupelna'; initRoom(canvas.width * 0.5, canvas.height * 0.7); return;
     }
   }
