@@ -341,6 +341,21 @@ const NPCS = {
       {
         text:'"Díky, Fando. Vážně." *Pája si přesedne* "Kdybys ne ty, tak bych o tom nikdy nevěděl." *škytne* "Buď zdravej, brácho."',
         choices:[{label:'(Odejít)', fn:'close'}]
+      },
+      // stage 5 – už mu hráč půjčil, Pája hraje na Betanu (čeká na timer)
+      {
+        text:'"Teď neruš, kámo, musím to na Betanu protočit." *zírá do telefonu, prsty třesou na obrazovce* "Ještě jeden spin... no tak..."',
+        choices:[
+          {label:'Vydrž to, Pájo', cls:'prim', fn:'close'},
+        ]
+      },
+      // stage 6 – v hospodě, hráč už slyšel o šamanovi, čeká až dojde za ním
+      {
+        text:'"Teď mi dej chvilku, brácho, hledám po kapsách prachy..." *Pája se prohrabuje bundou, vytahuje účtenky a žvýkačky*',
+        choices:[
+          {label:'🔮 "Připomeň mi to heslo na šamana ještě jednou."', cls:'special', fn:'q_paja_fabie_info'},
+          {label:'(Odejít)', cls:'danger', fn:'close'},
+        ]
       }
     ]
   },

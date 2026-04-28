@@ -359,8 +359,10 @@ function getStage(id){
     case 'paja':
       if(s.paja_quest_done) return 4;
       if(s.paja_stolen) return 3;
+      if(s.paja_in_hospoda && s.paja_fabie_told) return 6; // už hráč slyšel o šamanovi – jen čeká
       if(s.paja_in_hospoda) return 2;
       if(s.paja === 2) return 1;
+      if(s.paja === 1) return 5; // hráč už půjčil – Pája hraje na Betanu
       return 0;
     case 'platenikova':
       if(s.platenikova_rewarded) return 2;
