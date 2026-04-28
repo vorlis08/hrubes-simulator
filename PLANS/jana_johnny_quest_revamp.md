@@ -64,12 +64,12 @@ VILLA_PHASE (Johnny + Jana ve vile)
 ### 1.2 Outcome tabulka
 | Kód | Název | REP gain | REP loss | Net | Artefakt | Endingy unlock |
 |-----|-------|---------:|---------:|----:|----------|----------------|
-| `OUT_RESCUE_DIRECT` | Hospoda rescue | +5 | -25 (později) | **-20** | – | – |
-| `OUT_FLOOD_RESCUE` | Bathroom plan zachránil Janu | +18 | -10 (Johnny) | **+8** | 👙 podprsenka | – |
-| `OUT_DRINK_HELP` | Pomohl Johnnymu (drink přes WC trick) | +8 | -15 (Jana later if learns) | **-7** | 💳 vaza_membership | – |
-| `OUT_FLOOD_DRUG` | Bathroom plan + drug → Johnny path | +5 | -20 | **-15** | 💳 vaza_membership | – |
-| `OUT_DEFAULT` | Žádná akce, Johnny ji odvedl | 0 | -5 | **-5** | – | – |
-| `OUT_KATANA_DEATH` | DEATH – Jana naseraná, katana | – | – | – | – | `death_jana_katana` |
+| `OUT_RESCUE_HOSPODA` | "Pojď Jano" – odešla s hráčem | +5 | 0 | **+5** | – | – |
+| `OUT_DATE_GHOSTED` | "Johnny v pohodě" – Jana k němu | 0 | -25 (villa) | **-25** | – | – |
+| `OUT_FLOOD_RESCUE` | Villa: bathroom plán zachránil Janu | +18 | -10 (Johnny) | **+8** | 👙 podprsenka | – |
+| `OUT_DRINK_HELP` | Villa: drug přes WC trick → Johnny path | +5 | -10 morálka | **-5** | 💳 vaza_membership | – |
+| `OUT_FLOOD_DRUG` | Villa: hadr + drug → Jana usne | +5 | -20 | **-15** | 💳 vaza_membership | – |
+| `OUT_KATANA_DEATH` | DEATH – Janu otrávil přímo | – | – | – | – | `death_jana_katana` |
 
 ---
 
@@ -601,10 +601,10 @@ function useGlassDrug(){
 ```
 "Fando... Ten Johnny je divný..." (původní)
 choices:
-  [A] Pojď, jdeme odtud (prim)            → q_jana_rescue       [BEZPEČNÉ ALE -25 REP po villa]
-  [B] Vzít její sklenici                  → q_take_jana_drink   [NOVÉ]
-  [C] Pohoda Jano, Johnny je v pohodě    → close (default)     [BEZ EFEKTU]
+  [A] Pojď, jdeme odtud (prim)            → q_jana_rescue       [SKUTEČNÝ rescue, +5 REP]
+  [B] Pohoda Jano, Johnny je v pohodě    → q_jana_to_johnny    [Jana → krb → villa → -25 REP later]
 ```
+**Pozn.:** Drink možnost přesunuta do villy (10.5).
 
 ### 10.2 Villa – Johnny dialog (před vším)
 **EXISTUJE STAGE 0 (initial)** – ponechat
@@ -852,14 +852,35 @@ Možnosti:
 
 ---
 
-## 16) OTÁZKY K ROZHODNUTÍ PŘED IMPLEMENTACÍ
+## 16) ROZHODNUTÍ (uživatel potvrdil 2026-04-28)
 
-1. **Jana ke krbu:** má jít automaticky, nebo až když hráč opustí hospodu?
-2. **Vila ghosting trigger:** automaticky po opuštění hospody, nebo po vstupu do villy?
-3. **Path D (flood + drug):** technicky vyřešitelné? Nebo zakázat?
-4. **Drink můžu vzít v hospodě?** Nebo jen ve ville? Default: hospoda i villa.
-5. **Pizza žemle slib:** Jana slibuje pizzu žemli – aktivovat samostatný side quest?
-6. **Time of day:** flood trvá 12s – stačí, nebo prodloužit pro dramatický efekt?
+1. **Jana ke krbu:** ✅ Trigger = volba **"Pohoda Jano, Johnny je v pohodě"** (ne "Pojď Jano!")
+   - "Pojď Jano" = skutečný rescue (Jana odejde s hráčem, vrací se do Billy)
+   - "Johnny je v pohodě" = Jana se odkloní k Johnnymu u krbu, později vila
+
+2. **Villa ghosting (lépe nazváno "VILLA_DATE_CONTINUES"):** ✅
+   - Po Janině přesunu ke krbu Johnny zůstane s ní
+   - Časem (timer ~30s nebo po opuštění hospody hráčem) Johnny vezme Janu k sobě domů
+   - Ve ville oba sedí na gauči těsně u sebe (custom render)
+   - Když hráč mluví s Janou: stage 6 dialog → -25 REP
+
+3. **Path D (flood + drug):** ✅ PODPOROVAT
+   - Sekvence: hráč otráví drink → dá Janě → Jana se napije a jde na flood plán
+   - Drug způsobí, že Jana usne v koupelně **před** dokončením flood plánu
+   - Voda mírně teče (zamlžila pár dlaždic), pak ustane
+   - Johnny vyrazí dveře (kratší timer než normální flood)
+   - Najde Janu v bezvědomí, vezme si ji na gauč
+   - Outcome: Johnny path success + -20 REP morálka
+
+4. **Drink:** ✅ JEN VE VILLE (hospoda zákaz)
+
+5. **Pizza žemle:** ❌ ZRUŠIT samostatný side quest, ponechat jen flavor text
+
+6. **Flood timer:** ✅ NEKONEČNÝ – běží dokud hráč nezastaví vodu v koupelně
+   - Voda se šíří přes celou podlahu (~30-40s do plné kaluže)
+   - Johnny notice → breakdown automaticky když voda dosáhne ~60% pokrytí
+   - Vstup do koupelny po breakdownu → cutscena
+   - Player nemůže zastavit vodu sám (Jana zamčená) – jen Johnny breakdown to zastaví
 
 ---
 
