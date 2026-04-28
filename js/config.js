@@ -172,14 +172,57 @@ const NPCS = {
       {
         text:'"Fando... Ráda jsem, že jsi tady." *sklopí oči* "Ten Johnny je... divný. Pořád se ke mně mačká a říká věci, co mi nejsou příjemný. Nevím jestli to zvládnu."',
         choices:[
-          {label:'Pohoda Jano, Johnnny je v pohodě', cls:'danger', fn:'close'},
           {label:'Pojď, jdeme odtud',                 cls:'prim',   fn:'q_jana_rescue'},
+          {label:'Pohoda Jano, Johnny je v pohodě',  cls:'special', fn:'q_jana_to_johnny'},
         ]
       },
       // stage 4 – po záchraně
       {
         text:'"Díky, Fando. Vážně." *podívá se na tebe jinak než dřív* "Tady je moje číslo. A... kdybys potřeboval někdy pomoc s čímkoliv, řekni."',
         choices:[{label:'(Vzít číslo)', cls:'prim', fn:'q_jana_thanks'}]
+      },
+      // stage 5 – Jana je u krbu s Johnnym (po "Johnny je v pohodě")
+      {
+        text:'*Jana stojí těsně u Johnnyho u krbu. Když k nim přijdeš, přes Johnnyho rameno na tebe vrhne mírně rozčarovaný pohled.* "Ten je slizkej, Hrubeši. Tohle si s tebou ještě vyřídím." *Johnny se otočí, zasměje se* "Teď neruš, kámo. Mám tu situaci pod kontrolou."',
+        choices:[
+          {label:'(Odejít)', cls:'danger', fn:'close'}
+        ]
+      },
+      // stage 6 – Jana ve ville (po jana_to_johnny → villa)
+      {
+        text:'*Jana sedí na Johnnyho gauči, paží má kolem těla.* "Hrubeši, no... jsem trochu naštvaná, ale stejně bys mi mohl pomoct. Tenhle Johnny už začíná dělat opravdové ptákoviny."',
+        choices:[
+          {label:'"Najdu způsob, Jano."', cls:'prim', fn:'close'}
+        ]
+      },
+      // stage 7 – v koupelně po flood úspěchu / kontrahandcuffu
+      {
+        text:'*Jana k tobě přijde, lehce dýchá. Drží Johnnyho klíče.* "Hrubeši. To jsi byl ty. Děkuju ti, vážně. Tady – podprsenka. Vím, je to bizarní, ale vem si ji. Vrátím se do Billy."',
+        choices:[
+          {label:'(Vzít podprsenku)', cls:'prim', fn:'q_jana_thanks'}
+        ]
+      },
+      // stage 8 – Jana ve ville po dání hadru (čeká až jí ho podá hráč)
+      {
+        text:'*Šeptáš Janě plán. Jí pomalu rozšíří úsměv.* "Vážně? Vytopit Johnnyho? Hrubeši, ty jsi GÉNIUS. Hned tam jdu."',
+        choices:[
+          {label:'(Pohlédnout na ni naposledy.)', cls:'prim', fn:'q_jana_go_bathroom'}
+        ]
+      },
+      // stage 9 – villa, hráč drží jen prášek (žádná sklenice), Jana popojí drink
+      {
+        text:'*Jana drží sklenici Démona v ruce, mírně rozčarovaná pije.* "Když už mě sem tahá, ať mi aspoň objedná ty pivka..."',
+        choices:[
+          {label:'(Vzít její drink)', cls:'prim', fn:'q_take_jana_drink'},
+          {label:'(Odejít)', cls:'danger', fn:'close'}
+        ]
+      },
+      // stage 10 – villa, Jana po napití pití (s drinkem v ruce)
+      {
+        text:'"Mmm, díky, Hrubeši. Aspoň jeden chlap se o mě dneska zajímá jak by měl." *upije velký lok* "Jsi dobrej kámoš. I když ten rande mi byl od tebe fakt podpásovka." *odloží sklenici na stůl* "Zacvaknu si na záchod. Hned jsem zpátky."',
+        choices:[
+          {label:'(Sledovat ji)', cls:'prim', fn:'q_jana_take_glass_back'}
+        ]
       },
     ]
   },
@@ -563,6 +606,8 @@ const NPCS = {
         text:'"Fando..." *šeptá* "Ten chlap je úplně slizkej. Je na mě hrozně hrr na věc a já prostě nechci. Pomoz mi, prosím."',
         choices:[
           {label:'🚿 "Jak ti mám pomoct?"', cls:'special', fn:'q_jana_help_hint'},
+          {label:'🧻 "Mám lepší nápad – vytopíme ho." (dát hadr)', cls:'special', fn:'q_give_jana_rag', condFlag:'has_hadr'},
+          {label:'🥃 "Vezmu ti to pití, ať ti ho objednám čerstvý."', cls:'special', fn:'q_take_jana_drink'},
           {label:'(Nechat ji tady)', cls:'danger', fn:'close'},
         ]
       },
@@ -575,6 +620,27 @@ const NPCS = {
         // stage 2 – při návratu, zdrogovaná, na gauči s Johnnym
         text:'"Hmm... Fando..." *oči přivřené, mluví pomalu* "...asi budu blinkat..."',
         choices:[{label:'(Nechat ji)', fn:'close'}]
+      },
+      {
+        // stage 3 – po dání hadru, Jana je nadšená a jde do koupelny
+        text:'*Jana se rozzáří.* "Hrubeši, ty jsi GÉNIUS! Hned tam jdu, ucpu odtok a pustím vodu naplno. Johnny si tady dneska ze mě nezasere!"',
+        choices:[
+          {label:'(Pohlédnout na ni naposledy.)', cls:'prim', fn:'q_jana_go_bathroom'}
+        ]
+      },
+      {
+        // stage 4 – po napití pití, jde na WC
+        text:'"Mmm, díky, Hrubeši. Aspoň jeden chlap se o mě dneska zajímá jak by měl." *upije velký lok* "Jsi dobrej kámoš. Ten rande mi byl od tebe podpásovka, ale dík, že tu aspoň jsi." *odloží sklenici na stůl* "Zacvaknu si na záchod, hned jsem zpátky."',
+        choices:[
+          {label:'(Sledovat ji)', cls:'prim', fn:'q_jana_take_glass_back'}
+        ]
+      },
+      {
+        // stage 5 – po flood/handcuff – děkuje, dá podprsenku
+        text:'*Jana k tobě přijde, lehce dýchá. Drží Johnnyho klíče.* "Hrubeši. To jsi byl ty. Děkuju ti, vážně. Tady – podprsenka. Vím, je to bizarní, ale vem si ji. Vrátím se do Billy."',
+        choices:[
+          {label:'(Vzít podprsenku)', cls:'prim', fn:'q_jana_thanks'}
+        ]
       },
     ]
   },

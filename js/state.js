@@ -9,7 +9,7 @@ const gs = {
   money: 150,
   energy: 100,
   rep: 0,
-  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0, propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0, kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0 },
+  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0, propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0, kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0, hadr:0, sklenice_jana:0 },
 
   kratom_on:      false,
   kratom_t:       0,
@@ -96,6 +96,17 @@ const gs = {
   cibulka_used:     false,   // true = heslo už bylo použito u šamana
   saman_to_krb:     null,    // animace šamana ke krbu { phase, x, y, t }
   krb_open:         false,   // krb je otevřený – přístup do tajné místnosti
+
+  // Jana × Johnny rande quest (revamp)
+  jana_to_fireplace_anim: null,  // { phase, x, y, targetX, targetY, t0 }
+  jana_to_bathroom_anim:  null,  // { phase, x, y, t0 }
+  jana_to_toilet_anim:    null,  // { phase, x, y, t0, returnAt }
+  charm_gauc_anim:        null,  // { phase, t0, jana_x, jana_y, johnny_x, johnny_y }
+  bathroom_flood_anim:    null,  // { progress, startTime, johnnyBroke, jana_drugged }
+  jana_katana_anim:       null,  // { phase, t0, x, y, swingT, cuts:[] }
+  jana_handcuffs_anim:    null,  // { phase, t0 }
+  bathroom_cutscene_anim: null,  // { phase, t0, lineIndex }
+  player_cuts_anim:       null,  // { startTime, parts:[], bloodPool:0 } – pro katana death
 };
 
 function resetGameState(){
@@ -112,7 +123,7 @@ function resetGameState(){
     milan_phone:0, zelizka:0, prasek:0, klice_vila:0, klice_fabie:0,
     klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0,
     propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0,
-    kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0,
+    kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0, hadr:0, sklenice_jana:0,
   });
 
   gs.kratom_on        = false;
@@ -176,6 +187,15 @@ function resetGameState(){
   gs.cibulka_used      = false;
   gs.saman_to_krb      = null;
   gs.krb_open          = false;
+  gs.jana_to_fireplace_anim = null;
+  gs.jana_to_bathroom_anim  = null;
+  gs.jana_to_toilet_anim    = null;
+  gs.charm_gauc_anim        = null;
+  gs.bathroom_flood_anim    = null;
+  gs.jana_katana_anim       = null;
+  gs.jana_handcuffs_anim    = null;
+  gs.bathroom_cutscene_anim = null;
+  gs.player_cuts_anim       = null;
   // Invalidate stale setTimeout callbacks from previous game runs
   gs._gen = (gs._gen || 0) + 1;
 }

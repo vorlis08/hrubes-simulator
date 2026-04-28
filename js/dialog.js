@@ -332,6 +332,16 @@ function getStage(id){
       return 0;
     case 'jana_kosova':
       if(s.jana_rescued) return 4;
+      // Po flood / handcuff – Jana děkuje + dá podprsenku
+      if(s.jana_handcuffed_johnny) return 7;
+      // Villa: Jana je opilá / pije pití → stage 10
+      if(s.jana_drink_taken && !s.drink_drugged && gs.room === 'johnny_vila' && !s.jana_at_toilet) return 10;
+      // Villa: hráč jí podal hadr → stage 8 (briefing)
+      if(s.bathroom_plan_briefed && !s.jana_in_bathroom_locked && gs.room === 'johnny_vila') return 8;
+      // Villa: standardní (po jana_to_johnny path) → stage 6
+      if(s.jana_at_johnny && gs.room === 'johnny_vila' && !s.bathroom_plan_briefed && !s.jana_drink_taken && !s.jana_handcuffed_johnny) return 6;
+      // Hospoda: po "Johnny je v pohodě" → Jana u krbu, stage 5
+      if(s.jana_at_johnny && gs.room === 'hospoda') return 5;
       if(s.jana_in_hospoda) return 3;
       if(s.jana >= 2) return 2;
       if(s.jana === 1) return 1;
@@ -399,6 +409,9 @@ function getStage(id){
       if(s.johnny_cuffed) return 1;
       return 0;
     case 'jana_vila':
+      if(s.jana_handcuffed_johnny) return 5;
+      if(s.jana_drink_taken && !s.drink_drugged && !s.jana_at_toilet) return 4;
+      if(s.bathroom_plan_briefed && !s.jana_in_bathroom_locked) return 3;
       if(s.johnny_return_visit) return 2;
       if(s.johnny_cuffed) return 1;
       return 0;
@@ -606,7 +619,16 @@ function showDialog(npc){
   if(npc.id === 'krejci' && gs.story.paja_krejci_red && !gs.story.paja_pytel_taken)
     choices.push({label:'🔴 "Odhalil jsem vás, Krejčí."', cls:'danger', fn:'q_paja_confront_krejci'});
 
-  document.getElementById('dchoices').innerHTML = choices.map(c => `
+  // Filtrovat volby s condFlag (zobrazí se jen pokud podmínka splněná)
+  const condCheck = (flag) => {
+    if(flag === 'has_hadr') return !!gs.inv.hadr;
+    if(flag === 'has_prasek') return !!gs.inv.prasek;
+    if(flag === 'has_sklenice') return !!gs.inv.sklenice_jana;
+    return true;
+  };
+  const filteredChoices = choices.filter(c => !c.condFlag || condCheck(c.condFlag));
+
+  document.getElementById('dchoices').innerHTML = filteredChoices.map(c => `
     <button class="db ${c.cls || ''}" onclick="runQF('${c.fn}')">
       ${c.label}${c.sub ? `<span class="dc">${c.sub}</span>` : ''}
     </button>`).join('');

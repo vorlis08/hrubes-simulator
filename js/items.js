@@ -222,6 +222,162 @@ function showWin(){
 }
 
 
+// ─── Janina sklenice – nasypání prášku ───────────────────────────────────
+
+function useGlassDrug(){
+  if(!gs.inv.sklenice_jana){ addLog('Nemáš sklenici.','lw'); return; }
+  if(!gs.inv.prasek){
+    addLog('Nemáš prášek na nasypání. Najdi ho v šuplíku ve villce.','lw');
+    return;
+  }
+  if(gs.story.drink_drugged){ addLog('Už jsi do toho jednou nasypal.','lw'); return; }
+  runQF('q_drug_jana_drink');
+}
+
+// ─── Janina × Johnny questline animace ──────────────────────────────────
+
+function triggerJanaToFireplace(){
+  const jana = currentNPCs.find(n => n.id === 'jana_kosova');
+  const fp = ROOMS.hospoda.fireplace;
+  const krbX = fp.rx * canvas.width, krbY = fp.ry * canvas.height + canvas.height * 0.30;
+  if(jana){
+    gs.jana_to_fireplace_anim = {
+      phase: 'walking',
+      x: jana.x, y: jana.y,
+      targetX: krbX - 35, targetY: krbY,
+      flipX: krbX < jana.x ? -1 : 1,
+      t0: gs.ts,
+    };
+    // Odebrat Janu z normálního NPC pole – budeme ji renderovat sami
+    currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova');
+  }
+}
+
+function triggerJanaToBathroom(){
+  // Animace přesunu Jany od gauče k dveřím koupelny ve ville
+  const W = canvas.width, H = canvas.height;
+  const jana = currentNPCs.find(n => n.id === 'jana_kosova');
+  const startX = jana ? jana.x : W * 0.65, startY = jana ? jana.y : H * 0.60;
+  gs.jana_to_bathroom_anim = {
+    phase: 'walking',
+    x: startX, y: startY,
+    targetX: W * 0.92, targetY: H * 0.40,
+    t0: gs.ts,
+  };
+  currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova');
+  setTimeout(() => {
+    addLog('*Slyšíš cvaknutí zámku.* Jana je v koupelně.', 'lm');
+    fnotif('🔒 Jana zamčená', 'pos');
+    gs.story.jana_in_bathroom_locked = true;
+    gs.jana_to_bathroom_anim = null;
+    // Spustit povodeň
+    setTimeout(() => triggerBathroomFlood(), 2000);
+  }, 3500);
+}
+
+function triggerJanaToToilet(){
+  // Krátká animace Jany na WC + návrat
+  const W = canvas.width, H = canvas.height;
+  const jana = currentNPCs.find(n => n.id === 'jana_kosova');
+  const startX = jana ? jana.x : W * 0.55, startY = jana ? jana.y : H * 0.60;
+  gs.jana_to_toilet_anim = {
+    phase: 'walking',
+    x: startX, y: startY,
+    targetX: W * 0.92, targetY: H * 0.40,
+    t0: gs.ts,
+    returnAt: gs.ts + 8000, // za 8s návrat
+  };
+  currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova');
+}
+
+function triggerBathroomFlood(){
+  if(gs.bathroom_flood_anim) return;
+  gs.bathroom_flood_anim = {
+    progress: 0,
+    startTime: gs.ts,
+    johnnyBroke: false,
+    jana_drugged: !!gs.story.drink_drugged && gs.story.jana_drank_potion,
+  };
+  addLog('*Z pod dveří koupelny začíná téct voda...* 💧', 'lw');
+  fnotif('💧 Začala povodeň', 'rep');
+}
+
+// Jana se napila otráveného pití (auto-trigger po vrácení sklenice + návratu z WC)
+function triggerJanaDrinksPotion(){
+  gs.story.jana_drank_potion = true;
+  addLog('*Jana se vrátila z WC, vzala sklenici a usrkla.* "Mmm, dík Hrubeši..."', 'ls');
+  setTimeout(() => {
+    addLog('*Po chvíli začíná Jana mluvit pomaleji, oči se jí zavírají.* "Mám... mám trochu únavu..."', 'lw');
+    fnotif('💊 Prášek funguje', 'rep');
+    // Spustit Johnny charm sequence
+    setTimeout(() => triggerCharmGauc(), 2500);
+  }, 2000);
+}
+
+// Johnny přesune Janu na gauč (po flood + drug)
+function triggerJohnnyDragsJanaToGauc(){
+  addLog('*Johnny vyběhne s Janou na rukou. Položí ji na gauč.* "...zatraceně, dneska to bude těžké."', 'lw');
+  gs.story.jana_asleep_gauc = true;
+  setTimeout(() => {
+    showNPCLine('johnny_vila',
+      '"Hrubeš, díky." *zatřese hlavou* "Tohle by bez tebe nešlo. Tady máš naši kartu Vaza Systems – jsme bratři teď." *podá ti kartu*',
+      () => {
+        runQF('q_johnny_help_done');
+        addLog('Quest "Pomoct Johnnymu" dokončen.', 'lm');
+        doneObj('side_johnny');
+      }
+    );
+  }, 2500);
+}
+
+// Charm gauč sequence – Johnny baluje Janu, ona usne
+function triggerCharmGauc(){
+  if(gs.charm_gauc_anim) return;
+  gs.charm_gauc_anim = {
+    phase: 'flirt',
+    t0: gs.ts,
+    jana_x: canvas.width * 0.55,
+    jana_y: canvas.height * 0.60,
+    johnny_x: canvas.width * 0.62,
+    johnny_y: canvas.height * 0.60,
+  };
+  // Schovat normální NPCy
+  currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
+
+  const seq = [
+    { delay: 2500, log:'*Johnny zašeptá Hrubešovi:* "Sleduj, jak na ni jdu."', cls:'ls' },
+    { delay: 2800, log:'Johnny: "Janičko, ta dnešní noc se ti zalíbí. Pojď na gauč."', cls:'ls' },
+    { delay: 3000, log:'*Jana s ospalýma očima souhlasí, sedají si těsně k sobě.*', cls:'ls', phase:'gauc' },
+    { delay: 8000, log:'*Po chvíli Jana usne na Johnnyho rameni.*', cls:'lw', phase:'asleep' },
+    { delay: 1500, log:'Johnny: "LEEEETS GOOOO! Jdi domů, Hrubeši." *mrkne*', cls:'lm', phase:'done' },
+  ];
+  let i = 0;
+  function nextLine(){
+    if(!gs.charm_gauc_anim) return;
+    if(i >= seq.length){
+      // Konec – obnovit Johnnyho jako NPC s novým dialogem
+      gs.story.jana_asleep_gauc = true;
+      const jhNPC = NPCS['johnny_vila'];
+      if(jhNPC) currentNPCs.push({...jhNPC, id:'johnny_vila', x:canvas.width*0.62, y:canvas.height*0.60, bob:0, bobDir:1});
+      gs.charm_gauc_anim = null;
+      // Spustit q_johnny_help_done po krátké pauze
+      setTimeout(() => {
+        showNPCLine('johnny_vila',
+          '"LEEEETS GOOOO!" *Johnny zvedne palce vzhůru* "Tady máš kartu Vaza Systems – jsme bratři teď. Jdi domů, kámo."',
+          () => runQF('q_johnny_help_done')
+        );
+      }, 800);
+      return;
+    }
+    const ln = seq[i];
+    addLog(ln.log, ln.cls);
+    if(ln.phase) gs.charm_gauc_anim.phase = ln.phase;
+    i++;
+    setTimeout(nextLine, ln.delay);
+  }
+  setTimeout(nextLine, 500);
+}
+
 // ─── Cibulkův papírek – jednorázové heslo ────────────────────────────────
 
 const CIBULKA_PWD_WORDS = [

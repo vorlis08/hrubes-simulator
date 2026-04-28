@@ -65,7 +65,7 @@ VILLA_PHASE (Johnny + Jana ve vile)
 | Kód | Název | REP gain | REP loss | Net | Artefakt | Endingy unlock |
 |-----|-------|---------:|---------:|----:|----------|----------------|
 | `OUT_RESCUE_HOSPODA` | "Pojď Jano" – odešla s hráčem | +5 | 0 | **+5** | – | – |
-| `OUT_DATE_GHOSTED` | "Johnny v pohodě" – Jana k němu | 0 | -25 (villa) | **-25** | – | – |
+| `OUT_DATE_TO_VILLA` | "Johnny v pohodě" – Jana k němu, pak villa | 0 | 0 | **0** | – | – |
 | `OUT_FLOOD_RESCUE` | Villa: bathroom plán zachránil Janu | +18 | -10 (Johnny) | **+8** | 👙 podprsenka | – |
 | `OUT_DRINK_HELP` | Villa: drug přes WC trick → Johnny path | +5 | -10 morálka | **-5** | 💳 vaza_membership | – |
 | `OUT_FLOOD_DRUG` | Villa: hadr + drug → Jana usne | +5 | -20 | **-15** | 💳 vaza_membership | – |

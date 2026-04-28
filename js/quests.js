@@ -365,10 +365,127 @@ const QF = {
   q_jana_thanks(){
     gs.story.jana_grateful = true;
     gs.inv.jana_cislo = 1; updateInv();
-    gainRep(15, 'Jana ti důvěřuje');
-    addLog('Dostal jsi Janino číslo. +15 REP 📱', 'lm');
-    fnotif('+15 REP 📱', 'rep');
+    // Po flood/handcuff path – dostane jen podprsenku a +15 REP (jana_handcuffed_johnny)
+    if(gs.story.jana_handcuffed_johnny){
+      gs.inv.podprsenka = 1; updateInv();
+      gainRep(15, 'Jana ti důvěřuje – pomohl jsi jí utéct');
+      addLog('Jana ti dala podprsenku a poděkovala. +15 REP 👙', 'lm');
+      fnotif('👙 Podprsenka', 'itm');
+    } else {
+      gs.inv.podprsenka = 1; updateInv();
+      gainRep(15, 'Jana ti důvěřuje');
+      addLog('Dostal jsi Janino číslo + podprsenku. +15 REP 📱', 'lm');
+      fnotif('+15 REP 📱', 'rep');
+    }
     closeDialog();
+  },
+
+  // ─── JANA × JOHNNY REVAMP ─────────────────────────────────────────────
+  // Hospoda: "Johnny je v pohodě" – Jana se přesune ke krbu k Johnnymu
+  q_jana_to_johnny(){
+    gs.story.jana_at_johnny = true;
+    gs.story.jana_in_hospoda = false; // už není u baru, ale u krbu
+    closeDialog();
+    setTimeout(() => {
+      addLog('Jana se na tebe naposledy podívá s lehkým rozčarováním a odejde k Johnnymu ke krbu.', 'lw');
+      fnotif('Jana → Johnny 🍷', 'rep');
+      triggerJanaToFireplace();
+    }, 300);
+    // Po nějakém čase je odvede do villy
+    gs.villa_deadline = gs.ts + 60000; // 60s timer (existující systém)
+  },
+
+  // Villa: vzít Janin drink (kliknutím na drink v dialogu)
+  q_take_jana_drink(){
+    if(gs.story.jana_drink_taken){ closeDialog(); return; }
+    gs.story.jana_drink_taken = true;
+    gs.inv.sklenice_jana = 1; updateInv();
+    closeDialog();
+    setTimeout(() => {
+      showNPCLine('jana_kosova',
+        '*Jana se mírně usměje.* "Aha, dík. Sem tam mi tu sklenici drbni do ruky, jo? Pitnej režim je důležitej."',
+        () => addLog('Vzal jsi Janině sklenici. Můžeš jí nasypat něco do nápoje, nebo ji vrátit zpět...', 'ls')
+      );
+    }, 200);
+  },
+
+  // Villa: po stage 10, hráč sleduje Janu jak jde na WC
+  q_jana_take_glass_back(){
+    closeDialog();
+    gs.story.jana_at_toilet = true;
+    setTimeout(() => {
+      addLog('Jana odešla na záchod. Sklenici máš v ruce. Můžeš ji vrátit na stůl, nebo do ní něco hodit...', 'ls');
+      triggerJanaToToilet();
+    }, 300);
+  },
+
+  // Villa: vrátit (otrávenou) sklenici na stůl
+  q_return_glass_to_table(){
+    if(!gs.inv.sklenice_jana){ closeDialog(); return; }
+    gs.inv.sklenice_jana = 0; updateInv();
+    closeDialog();
+    addLog('Vrátil jsi sklenici na stůl. Vypadá to nenápadně.', 'ls');
+  },
+
+  // Villa: nasypat prášek do drinku (ze sklenice v inventáři)
+  q_drug_jana_drink(){
+    if(!gs.inv.prasek){ addLog('Nemáš prášek!','lw'); closeDialog(); return; }
+    if(!gs.inv.sklenice_jana){ addLog('Nemáš sklenici!','lw'); closeDialog(); return; }
+    if(gs.story.drink_drugged){ addLog('Už jsi to jednou udělal.','lw'); closeDialog(); return; }
+    gs.inv.prasek = 0;
+    gs.story.drink_drugged = true;
+    updateInv();
+    closeDialog();
+
+    // Bezpečná chvíle – Jana je pryč (na WC nebo v koupelně)
+    if(gs.story.jana_at_toilet || gs.story.jana_in_bathroom_locked){
+      addLog('💊 Nasypal jsi prášek do Janiny sklenice. Teď ji jen vrátit na stůl, ať se napije...', 'ls');
+      fnotif('💊 Drink otráven', 'rep');
+      return;
+    }
+
+    // Hráč otrávil drink přímo – Jana to vidí → DEATH
+    addLog('*Jana se otočí v okamžiku, kdy sypeš prášek do sklenice...*', 'lw');
+    setTimeout(() => triggerJanaKatanaKill(), 1200);
+  },
+
+  // Villa: dát Janě hadr → ona vyrazí do koupelny
+  q_give_jana_rag(){
+    if(!gs.inv.hadr){ addLog('Nemáš hadr!','lw'); closeDialog(); return; }
+    gs.inv.hadr = 0; updateInv();
+    gs.story.bathroom_plan_briefed = true;
+    closeDialog();
+    // Stage 8 dialog se zobrazí auto z getStage při dalším showDialog
+    setTimeout(() => {
+      const jana = currentNPCs.find(n => n.id === 'jana_kosova');
+      if(jana) showDialog(jana);
+    }, 300);
+  },
+
+  // Villa: po stage 8 dialogu Jana odejde do koupelny
+  q_jana_go_bathroom(){
+    closeDialog();
+    triggerJanaToBathroom();
+  },
+
+  // Johnny pomoc – konec Johnny path (Jana usnula na gauči)
+  q_johnny_help_done(){
+    closeDialog();
+    if(!gs.inv.membership_vaza){
+      gs.inv.membership_vaza = 1;
+      if(typeof activeProfile !== 'undefined' && activeProfile){
+        activeProfile.artifacts.membership_vaza = true;
+      }
+      updateInv();
+      fnotif('💳 Vaza Systems','itm');
+    }
+    gainRep(5, 'Pomohl Johnnymu (rituál bratrstva)');
+    // Snížení REP za morálku (Janu omámil)
+    if(gs.story.drink_drugged){
+      gs.rep = Math.max(0, gs.rep - 10);
+      updateHUD();
+      addLog('-10 REP – něco v tobě hlodá. Janu jsi omámil.','lw');
+    }
   },
   // ─── Jana – rande pro Johnnyho ────────────────────────────────────────────
   q_jana_rande(){
@@ -641,9 +758,9 @@ const QF = {
   q_koupelna_drawer(){
     if(gs.story.koupelna_drawer_opened){ addLog('Šuplík je prázdný.','lw'); return; }
     gs.story.koupelna_drawer_opened = true;
-    gs.inv.zelizka = 1; updateInv();
-    addLog('V šuplíku pod umyvadlem – želízka. Johnnyho "hračky".', 'lw');
-    fnotif('⛓️ Želízka','itm');
+    gs.inv.zelizka = 1; gs.inv.hadr = 1; updateInv();
+    addLog('V šuplíku pod umyvadlem najdeš želízka (Johnnyho "hračky") a vespod čistý bílý hadr.', 'lw');
+    fnotif('⛓️ Želízka, 🧻 Hadr','itm');
   },
   // Koupelna – umyvadlo
   q_koupelna_sink(){

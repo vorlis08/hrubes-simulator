@@ -347,6 +347,20 @@ function checkProx(){
     if(dist2(p, {x:sx, y:sy}) < PROX_R){ best = {isSamanBody:true}; }
   }
 
+  // Jana u krbu (po "Johnny je v pohodě")
+  if(gs.room === 'hospoda' && gs.story.jana_at_johnny && !gs.story.johnny_took_jana && !gs.jana_to_fireplace_anim){
+    const fp = ROOMS.hospoda.fireplace;
+    const jx = fp.rx * canvas.width - 35;
+    const jy = fp.ry * canvas.height + canvas.height * 0.30;
+    if(dist2(p, {x:jx, y:jy}) < PROX_R){ best = {isJanaFireplace:true}; }
+  }
+
+  // Sklenice na stole ve villce (možnost vrátit po otrávení)
+  if(gs.room === 'johnny_vila' && gs.inv.sklenice_jana && gs.story.jana_at_toilet){
+    const tx = canvas.width * 0.50, ty = canvas.height * 0.62;
+    if(dist2(p, {x:tx, y:ty}) < PROX_R * 1.2){ best = {isVillaTable:true}; }
+  }
+
   // Krb v hospodě – vstup do Cibulkovy laboratoře
   if(gs.room === 'hospoda' && gs.krb_open){
     const fp = ROOMS.hospoda.fireplace;
@@ -410,6 +424,10 @@ function checkProx(){
       document.getElementById('ptxt').textContent = best.pickable ? ('Vzít ' + nm) : ('🔒 ' + nm + ' (nelze vzít)');
     } else if(best.isSamanBody){
       document.getElementById('ptxt').textContent = 'Vzít šamanovu hlavu';
+    } else if(best.isJanaFireplace){
+      document.getElementById('ptxt').textContent = 'Mluvit s Janou';
+    } else if(best.isVillaTable){
+      document.getElementById('ptxt').textContent = 'Vrátit sklenici na stůl';
     } else if(best.isKrbEntry){
       document.getElementById('ptxt').textContent = '🔬 Vstoupit do Cibulkovy laboratoře';
     } else if(best.isLabExit){
@@ -690,6 +708,27 @@ function interact(){
     }
   }
 
+  // Jana u krbu (po "Johnny je v pohodě") – mluvit s ní
+  if(gs.room === 'hospoda' && gs.story.jana_at_johnny && !gs.story.johnny_took_jana && !gs.jana_to_fireplace_anim){
+    const fp = ROOMS.hospoda.fireplace;
+    const jx = fp.rx * canvas.width - 35;
+    const jy = fp.ry * canvas.height + canvas.height * 0.30;
+    if(dist2(gs.player, {x:jx, y:jy}) < PROX_R){
+      const janaNPC = NPCS['jana_kosova'];
+      if(janaNPC) showDialog({...janaNPC, id:'jana_kosova'});
+      return;
+    }
+  }
+
+  // Sklenice na stole ve villce – vrátit
+  if(gs.room === 'johnny_vila' && gs.inv.sklenice_jana && gs.story.jana_at_toilet){
+    const tx = canvas.width * 0.50, ty = canvas.height * 0.62;
+    if(dist2(gs.player, {x:tx, y:ty}) < PROX_R * 1.2){
+      runQF('q_return_glass_to_table');
+      return;
+    }
+  }
+
   // Šamanova mrtvola – vzít hlavu
   if(gs.room === 'hospoda' && gs.saman_dead && gs.saman_death_anim && !gs.inv.saman_hlava){
     const sx = gs.saman_death_anim.x, sy = gs.saman_death_anim.y;
@@ -744,6 +783,123 @@ function update(dt){
         fig.y += (dy / d) * spd;
       }
     }
+  }
+
+  // ── Jana × Johnny revamp animace ────────────────────────────
+  // Jana jde ke krbu (po "Johnny je v pohodě")
+  if(gs.jana_to_fireplace_anim && gs.room === 'hospoda'){
+    const a = gs.jana_to_fireplace_anim;
+    if(a.phase === 'walking'){
+      const dx = a.targetX - a.x, dy = a.targetY - a.y;
+      const d = Math.hypot(dx, dy);
+      if(d > 4){
+        const spd = 2.6 * dt / 16.667;
+        a.x += (dx / d) * spd;
+        a.y += (dy / d) * spd;
+        a.flipX = dx < 0 ? -1 : 1;
+      } else {
+        a.phase = 'arrived';
+      }
+    }
+  }
+  // Jana jde do koupelny ve ville
+  if(gs.jana_to_bathroom_anim && gs.room === 'johnny_vila'){
+    const a = gs.jana_to_bathroom_anim;
+    if(a.phase === 'walking'){
+      const dx = a.targetX - a.x, dy = a.targetY - a.y;
+      const d = Math.hypot(dx, dy);
+      if(d > 4){
+        const spd = 2.8 * dt / 16.667;
+        a.x += (dx / d) * spd;
+        a.y += (dy / d) * spd;
+        a.flipX = dx < 0 ? -1 : 1;
+      } else {
+        a.phase = 'arrived';
+      }
+    }
+  }
+  // Jana jde na WC ve ville (drink path)
+  if(gs.jana_to_toilet_anim && gs.room === 'johnny_vila'){
+    const a = gs.jana_to_toilet_anim;
+    const dx = a.targetX - a.x, dy = a.targetY - a.y;
+    const d = Math.hypot(dx, dy);
+    if(a.phase === 'walking'){
+      if(d > 4){
+        const spd = 2.5 * dt / 16.667;
+        a.x += (dx / d) * spd; a.y += (dy / d) * spd;
+        a.flipX = dx < 0 ? -1 : 1;
+      } else {
+        a.phase = 'in_toilet';
+      }
+    }
+    if(a.phase === 'in_toilet' && gs.ts >= a.returnAt){
+      // Návrat na původní pozici (gauč)
+      a.phase = 'returning';
+      a.targetX = canvas.width * 0.55;
+      a.targetY = canvas.height * 0.60;
+    }
+    if(a.phase === 'returning'){
+      if(d > 4){
+        const spd = 2.5 * dt / 16.667;
+        a.x += (dx / d) * spd; a.y += (dy / d) * spd;
+        a.flipX = dx < 0 ? -1 : 1;
+      } else {
+        // Návrat dokončen – Jana zase do currentNPCs jako jana_vila
+        gs.story.jana_at_toilet = false;
+        const jvNPC = NPCS['jana_vila'];
+        if(jvNPC && !currentNPCs.find(n => n.id === 'jana_vila')){
+          currentNPCs.push({...jvNPC, id:'jana_vila', x:a.x, y:a.y, bob:0, bobDir:1});
+        }
+        gs.jana_to_toilet_anim = null;
+        // Pokud je drink otrávený a vrácený → Jana se napije
+        if(gs.story.drink_drugged && !gs.inv.sklenice_jana && !gs.story.jana_drank_potion){
+          setTimeout(() => triggerJanaDrinksPotion(), 1500);
+        }
+      }
+    }
+  }
+  // Bathroom flood progres (rozšíření kaluže)
+  if(gs.bathroom_flood_anim && gs.room === 'johnny_vila'){
+    const f = gs.bathroom_flood_anim;
+    // Pokud je Jana drogovaná, voda postupuje pomaleji a brzy ustane
+    const speed = f.jana_drugged ? 0.08 : 0.18;
+    f.progress = Math.min(1, f.progress + (dt / 1000) * speed);
+    // Johnny notice po určitém prahu
+    if(!f.johnnyBroke && f.progress > 0.55){
+      f.johnnyBroke = true;
+      gs.story.bathroom_door_broken = true;
+      addLog('*Johnny vystartuje ke dveřím.* "JANO! OTEVŘI! HNED!"', 'lw');
+      setTimeout(() => {
+        addLog('💥 *Johnny rozkopl dveře koupelny.*', 'lw');
+        screenShake(500);
+        gs.story.johnny_in_bathroom = true;
+        // Přesunout Johnnyho do koupelny (skrýt z villa)
+        currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
+        // Pokud Jana je drogovaná, Johnny ji vezme na gauč → johnny path
+        if(f.jana_drugged){
+          setTimeout(() => triggerJohnnyDragsJanaToGauc(), 1500);
+        }
+      }, 800);
+    }
+  }
+  // Katana animace (Jana zabíjí hráče)
+  if(gs.jana_katana_anim){
+    const a = gs.jana_katana_anim;
+    a.t = gs.ts - a.t0;
+    // Fáze řízeny v triggerJanaKatanaKill (setTimeout chain)
+  }
+  // Player cuts (po katana hit)
+  if(gs.player_cuts_anim){
+    const c = gs.player_cuts_anim;
+    const elapsed = (gs.ts - c.startTime) / 1000;
+    if(c.parts && c.parts.length){
+      c.parts.forEach(p => {
+        p.x += p.vx * dt / 16.667;
+        p.y += p.vy * dt / 16.667;
+        p.vy += 0.4 * dt / 16.667; // gravitace
+      });
+    }
+    c.bloodPool = Math.min(1, elapsed / 3);
   }
 
   // Šaman jde ke krbu (Cibulkův příkaz)

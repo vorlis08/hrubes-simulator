@@ -932,6 +932,86 @@ function drawHospoda(W,H,t){
   if(gs.saman_to_krb){
     drawSamanAtKrb(gs.saman_to_krb, t);
   }
+  // Jana – jde / stojí u krbu (po "Johnny je v pohodě")
+  if(gs.jana_to_fireplace_anim || (gs.story.jana_at_johnny && !gs.story.johnny_took_jana)){
+    drawJanaAtFireplace(t);
+  }
+}
+
+// ─── Jana u krbu / jde ke krbu ──────────────────────────────────────────────
+function drawJanaAtFireplace(t){
+  let x, y, flip = 1, walking = false;
+  if(gs.jana_to_fireplace_anim){
+    x = gs.jana_to_fireplace_anim.x;
+    y = gs.jana_to_fireplace_anim.y;
+    flip = gs.jana_to_fireplace_anim.flipX || 1;
+    walking = gs.jana_to_fireplace_anim.phase === 'walking';
+  } else {
+    // Stojí u Johnnyho u krbu (po dokončení animace)
+    const fp = ROOMS.hospoda.fireplace;
+    x = fp.rx * canvas.width - 35;
+    y = fp.ry * canvas.height + canvas.height * 0.30;
+    flip = 1;
+  }
+  const bob = walking ? Math.abs(Math.sin(t * 0.012)) * 4 : Math.sin(t * 0.003) * 1.2;
+  const bY = y - bob;
+
+  // Stín
+  ctx.fillStyle = 'rgba(0,0,0,0.32)';
+  ctx.beginPath(); ctx.ellipse(x, bY + 22, 18, 4, 0, 0, Math.PI * 2); ctx.fill();
+
+  ctx.save();
+  ctx.translate(x, bY);
+  ctx.scale(flip, 1);
+
+  // Šaty (růžové)
+  const dressG = ctx.createLinearGradient(0, -10, 0, 28);
+  dressG.addColorStop(0, '#e91e63'); dressG.addColorStop(1, '#9c1148');
+  ctx.fillStyle = dressG;
+  ctx.beginPath();
+  ctx.moveTo(-12, -8);
+  ctx.bezierCurveTo(-18, 8, -16, 22, -14, 28);
+  ctx.lineTo(14, 28);
+  ctx.bezierCurveTo(16, 22, 18, 8, 12, -8);
+  ctx.closePath();
+  ctx.fill();
+
+  // Hlava
+  ctx.fillStyle = '#fde8c8';
+  ctx.beginPath(); ctx.arc(0, -22, 12, 0, Math.PI * 2); ctx.fill();
+  // Vlasy (blond, dlouhé)
+  ctx.fillStyle = '#f5d97a';
+  ctx.beginPath();
+  ctx.moveTo(-12, -28); ctx.lineTo(-14, -8); ctx.lineTo(-9, -10); ctx.lineTo(-9, -32);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(12, -28); ctx.lineTo(14, -8); ctx.lineTo(9, -10); ctx.lineTo(9, -32);
+  ctx.closePath(); ctx.fill();
+  // Vlasy nahoře
+  ctx.beginPath();
+  ctx.arc(0, -30, 11, Math.PI, 0); ctx.fill();
+  // Oči
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(-3, -22, 1.2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(3, -22, 1.2, 0, Math.PI * 2); ctx.fill();
+  // Rty
+  ctx.fillStyle = '#c62b6c';
+  ctx.fillRect(-2.5, -17, 5, 1.5);
+
+  ctx.restore();
+
+  // Jméno
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = 'bold 11px Outfit,sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Jana', x, bY - 38);
+
+  // Při proximity ukázat [E]
+  if(!walking && dist2(gs.player, {x: x, y: y}) < PROX_R){
+    ctx.fillStyle = 'rgba(240,192,64,.78)';
+    ctx.font = 'bold 10px JetBrains Mono,monospace';
+    ctx.fillText('[E] MLUVIT', x, bY + 50);
+  }
 }
 
 // ─── Šaman u krbu (Cibulkův příkaz) ──────────────────────────────────────────
