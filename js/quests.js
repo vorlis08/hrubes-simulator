@@ -427,6 +427,17 @@ const QF = {
     addLog('Vrátil jsi sklenici na stůl. Vypadá to nenápadně.', 'ls');
   },
 
+  // Villa: rychle nasypat prášek Janě do pití během rozhovoru (DEATH - vidí to)
+  q_drug_drink_in_dialog(){
+    if(!gs.inv.prasek){ closeDialog(); return; }
+    closeDialog();
+    addLog('*Sahneš pro prášek a snažíš se ho nepozorovaně nasypat do její sklenice...*', 'lw');
+    setTimeout(() => {
+      addLog('*Jana se otočí v okamžiku.* "Co... CO TO DĚLÁŠ?!"', 'lw');
+      setTimeout(() => triggerJanaKatanaKill(), 1200);
+    }, 1200);
+  },
+
   // Villa: nasypat prášek do drinku (ze sklenice v inventáři)
   q_drug_jana_drink(){
     if(!gs.inv.prasek){ addLog('Nemáš prášek!','lw'); closeDialog(); return; }

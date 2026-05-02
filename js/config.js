@@ -608,6 +608,7 @@ const NPCS = {
           {label:'🚿 "Jak ti mám pomoct?"', cls:'special', fn:'q_jana_help_hint'},
           {label:'🧻 "Mám lepší nápad – vytopíme ho." (dát hadr)', cls:'special', fn:'q_give_jana_rag', condFlag:'has_hadr'},
           {label:'🥃 "Vezmu ti to pití, ať ti ho objednám čerstvý."', cls:'special', fn:'q_take_jana_drink'},
+          {label:'💊 (Šeptem do pití přilít prášek...)', cls:'danger', fn:'q_drug_drink_in_dialog', condFlag:'has_prasek'},
           {label:'(Nechat ji tady)', cls:'danger', fn:'close'},
         ]
       },
