@@ -982,6 +982,204 @@ function drawJanaPixel(x, bY, t, flip){
   ctx.beginPath(); ctx.ellipse(x, bY + 22, 18, 4, 0, 0, Math.PI * 2); ctx.fill();
 }
 
+// ─── Jana s katanou (death animace) ────────────────────────────────────────
+function drawJanaKatana(anim, t){
+  const W = canvas.width, H = canvas.height;
+  const phase = anim.phase;
+  const elapsed = (gs.ts - anim.t0) / 1000;
+  let x = anim.x, y = anim.y;
+  const flip = anim.flipX || 1;
+
+  // Animace přiblížení
+  if(phase === 'approach' || phase === 'strike' || phase === 'cuts' || phase === 'fall_apart' || phase === 'pool'){
+    const dx = anim.targetX - anim.x, dy = anim.targetY - anim.y;
+    const d = Math.hypot(dx, dy);
+    if(d > 4){
+      anim.x += (dx / d) * 6;
+      anim.y += (dy / d) * 4;
+    }
+    x = anim.x; y = anim.y;
+  }
+
+  drawJanaPixel(x, y, t, flip);
+
+  // Ruce (přidá pravou ruku držící katanu)
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(flip, 1);
+
+  // Levá ruka (idle při těle)
+  if(phase === 'realize' || phase === 'rage'){
+    ctx.strokeStyle = '#fde8c8';
+    ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-10, -2); ctx.lineTo(-14, 12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(10, -2); ctx.lineTo(14, 12);
+    ctx.stroke();
+  }
+
+  // Po tasení katany: pravá ruka drží katanu nahoře, příprava sek
+  if(phase === 'draw' || phase === 'wind_up' || phase === 'approach' || phase === 'strike'){
+    // Levá ruka stále dolů
+    ctx.strokeStyle = '#fde8c8';
+    ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-10, -2); ctx.lineTo(-16, 14);
+    ctx.stroke();
+
+    // Pravá ruka držící katanu
+    let armAng = -0.4; // basic raised
+    if(phase === 'wind_up') armAng = -1.0; // úplné napřahnutí
+    if(phase === 'approach') armAng = -1.2;
+    if(phase === 'strike') armAng = 0.6 + (elapsed % 0.3) * 4; // sek dolů
+
+    const ax = 12, ay = -2;
+    const armEx = ax + Math.cos(armAng) * 22;
+    const armEy = ay + Math.sin(armAng) * 22;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay); ctx.lineTo(armEx, armEy);
+    ctx.stroke();
+
+    // Katana
+    const kx0 = armEx, ky0 = armEy;
+    const katanaAng = armAng + 0.3;
+    const kEndX = kx0 + Math.cos(katanaAng) * 50;
+    const kEndY = ky0 + Math.sin(katanaAng) * 50;
+    // Hilta (rudá)
+    ctx.strokeStyle = '#c41818';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(kx0, ky0);
+    ctx.lineTo(kx0 + Math.cos(katanaAng)*8, ky0 + Math.sin(katanaAng)*8);
+    ctx.stroke();
+    // Garda
+    ctx.fillStyle = '#444';
+    ctx.beginPath();
+    ctx.arc(kx0 + Math.cos(katanaAng)*8, ky0 + Math.sin(katanaAng)*8, 3, 0, Math.PI*2);
+    ctx.fill();
+    // Čepel (stříbrná, lehce zakřivená)
+    ctx.strokeStyle = '#e8eef2';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    const blStart = { x: kx0 + Math.cos(katanaAng)*10, y: ky0 + Math.sin(katanaAng)*10 };
+    ctx.moveTo(blStart.x, blStart.y);
+    // mírně ohnutá čepel
+    ctx.bezierCurveTo(
+      blStart.x + Math.cos(katanaAng+0.1)*22, blStart.y + Math.sin(katanaAng+0.1)*22,
+      kEndX - Math.cos(katanaAng-0.1)*4, kEndY - Math.sin(katanaAng-0.1)*4,
+      kEndX, kEndY
+    );
+    ctx.stroke();
+    // Lesk čepele
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(blStart.x, blStart.y);
+    ctx.lineTo(kEndX*0.9 + blStart.x*0.1, kEndY*0.9 + blStart.y*0.1);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  // Speech bubble pro hlášky
+  const phaseToText = {
+    realize: '"Tys mi to fakt chtěl...?"',
+    rage: '"PO VŠEM CO JSME PROŽILI?!"',
+    draw: '*tasí katanu*',
+    wind_up: '"PRO TUHLE PŘÍLEŽITOST!"',
+  };
+  if(phaseToText[phase] && elapsed > 0.2){
+    const text = phaseToText[phase];
+    ctx.font = 'bold 14px Outfit,sans-serif';
+    const tw = ctx.measureText(text).width;
+    const bw = tw + 22, bh = 28;
+    const bx = x - bw/2, by = y - 70;
+    ctx.fillStyle = 'rgba(255,250,235,0.95)';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeStyle = 'rgba(180,80,80,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(bx, by, bw, bh);
+    ctx.fillStyle = '#1a0808';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, by + bh/2);
+  }
+
+  // Bílý flash při strike
+  if(phase === 'strike' && anim.flashT){
+    const fT = (gs.ts - anim.flashT) / 200;
+    if(fT < 1){
+      ctx.fillStyle = `rgba(255,255,255,${1 - fT})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+}
+
+// ─── Render hráčových řezů + rozpadu těla (po katana strike) ───────────────
+function drawPlayerCuts(t){
+  if(!gs.player_cuts_anim) return;
+  const c = gs.player_cuts_anim;
+  const px = gs.player.x, py = gs.player.y;
+
+  // Jen řezy (před fall_apart)
+  if(!c.parts){
+    if(c.cuts){
+      ctx.save();
+      ctx.translate(px, py);
+      // Krvavé linie přes tělo
+      ctx.strokeStyle = '#c41818';
+      ctx.lineWidth = 2.5;
+      c.cuts.forEach(cut => {
+        ctx.save();
+        ctx.rotate(cut.ang);
+        ctx.beginPath();
+        ctx.moveTo(-22, cut.y);
+        ctx.lineTo(22, cut.y);
+        ctx.stroke();
+        ctx.restore();
+      });
+      ctx.restore();
+      // Kapky krve padají
+      const elapsed = (gs.ts - c.startTime) / 1000;
+      for(let d=0; d<5; d++){
+        const dropT = (elapsed*1.5 + d*0.3) % 1.5;
+        const dy = py + dropT * 60;
+        const dx = px + (Math.sin(d*7.3)*15);
+        if(dy < py + 60){
+          ctx.fillStyle = `rgba(196,24,24,${0.85 - dropT*0.5})`;
+          ctx.beginPath(); ctx.arc(dx, dy, 1.5 + dropT, 0, Math.PI*2); ctx.fill();
+        }
+      }
+    }
+  } else {
+    // Tělo se rozpadlo na kostky
+    c.parts.forEach(p => {
+      ctx.save();
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x - p.w/2, p.y - p.h/2, p.w, p.h);
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(p.x - p.w/2, p.y - p.h/2, p.w, p.h);
+      // Krev po hranách
+      ctx.fillStyle = '#8b0000';
+      ctx.fillRect(p.x - p.w/2, p.y - p.h/2 - 1, p.w, 2);
+      ctx.fillRect(p.x - p.w/2, p.y + p.h/2 - 1, p.w, 2);
+      ctx.restore();
+    });
+    // Krevní loužička
+    if(c.bloodPool > 0){
+      const r = c.bloodPool * 60;
+      const bg = ctx.createRadialGradient(px, py + 20, 0, px, py + 20, r);
+      bg.addColorStop(0, 'rgba(140,0,0,0.85)');
+      bg.addColorStop(0.6, 'rgba(180,0,0,0.65)');
+      bg.addColorStop(1, 'rgba(140,0,0,0)');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.ellipse(px, py + 20, r, r*0.45, 0, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
 // ─── Jana u krbu / jde ke krbu ──────────────────────────────────────────────
 function drawJanaAtFireplace(t){
   let x, y, flip = 1, walking = false;
@@ -3932,6 +4130,14 @@ function render(){
     if(fig && (!fpsMonitor || fpsMonitor.fps > 45)){
       drawPulsingAura(ctx, fig.x, fig.y, 35, 'rgba(100,200,255,0.3)', t, 0.004);
     }
+  }
+
+  // Katana death animace + hráčovy řezy/rozpad těla (přes celou scénu)
+  if(gs.jana_katana_anim){
+    drawJanaKatana(gs.jana_katana_anim, t);
+  }
+  if(gs.player_cuts_anim){
+    drawPlayerCuts(t);
   }
 
   // Pulsující aura vypnuta během blend – CSS animace je postačující

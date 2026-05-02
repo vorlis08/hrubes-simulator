@@ -330,6 +330,108 @@ function triggerJohnnyDragsJanaToGauc(){
   }, 2500);
 }
 
+// ─── KATANA DEATH ─────────────────────────────────────────────────────────
+// Jana zabíjí hráče katanou (8 fází)
+function triggerJanaKatanaKill(){
+  if(gs.jana_katana_anim) return;
+  gs.running = false;
+  // Najdi Janu pozici
+  const W = canvas.width, H = canvas.height;
+  let janaX = W * 0.55, janaY = H * 0.60;
+  const janaNPC = currentNPCs.find(n => n.id === 'jana_kosova' || n.id === 'jana_vila');
+  if(janaNPC){ janaX = janaNPC.x; janaY = janaNPC.y; }
+  // Schovat ji jako standardního NPC (renderujeme sami)
+  currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova' && n.id !== 'jana_vila');
+
+  gs.jana_katana_anim = {
+    phase: 'realize',  // realize → rage → draw → wind_up → strike → cuts → fall_apart → end
+    t0: gs.ts,
+    x: janaX, y: janaY,
+    targetX: gs.player.x + 50, // přiblíží se k hráči
+    targetY: gs.player.y,
+    swingT: 0,
+    flipX: gs.player.x < janaX ? -1 : 1,
+  };
+
+  const seq = [
+    { delay: 1500, phase:'rage',
+      log:'*Jana ztuhne. Otočí se na tebe se zlým výrazem.* "Tys mi tohle FAKT chtěl udělat...?!"', cls:'lw' },
+    { delay: 1800, phase:'draw',
+      log:'"Po VŠEM CO JSME SPOLU PROŽILI?!" *vytáhne katanu zpod šatů*', cls:'lw' },
+    { delay: 1400, phase:'wind_up',
+      log:'"TU KATANU JSEM UKRADLA MILANOVI! PRO TUHLE PŘÍLEŽITOST!"', cls:'lw' },
+    { delay: 700, phase:'approach',
+      log:'*Jana se rozeběhne přímo k tobě.*', cls:'lw' },
+    { delay: 600, phase:'strike',
+      log:'💥 *SVIST!* Bílý záblesk.', cls:'lw' },
+    { delay: 1200, phase:'cuts',
+      log:'*Stojíš. Po těle ti naskakuje šest symetrických ran. Z každé teče krev.*', cls:'lw' },
+    { delay: 1800, phase:'fall_apart',
+      log:'*A pak se to stane. Tělo se rozpadne na kostky. Padají k zemi.*', cls:'lw' },
+    { delay: 2000, phase:'pool',
+      log:'*Pod tělem se rozlévá louže krve. Konec.*', cls:'lw' },
+    { delay: 1600, phase:'end' },
+  ];
+
+  let i = 0;
+  function next(){
+    if(!gs.jana_katana_anim) return;
+    const ln = seq[i++];
+    if(!ln){
+      // Spustit death screen
+      triggerDeath(
+        'Jana Kosová tě rozsekala katanou na šest dílů.\nMěls jí věřit. Měls.',
+        'ROZSEKÁN KATANOU',
+        'KONEC HRY · SUSHI A LA HRUBEŠ',
+        'death_jana_katana'
+      );
+      return;
+    }
+    if(ln.log) addLog(ln.log, ln.cls);
+    if(ln.phase) gs.jana_katana_anim.phase = ln.phase;
+
+    if(ln.phase === 'approach'){
+      // Jana startuje směrem k hráči
+      gs.jana_katana_anim.targetX = gs.player.x + 35 * gs.jana_katana_anim.flipX;
+      gs.jana_katana_anim.targetY = gs.player.y;
+    }
+    if(ln.phase === 'strike'){
+      // Bílý flash + screen shake + spustit player_cuts_anim
+      screenShake(700);
+      gs.jana_katana_anim.flashT = gs.ts;
+    }
+    if(ln.phase === 'cuts'){
+      // Hráč začne mít rány
+      gs.player_cuts_anim = {
+        startTime: gs.ts,
+        cuts: [
+          {y:-22, ang: 0.05},
+          {y:-10, ang:-0.08},
+          {y:0,   ang: 0.12},
+          {y:10,  ang:-0.04},
+          {y:18,  ang: 0.06},
+        ],
+        parts: null,
+        bloodPool: 0,
+      };
+    }
+    if(ln.phase === 'fall_apart'){
+      // Tělo se rozpadne na 6 kostek
+      const px = gs.player.x, py = gs.player.y;
+      gs.player_cuts_anim.parts = [
+        {x:px,   y:py-22, w:14, h:8,  vx:-1.5, vy:-2, color:'#fde8c8'}, // hlava
+        {x:px,   y:py-12, w:18, h:10, vx: 0.8, vy:-1, color:'#1e90ff'}, // hruď
+        {x:px,   y:py-2,  w:18, h:8,  vx:-0.6, vy: 0, color:'#1e90ff'}, // břicho
+        {x:px-8, y:py+5,  w:8,  h:10, vx:-2.0, vy: 0.5, color:'#1e90ff'}, // levá ruka
+        {x:px+8, y:py+5,  w:8,  h:10, vx: 2.0, vy: 0.5, color:'#1e90ff'}, // pravá ruka
+        {x:px,   y:py+15, w:16, h:10, vx: 0.4, vy: 0.8, color:'#1e90ff'}, // nohy
+      ];
+    }
+    setTimeout(next, ln.delay);
+  }
+  setTimeout(next, 800);
+}
+
 // Jana spoutá Johnnyho – animace
 function triggerJanaHandcuffs(){
   if(gs.jana_handcuffs_anim) return;
