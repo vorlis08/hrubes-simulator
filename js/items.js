@@ -254,183 +254,92 @@ function triggerJanaToFireplace(){
 }
 
 function triggerJanaToBathroom(){
-  // Animace přesunu Jany od gauče k dveřím koupelny ve ville
+  // Jana odejde do koupelny s hadrem, zamkne se
   const W = canvas.width, H = canvas.height;
-  const jana = currentNPCs.find(n => n.id === 'jana_kosova');
-  const startX = jana ? jana.x : W * 0.65, startY = jana ? jana.y : H * 0.60;
+  const jana = currentNPCs.find(n => n.id === 'jana_vila');
+  const startX = jana ? jana.x : W * 0.35, startY = jana ? jana.y : H * 0.55;
   gs.jana_to_bathroom_anim = {
     phase: 'walking',
     x: startX, y: startY,
     targetX: W * 0.92, targetY: H * 0.40,
     t0: gs.ts,
   };
-  currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova');
+  currentNPCs = currentNPCs.filter(n => n.id !== 'jana_vila');
   setTimeout(() => {
-    addLog('*Slyšíš cvaknutí zámku.* Jana je v koupelně.', 'lm');
-    fnotif('🔒 Jana zamčená', 'pos');
+    addLog('*Cvak. Dveře koupelny jsou zamčené zevnitř.*', 'lm');
+    fnotif('🔒 Koupelna zamčená', 'pos');
     gs.story.jana_in_bathroom_locked = true;
     gs.jana_to_bathroom_anim = null;
-    // Spustit povodeň
-    setTimeout(() => triggerBathroomFlood(), 2000);
-  }, 3500);
-}
-
-function triggerJanaToToilet(){
-  // Krátká animace Jany na WC + návrat
-  const W = canvas.width, H = canvas.height;
-  const jana = currentNPCs.find(n => n.id === 'jana_kosova');
-  const startX = jana ? jana.x : W * 0.55, startY = jana ? jana.y : H * 0.60;
-  gs.jana_to_toilet_anim = {
-    phase: 'walking',
-    x: startX, y: startY,
-    targetX: W * 0.92, targetY: H * 0.40,
-    t0: gs.ts,
-    returnAt: gs.ts + 8000, // za 8s návrat
-  };
-  currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova');
+    setTimeout(() => triggerBathroomFlood(), 4000);
+  }, 3000);
 }
 
 function triggerBathroomFlood(){
   if(gs.bathroom_flood_anim) return;
-  gs.bathroom_flood_anim = {
-    progress: 0,
-    startTime: gs.ts,
-    johnnyBroke: false,
-    jana_drugged: !!gs.story.drink_drugged && gs.story.jana_drank_potion,
-  };
-  addLog('*Z pod dveří koupelny začíná téct voda...* 💧', 'lw');
-  fnotif('💧 Začala povodeň', 'rep');
+  gs.bathroom_flood_anim = { progress: 0, startTime: gs.ts, johnnyBroke: false };
+  addLog('*Pod dveřmi koupelny se začíná rozlévat voda...* 💧', 'lw');
+  fnotif('💧 Povodeň začíná', 'rep');
 }
 
-// Jana se napila otráveného pití (auto-trigger po vrácení sklenice + návratu z WC)
-function triggerJanaDrinksPotion(){
-  gs.story.jana_drank_potion = true;
-  addLog('*Jana se vrátila z WC, vzala sklenici a usrkla.* "Mmm, dík Hrubeši..."', 'ls');
-  setTimeout(() => {
-    addLog('*Po chvíli začíná Jana mluvit pomaleji, oči se jí zavírají.* "Mám... mám trochu únavu..."', 'lw');
-    fnotif('💊 Prášek funguje', 'rep');
-    // Spustit Johnny charm sequence
-    setTimeout(() => triggerCharmGauc(), 2500);
-  }, 2000);
-}
-
-// Johnny přesune Janu na gauč (po flood + drug)
-function triggerJohnnyDragsJanaToGauc(){
-  addLog('*Johnny vyběhne s Janou na rukou. Položí ji na gauč.* "...zatraceně, dneska to bude těžké."', 'lw');
-  gs.story.jana_asleep_gauc = true;
-  setTimeout(() => {
-    showNPCLine('johnny_vila',
-      '"Hrubeš, díky." *zatřese hlavou* "Tohle by bez tebe nešlo. Tady máš naši kartu Vaza Systems – jsme bratři teď." *podá ti kartu*',
-      () => {
-        runQF('q_johnny_help_done');
-        addLog('Quest "Pomoct Johnnymu" dokončen.', 'lm');
-        doneObj('side_johnny');
-      }
-    );
-  }, 2500);
-}
-
-// ─── KATANA DEATH ─────────────────────────────────────────────────────────
-// Jana zabíjí hráče katanou (8 fází)
-function triggerJanaKatanaKill(){
-  if(gs.jana_katana_anim) return;
+// Johnny vstoupí do koupelny se zbraní – gun scene (voláno když hráč vstoupí do koupelny po johnnyBroke)
+function triggerJohnnyGunScene(){
+  if(gs.story.gun_scene_done) return;
+  gs.story.gun_scene_done = true;
   gs.running = false;
-  // Najdi Janu pozici
-  const W = canvas.width, H = canvas.height;
-  let janaX = W * 0.55, janaY = H * 0.60;
-  const janaNPC = currentNPCs.find(n => n.id === 'jana_kosova' || n.id === 'jana_vila');
-  if(janaNPC){ janaX = janaNPC.x; janaY = janaNPC.y; }
-  // Schovat ji jako standardního NPC (renderujeme sami)
-  currentNPCs = currentNPCs.filter(n => n.id !== 'jana_kosova' && n.id !== 'jana_vila');
-
-  gs.jana_katana_anim = {
-    phase: 'realize',  // realize → rage → draw → wind_up → strike → cuts → fall_apart → end
-    t0: gs.ts,
-    x: janaX, y: janaY,
-    targetX: gs.player.x + 50, // přiblíží se k hráči
-    targetY: gs.player.y,
-    swingT: 0,
-    flipX: gs.player.x < janaX ? -1 : 1,
-  };
 
   const seq = [
-    { delay: 1500, phase:'rage',
-      log:'*Jana ztuhne. Otočí se na tebe se zlým výrazem.* "Tys mi tohle FAKT chtěl udělat...?!"', cls:'lw' },
-    { delay: 1800, phase:'draw',
-      log:'"Po VŠEM CO JSME SPOLU PROŽILI?!" *vytáhne katanu zpod šatů*', cls:'lw' },
-    { delay: 1400, phase:'wind_up',
-      log:'"TU KATANU JSEM UKRADLA MILANOVI! PRO TUHLE PŘÍLEŽITOST!"', cls:'lw' },
-    { delay: 700, phase:'approach',
-      log:'*Jana se rozeběhne přímo k tobě.*', cls:'lw' },
-    { delay: 600, phase:'strike',
-      log:'💥 *SVIST!* Bílý záblesk.', cls:'lw' },
-    { delay: 1200, phase:'cuts',
-      log:'*Stojíš. Po těle ti naskakuje šest symetrických ran. Z každé teče krev.*', cls:'lw' },
-    { delay: 1800, phase:'fall_apart',
-      log:'*A pak se to stane. Tělo se rozpadne na kostky. Padají k zemi.*', cls:'lw' },
-    { delay: 2000, phase:'pool',
-      log:'*Pod tělem se rozlévá louže krve. Konec.*', cls:'lw' },
-    { delay: 1600, phase:'end' },
+    { delay: 600,  log:'*Johnny stojí uprostřed zatopené koupelny. Voda mu sahá po kotníky. Vytáhne pistoli zpod saka.*', cls:'lw' },
+    { delay: 2200, log:'"TY KURVA JANO! Tys mi tady schválně vytopila celý barák?!" *zamíří na ni*', cls:'lw', npc:'johnny_vila', text:'"Já tě naučím úctu, zlatíčko."' },
+    { delay: 2400, fn: () => { screenShake(350); addLog('💥 *BANG!* Kulka zaryla do dlaždice vedle Jany. Minul.*', 'lw'); gs.story.gun_shot1 = true; } },
+    { delay: 1400, fn: () => { screenShake(280); addLog('💥 *BANG!* Druhá rána – zaryla do stropu.*', 'lw'); gs.story.gun_shot2 = true; } },
+    { delay: 900,  log:'*Jana se zhroutí ke zdi, pak vyskočí.* "UTÍKEJ, HRUBEŠI!!!"', cls:'lw' },
+    { delay: 400,  fn: () => triggerJanaFleeVilla() },
   ];
 
   let i = 0;
   function next(){
-    if(!gs.jana_katana_anim) return;
+    if(i >= seq.length) return;
     const ln = seq[i++];
-    if(!ln){
-      // Spustit death screen
-      triggerDeath(
-        'Jana Kosová tě rozsekala katanou na šest dílů.\nMěls jí věřit. Měls.',
-        'ROZSEKÁN KATANOU',
-        'KONEC HRY · SUSHI A LA HRUBEŠ',
-        'death_jana_katana'
-      );
-      return;
-    }
-    if(ln.log) addLog(ln.log, ln.cls);
-    if(ln.phase) gs.jana_katana_anim.phase = ln.phase;
-
-    if(ln.phase === 'approach'){
-      // Jana startuje směrem k hráči
-      gs.jana_katana_anim.targetX = gs.player.x + 35 * gs.jana_katana_anim.flipX;
-      gs.jana_katana_anim.targetY = gs.player.y;
-    }
-    if(ln.phase === 'strike'){
-      // Bílý flash + screen shake + spustit player_cuts_anim
-      screenShake(700);
-      gs.jana_katana_anim.flashT = gs.ts;
-    }
-    if(ln.phase === 'cuts'){
-      // Hráč začne mít rány
-      gs.player_cuts_anim = {
-        startTime: gs.ts,
-        cuts: [
-          {y:-22, ang: 0.05},
-          {y:-10, ang:-0.08},
-          {y:0,   ang: 0.12},
-          {y:10,  ang:-0.04},
-          {y:18,  ang: 0.06},
-        ],
-        parts: null,
-        bloodPool: 0,
-      };
-    }
-    if(ln.phase === 'fall_apart'){
-      // Tělo se rozpadne na 6 kostek
-      const px = gs.player.x, py = gs.player.y;
-      gs.player_cuts_anim.parts = [
-        {x:px,   y:py-22, w:14, h:8,  vx:-1.5, vy:-2, color:'#fde8c8'}, // hlava
-        {x:px,   y:py-12, w:18, h:10, vx: 0.8, vy:-1, color:'#1e90ff'}, // hruď
-        {x:px,   y:py-2,  w:18, h:8,  vx:-0.6, vy: 0, color:'#1e90ff'}, // břicho
-        {x:px-8, y:py+5,  w:8,  h:10, vx:-2.0, vy: 0.5, color:'#1e90ff'}, // levá ruka
-        {x:px+8, y:py+5,  w:8,  h:10, vx: 2.0, vy: 0.5, color:'#1e90ff'}, // pravá ruka
-        {x:px,   y:py+15, w:16, h:10, vx: 0.4, vy: 0.8, color:'#1e90ff'}, // nohy
-      ];
-    }
-    setTimeout(next, ln.delay);
+    const run = () => {
+      if(ln.log) addLog(ln.log, ln.cls);
+      if(ln.fn) ln.fn();
+      if(ln.npc && ln.text) showNPCLine(ln.npc, ln.text, () => setTimeout(next, 200));
+      else setTimeout(next, 200);
+    };
+    setTimeout(run, ln.delay);
   }
-  setTimeout(next, 800);
+  next();
 }
+
+// Jana a Johnny vyběhnou z koupelny – Jana utíká z vily, Johnny za ní
+function triggerJanaFleeVilla(){
+  gs.story.jana_fleeing = true;
+  gs.story.johnny_chasing = true;
+  gs.running = true;
+
+  // Vrátíme hráče do villa místnosti automaticky
+  if(gs.room === 'koupelna'){
+    gs.room = 'johnny_vila';
+    initRoom(canvas.width * 0.92, canvas.height * 0.45);
+  }
+
+  addLog('*Jana vyletí z koupelny a běží ke vchodovým dveřím!*', 'lw');
+  addLog('*Za ní Johnny, stále s pistolí v ruce, křičí.* "VRAŤ SE!"', 'lw');
+  addLog('Utíkej z vily! Máš asi 20 sekund než Johnny dostřelí.', 'ls');
+  fnotif('🏃 UTÍKEJ!', 'rep');
+
+  // Escapetimer – 20s na opuštění vily (do kremze)
+  gs.jana_escape_deadline = gs.ts + 20000;
+
+  // Jana zmizí z vily (utekla)
+  setTimeout(() => {
+    if(gs.room === 'johnny_vila'){
+      addLog('*Jana zmizela za rohem ve směru na Křemži.*', 'ls');
+    }
+  }, 3000);
+}
+
+// (katana death odstraněna – nahrazena gun scene)
 
 // Jana spoutá Johnnyho – animace
 function triggerJanaHandcuffs(){
@@ -460,44 +369,7 @@ function triggerJanaHandcuffs(){
   }, 2800);
 }
 
-// Bathroom cutscene – Johnny vs Jana hádka, hráč jen poslouchá
-function triggerBathroomCutscene(){
-  if(gs.story.bathroom_cutscene_done) return;
-  gs.story.bathroom_cutscene_done = true;
-  gs.bathroom_cutscene_anim = { phase:'fight', t0: gs.ts };
-
-  const seq = [
-    { delay: 1800, npc:'johnny',
-      text:'"JANO! CO TO MÁŠ ZA ZRŮDNOSTI?! VYSVĚTLI MI TO! KOUKEJ!"' },
-    { delay: 2200, npc:'jana',
-      text:'"Ty... TY MI POŘÁD HARAŠÍŠ! Kámoška měla pravdu, ŘÍKALA MI ABYCH SEM NECHODILA!"' },
-    { delay: 2400, npc:'jana',
-      text:'"A HRUBEŠ JE ZMRD CO MI TO DOHODIL! Nikdy mu to neodpustím!"' },
-    { delay: 1600, choice:true },
-  ];
-
-  let i = 0;
-  function next(){
-    if(i >= seq.length) return;
-    const ln = seq[i++];
-    if(ln.choice){
-      // Hráčova volba – bránit se nebo poslouchat
-      document.getElementById('dav').textContent = '🎒';
-      document.getElementById('dname').textContent = 'FANDA';
-      document.getElementById('drole').textContent = 'co teď?';
-      document.getElementById('dtxt').textContent = '*Stojíš v zatopené koupelně. Johnny+Jana ti křičí přes hlavu.* Co uděláš?';
-      document.getElementById('dchoices').innerHTML =
-        '<button class="db prim" onclick="runQF(\'q_bathroom_listen\')">(Naslouchat dál)</button>' +
-        '<button class="db danger" onclick="runQF(\'q_bathroom_defend\')">💬 "Já jsem chtěl jen pomoct..."</button>';
-      document.getElementById('dov').classList.add('on');
-      return;
-    }
-    showNPCLine(ln.npc, ln.text, () => {
-      setTimeout(next, 200);
-    });
-  }
-  next();
-}
+// (triggerBathroomCutscene odstraněna – nahrazena triggerJohnnyGunScene)
 
 function triggerCharmGauc(){
   if(gs.charm_gauc_anim) return;

@@ -240,17 +240,7 @@ function checkProx(){
     }
   }
 
-  // Villa – šuplík (prášek)
-  if(gs.room === 'johnny_vila' && !gs.story.villa_powder_taken && !gs.story.johnny_cuffed){
-    const dx = canvas.width * 0.22, dy = canvas.height * 0.72;
-    if(dist2(p, {x:dx, y:dy}) < PROX_R){ best = {isVillaDrawer:true}; }
-  }
-  // Villa – kuchyňská linka (nasypat prášek do drinku)
-  if(gs.room === 'johnny_vila' && gs.inv.prasek && !gs.story.jana_drugged_villa && !gs.story.johnny_cuffed){
-    const kx = canvas.width * 0.83, ky = canvas.height * 0.59;
-    if(dist2(p, {x:kx, y:ky}) < PROX_R){ best = {isVillaKitchen:true}; }
-  }
-  // Villa – dveře do koupelny (vždy přístupné, kromě když Jana zamčená a dveře nerozbity)
+  // Villa – dveře do koupelny
   if(gs.room === 'johnny_vila' && !gs.story.johnny_cuffed){
     const bx = canvas.width * 0.92, by = canvas.height * 0.35;
     if(dist2(p, {x:bx, y:by}) < PROX_R){
@@ -371,11 +361,6 @@ function checkProx(){
     if(dist2(p, {x:jx, y:jy}) < PROX_R){ best = {isJanaFireplace:true}; }
   }
 
-  // Sklenice na stole ve villce (možnost vrátit po otrávení)
-  if(gs.room === 'johnny_vila' && gs.inv.sklenice_jana && gs.story.jana_at_toilet){
-    const tx = canvas.width * 0.50, ty = canvas.height * 0.62;
-    if(dist2(p, {x:tx, y:ty}) < PROX_R * 1.2){ best = {isVillaTable:true}; }
-  }
 
   // Krb v hospodě – vstup do Cibulkovy laboratoře
   if(gs.room === 'hospoda' && gs.krb_open){
@@ -406,12 +391,10 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Ložnice (zamčeno)';
     } else if(best.isVillaDrawer){
       document.getElementById('ptxt').textContent = 'Prohledat šuplík';
-    } else if(best.isVillaKitchen){
-      document.getElementById('ptxt').textContent = 'Nasypat prášek do drinku';
     } else if(best.isVillaBathroom){
       document.getElementById('ptxt').textContent = 'Vstoupit do koupelny';
     } else if(best.isVillaBathroomLocked){
-      document.getElementById('ptxt').textContent = '🔒 Koupelna (zamčeno – Jana je uvnitř)';
+      document.getElementById('ptxt').textContent = '🔒 Koupelna zamčená – Jana je uvnitř';
     } else if(best.isBathroomDrawer){
       document.getElementById('ptxt').textContent = 'Otevřít šuplík';
     } else if(best.isBathroomSink){
@@ -444,8 +427,6 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Vzít šamanovu hlavu';
     } else if(best.isJanaFireplace){
       document.getElementById('ptxt').textContent = 'Mluvit s Janou';
-    } else if(best.isVillaTable){
-      document.getElementById('ptxt').textContent = 'Vrátit sklenici na stůl';
     } else if(best.isKrbEntry){
       document.getElementById('ptxt').textContent = '🔬 Vstoupit do Cibulkovy laboratoře';
     } else if(best.isLabExit){
@@ -465,6 +446,27 @@ function checkProx(){
 // ─── Interakce (klávesa E) ────────────────────────────────────────────────
 
 function interact(){
+  // Cibulkova laboratoř – šuplík (klíček od Páji)
+  if(gs.room === 'cibulka_lab' && !gs.story.kgb_detector_from_lab){
+    const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
+    if(dist2(gs.player, {x:supX, y:supY}) < PROX_R * 1.2){
+      if(!gs.inv.klic_supliku){
+        addLog('🔒 Šuplík je zamčený. Potřebuješ klíček.', 'lw');
+        return;
+      }
+      gs.story.kgb_detector_from_lab = true;
+      gs.inv.kgb_detector = 1;
+      gs.inv.klic_supliku = 0;
+      updateInv();
+      addLog('*Otočíš klíčkem v zámku. Šuplík povolí.* 🗝️', 'lm');
+      setTimeout(() => {
+        addLog('Uvnitř leží KGB Detektor. Cibulkův mistrovský kus. Bereš ho.', 'lm');
+        fnotif('🔍 KGB Detektor!', 'itm');
+        if(activeProfile){ activeProfile.artifacts.kgb_detector = true; }
+      }, 600);
+      return;
+    }
+  }
   // Ložnice dveře – naslouchání
   if(gs.room === 'johnny_vila'){
     const lx = canvas.width * 0.08, ly = canvas.height * 0.35;
@@ -510,25 +512,18 @@ function interact(){
       }
     }
   }
-  // Villa – šuplík (prášek)
-  if(gs.room === 'johnny_vila' && !gs.story.villa_powder_taken && !gs.story.johnny_cuffed){
-    const dx = canvas.width * 0.22, dy = canvas.height * 0.72;
-    if(dist2(gs.player, {x:dx, y:dy}) < PROX_R){ runQF('q_villa_drawer'); return; }
-  }
-  // Villa – kuchyňská linka (nasypat prášek)
-  if(gs.room === 'johnny_vila' && gs.inv.prasek && !gs.story.jana_drugged_villa && !gs.story.johnny_cuffed){
-    const kx = canvas.width * 0.83, ky = canvas.height * 0.59;
-    if(dist2(gs.player, {x:kx, y:ky}) < PROX_R){
-      gs.inv.prasek = 0; updateInv();
-      runQF('q_villa_drug_drink'); return;
-    }
-  }
-  // Villa – dveře do koupelny (vždy přístupné kromě zamčení)
+  // Villa – dveře do koupelny
   if(gs.room === 'johnny_vila' && !gs.story.johnny_cuffed){
     const bx = canvas.width * 0.92, by = canvas.height * 0.35;
     if(dist2(gs.player, {x:bx, y:by}) < PROX_R){
       if(gs.story.jana_in_bathroom_locked && !gs.story.bathroom_door_broken){
-        addLog('🔒 Koupelna je zamčená. Jana je uvnitř.', 'lw');
+        addLog('🔒 Koupelna zamčená zevnitř. Jana je tam.', 'lw');
+        return;
+      }
+      // Pokud Johnny právě vtrhl do koupelny – spustit gun scene
+      if(gs.story.johnny_in_bathroom && !gs.story.gun_scene_done){
+        gs.room = 'koupelna'; initRoom(canvas.width * 0.5, canvas.height * 0.7);
+        setTimeout(() => triggerJohnnyGunScene(), 600);
         return;
       }
       gs.room = 'koupelna'; initRoom(canvas.width * 0.5, canvas.height * 0.7); return;
@@ -708,26 +703,6 @@ function interact(){
       initRoom(fp.rx * canvas.width, fp.ry * canvas.height + canvas.height * 0.30);
       return;
     }
-    // Šuplík – odemknout klíčkem
-    const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
-    if(!gs.story.kgb_detector_from_lab && dist2(gs.player, {x:supX, y:supY}) < PROX_R * 1.2){
-      if(!gs.inv.klic_supliku){
-        addLog('🔒 Šuplík je zamčený. Potřebuješ klíček.', 'lw');
-        return;
-      }
-      gs.story.kgb_detector_from_lab = true;
-      gs.inv.kgb_detector = 1;
-      // Klíček spotřebován
-      gs.inv.klic_supliku = 0;
-      updateInv();
-      addLog('*Otočíš klíčkem v zámku. Šuplík povolí.* 🗝️', 'lm');
-      setTimeout(() => {
-        addLog('Uvnitř leží KGB Detektor. Cibulkův mistrovský kus. Bereš ho.', 'lm');
-        fnotif('🔍 KGB Detektor!', 'itm');
-        if(activeProfile){ activeProfile.artifacts.kgb_detector = true; }
-      }, 600);
-      return;
-    }
   }
 
   // Jana u krbu (po "Johnny je v pohodě") – mluvit s ní
@@ -821,6 +796,7 @@ function update(dt){
         a.flipX = dx < 0 ? -1 : 1;
       } else {
         a.phase = 'arrived';
+        gs.jana_to_fireplace_anim = null;
       }
     }
   }
@@ -880,28 +856,31 @@ function update(dt){
       }
     }
   }
-  // Bathroom flood progres (rozšíření kaluže)
+  // Bathroom flood progres (kaluž se rozlévá pod dveřmi do villa místnosti)
   if(gs.bathroom_flood_anim && gs.room === 'johnny_vila'){
     const f = gs.bathroom_flood_anim;
-    // Pokud je Jana drogovaná, voda postupuje pomaleji a brzy ustane
-    const speed = f.jana_drugged ? 0.08 : 0.18;
-    f.progress = Math.min(1, f.progress + (dt / 1000) * speed);
-    // Johnny notice po určitém prahu
-    if(!f.johnnyBroke && f.progress > 0.55){
+    f.progress = Math.min(1, f.progress + (dt / 1000) * 0.14);
+    if(!f.johnnyBroke && f.progress > 0.6){
       f.johnnyBroke = true;
       gs.story.bathroom_door_broken = true;
-      addLog('*Johnny vystartuje ke dveřím.* "JANO! OTEVŘI! HNED!"', 'lw');
+      addLog('*Johnny vstane ze sedačky.* "CO TO SAKRA...?!" *míří ke koupelně*', 'lw');
       setTimeout(() => {
-        addLog('💥 *Johnny rozkopl dveře koupelny.*', 'lw');
-        screenShake(500);
+        addLog('💥 *Johnny vykopl dveře koupelny nohou.* Rána otřásla celou místností.', 'lw');
+        screenShake(600);
         gs.story.johnny_in_bathroom = true;
-        // Přesunout Johnnyho do koupelny (skrýt z villa)
         currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
-        // Pokud Jana je drogovaná, Johnny ji vezme na gauč → johnny path
-        if(f.jana_drugged){
-          setTimeout(() => triggerJohnnyDragsJanaToGauc(), 1500);
-        }
-      }, 800);
+        addLog('*Johnny zmizel za dveřmi.* Vejdi za ním nebo uteč z vily!', 'ls');
+        fnotif('🚪 Koupelna – vstoupit?', 'rep');
+      }, 1200);
+    }
+  }
+  // Escape timer – Jana utíká, hráč musí dostat ven z vily
+  if(gs.jana_escape_deadline && gs.ts > gs.jana_escape_deadline && !gs.story.jana_escape_failed){
+    gs.story.jana_escape_failed = true;
+    gs.jana_escape_deadline = 0;
+    if(gs.room === 'johnny_vila' || gs.room === 'koupelna'){
+      addLog('*Příliš pozdě. Johnny tě dohnal.* 💥', 'lw');
+      triggerDeath('Johnny tě dohnal v chodbě vily.\nMěl jsi utéct dřív.', 'DOSTIŽEN JOHNNYM', 'KONEC HRY · KREMŽE PLÁČE');
     }
   }
   // Katana animace (Jana zabíjí hráče)
@@ -930,7 +909,7 @@ function update(dt){
     const dx = a.targetX - a.x, dy = a.targetY - a.y;
     const d = Math.hypot(dx, dy);
     if(d > 4){
-      const spd = 2.2 * dt / 16.667;
+      const spd = 3.8 * dt / 16.667;
       a.x += (dx / d) * spd;
       a.y += (dy / d) * spd;
       a.flipX = dx < 0 ? -1 : 1;
@@ -1014,6 +993,23 @@ function update(dt){
       }
       if(gs.johnny_stay_deadline > 0){
         gs.johnny_stay_deadline = 0; // zrušit timer při odchodu
+      }
+      // Pokud hráč uteče z vily včas s Janou prchající
+      if(gs.jana_escape_deadline && gs.ts < gs.jana_escape_deadline && !gs.story.jana_escaped_success){
+        gs.story.jana_escaped_success = true;
+        gs.jana_escape_deadline = 0;
+        setTimeout(() => {
+          addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
+          gainRep(12, 'Utekl s Janou z Johnnyho vily');
+          gs.inv.klice_vila = 1; updateInv();
+          gs.story.jana_rescued_villa = true;
+          gs.story.johnny_villa_done = true;
+          doneObj('side_johnny');
+          fnotif('+12 REP','rep'); fnotif('Jana zachráněna 💅','pos'); fnotif('🔑 Klíče od vily','itm');
+          addLog('Jana se vydá do Billy. Můžeš ji tam potkat.', 'ls');
+        }, 800);
+      } else if(gs.jana_escape_deadline && !gs.story.jana_escaped_success){
+        gs.jana_escape_deadline = 0;
       }
       gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.60); return;
     }

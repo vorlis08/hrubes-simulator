@@ -395,91 +395,25 @@ const QF = {
     gs.villa_deadline = gs.ts + 60000; // 60s timer (existující systém)
   },
 
-  // Villa: vzít Janin drink (kliknutím na drink v dialogu)
-  q_take_jana_drink(){
-    if(gs.story.jana_drink_taken){ closeDialog(); return; }
-    gs.story.jana_drink_taken = true;
-    gs.inv.sklenice_jana = 1; updateInv();
-    closeDialog();
-    setTimeout(() => {
-      showNPCLine('jana_kosova',
-        '*Jana se mírně usměje.* "Aha, dík. Sem tam mi tu sklenici drbni do ruky, jo? Pitnej režim je důležitej."',
-        () => addLog('Vzal jsi Janině sklenici. Můžeš jí nasypat něco do nápoje, nebo ji vrátit zpět...', 'ls')
-      );
-    }, 200);
-  },
-
-  // Villa: po stage 10, hráč sleduje Janu jak jde na WC
-  q_jana_take_glass_back(){
-    closeDialog();
-    gs.story.jana_at_toilet = true;
-    setTimeout(() => {
-      addLog('Jana odešla na záchod. Sklenici máš v ruce. Můžeš ji vrátit na stůl, nebo do ní něco hodit...', 'ls');
-      triggerJanaToToilet();
-    }, 300);
-  },
-
-  // Villa: vrátit (otrávenou) sklenici na stůl
-  q_return_glass_to_table(){
-    if(!gs.inv.sklenice_jana){ closeDialog(); return; }
-    gs.inv.sklenice_jana = 0; updateInv();
-    closeDialog();
-    addLog('Vrátil jsi sklenici na stůl. Vypadá to nenápadně.', 'ls');
-  },
-
-  // Villa: rychle nasypat prášek Janě do pití během rozhovoru (DEATH - vidí to)
-  q_drug_drink_in_dialog(){
-    if(!gs.inv.prasek){ closeDialog(); return; }
-    closeDialog();
-    addLog('*Sahneš pro prášek a snažíš se ho nepozorovaně nasypat do její sklenice...*', 'lw');
-    setTimeout(() => {
-      addLog('*Jana se otočí v okamžiku.* "Co... CO TO DĚLÁŠ?!"', 'lw');
-      setTimeout(() => triggerJanaKatanaKill(), 1200);
-    }, 1200);
-  },
-
-  // Villa: nasypat prášek do drinku (ze sklenice v inventáři)
-  q_drug_jana_drink(){
-    if(!gs.inv.prasek){ addLog('Nemáš prášek!','lw'); closeDialog(); return; }
-    if(!gs.inv.sklenice_jana){ addLog('Nemáš sklenici!','lw'); closeDialog(); return; }
-    if(gs.story.drink_drugged){ addLog('Už jsi to jednou udělal.','lw'); closeDialog(); return; }
-    gs.inv.prasek = 0;
-    gs.story.drink_drugged = true;
-    updateInv();
-    closeDialog();
-
-    // Bezpečná chvíle – Jana je pryč (na WC nebo v koupelně)
-    if(gs.story.jana_at_toilet || gs.story.jana_in_bathroom_locked){
-      addLog('💊 Nasypal jsi prášek do Janiny sklenice. Teď ji jen vrátit na stůl, ať se napije...', 'ls');
-      fnotif('💊 Drink otráven', 'rep');
-      return;
-    }
-
-    // Hráč otrávil drink přímo – Jana to vidí → DEATH
-    addLog('*Jana se otočí v okamžiku, kdy sypeš prášek do sklenice...*', 'lw');
-    setTimeout(() => triggerJanaKatanaKill(), 1200);
-  },
-
-  // Villa: dát Janě hadr → ona vyrazí do koupelny
+  // Villa: dát Janě hadr → she gets excited, briefing
   q_give_jana_rag(){
     if(!gs.inv.hadr){ addLog('Nemáš hadr!','lw'); closeDialog(); return; }
     gs.inv.hadr = 0; updateInv();
     gs.story.bathroom_plan_briefed = true;
     closeDialog();
-    // Stage 8 dialog se zobrazí auto z getStage při dalším showDialog
     setTimeout(() => {
-      const jana = currentNPCs.find(n => n.id === 'jana_kosova');
+      const jana = currentNPCs.find(n => n.id === 'jana_vila');
       if(jana) showDialog(jana);
     }, 300);
   },
 
-  // Villa: po stage 8 dialogu Jana odejde do koupelny
+  // Villa: po stage 8 dialogu Jana odejde do koupelny s hadrem
   q_jana_go_bathroom(){
     closeDialog();
     triggerJanaToBathroom();
   },
 
-  // Bathroom cutscene – hráč naslouchá
+  // Bathroom cutscene – hráč naslouchá (handcuff path)
   q_bathroom_listen(){
     closeDialog();
     setTimeout(() => {
@@ -673,19 +607,6 @@ const QF = {
     gs.room = 'kremze'; initRoom();
     closeDialog();
   },
-  q_villa_drug_drink(){
-    // Volá se z interact() po nasypání prášku do drinku
-    gs.story.jana_drugged_villa = true;
-    addLog('Nasypals prášek do Janina drinku. Za chvíli zmlkla.', 'lw');
-    addLog('Johnny se otočil a kývl. "Díky, brácho."', 'ls');
-    setTimeout(() => {
-      gs.money += 500; updateHUD();
-      gainRep(3, 'Pomohl Johnnymu');
-      addLog('Johnny ti strčil 500 Kč do kapsy. Promluv s ním – má pro tebe víc.', 'lm');
-      fnotif('+500 Kč 💰','pos'); fnotif('+3 REP','rep');
-      doneObj('side_johnny');
-    }, 2000);
-  },
   q_johnny_villa_rewards(){
     gs.story.johnny_villa_rewards = true;
     gs.inv.membership_vaza = 1;
@@ -806,13 +727,6 @@ const QF = {
     fnotif('🚰 Achievement!','pos');
   },
   // Villa – šuplík s práškem (obývák)
-  q_villa_drawer(){
-    if(gs.story.villa_powder_taken){ addLog('Šuplík je prázdný.','lw'); return; }
-    gs.story.villa_powder_taken = true;
-    gs.inv.prasek = 1; updateInv();
-    addLog('V šuplíku jsi našel podezřelý bílý prášek.', 'lw');
-    fnotif('💊 Prášek','itm');
-  },
 
   // ─── Pája ─────────────────────────────────────────────────────────────────
   q_paja_loan(){

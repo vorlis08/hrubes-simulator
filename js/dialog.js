@@ -298,6 +298,14 @@ function triggerCibulkaSequence(){
         gs.saman_to_krb.phase = 'done';
         gs.saman_to_krb.speech = null;
         addLog('Vejdi do krbu pro vstup do Cibulkovy laboratoře 🔥', 'lm');
+        // Šaman se vrátí na své místo jako normální NPC
+        setTimeout(() => {
+          gs.saman_to_krb = null;
+          const samanDef = NPCS['kratom_saman'];
+          if(samanDef && gs.room === 'hospoda' && !currentNPCs.find(n => n.id === 'kratom_saman')){
+            currentNPCs.push({ id:'kratom_saman', x: canvas.width * samanDef.rx, y: canvas.height * samanDef.ry, ...samanDef });
+          }
+        }, 2000);
       }
       i++;
       setTimeout(nextLine, ln.delay);
@@ -334,12 +342,10 @@ function getStage(id){
       if(s.jana_rescued) return 4;
       // Po flood / handcuff – Jana děkuje + dá podprsenku
       if(s.jana_handcuffed_johnny) return 7;
-      // Villa: Jana je opilá / pije pití → stage 10
-      if(s.jana_drink_taken && !s.drink_drugged && gs.room === 'johnny_vila' && !s.jana_at_toilet) return 10;
-      // Villa: hráč jí podal hadr → stage 8 (briefing)
+      // Villa: hráč jí řekl o hadru → stage 8 (briefing)
       if(s.bathroom_plan_briefed && !s.jana_in_bathroom_locked && gs.room === 'johnny_vila') return 8;
       // Villa: standardní (po jana_to_johnny path) → stage 6
-      if(s.jana_at_johnny && gs.room === 'johnny_vila' && !s.bathroom_plan_briefed && !s.jana_drink_taken && !s.jana_handcuffed_johnny) return 6;
+      if(s.jana_at_johnny && gs.room === 'johnny_vila' && !s.bathroom_plan_briefed && !s.jana_handcuffed_johnny) return 6;
       // Hospoda: po "Johnny je v pohodě" → Jana u krbu, stage 5
       if(s.jana_at_johnny && gs.room === 'hospoda') return 5;
       if(s.jana_in_hospoda) return 3;
@@ -353,6 +359,7 @@ function getStage(id){
     case 'johnny':
       if(s.jana_rescued) return 4;
       if(s.jana_in_hospoda) return 3;
+      if(s.johnny >= 3) return 5;
       if(s.johnny >= 2) return 2;
       if(s.johnny === 1) return 1;
       return 0;
@@ -410,7 +417,6 @@ function getStage(id){
       return 0;
     case 'jana_vila':
       if(s.jana_handcuffed_johnny) return 5;
-      if(s.jana_drink_taken && !s.drink_drugged && !s.jana_at_toilet) return 4;
       if(s.bathroom_plan_briefed && !s.jana_in_bathroom_locked) return 3;
       if(s.johnny_return_visit) return 2;
       if(s.johnny_cuffed) return 1;

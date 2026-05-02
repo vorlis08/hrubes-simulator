@@ -209,21 +209,6 @@ const NPCS = {
           {label:'(Pohlédnout na ni naposledy.)', cls:'prim', fn:'q_jana_go_bathroom'}
         ]
       },
-      // stage 9 – villa, hráč drží jen prášek (žádná sklenice), Jana popojí drink
-      {
-        text:'*Jana drží sklenici Démona v ruce, mírně rozčarovaná pije.* "Když už mě sem tahá, ať mi aspoň objedná ty pivka..."',
-        choices:[
-          {label:'(Vzít její drink)', cls:'prim', fn:'q_take_jana_drink'},
-          {label:'(Odejít)', cls:'danger', fn:'close'}
-        ]
-      },
-      // stage 10 – villa, Jana po napití pití (s drinkem v ruce)
-      {
-        text:'"Mmm, díky, Hrubeši. Aspoň jeden chlap se o mě dneska zajímá jak by měl." *upije velký lok* "Jsi dobrej kámoš. I když ten rande mi byl od tebe fakt podpásovka." *odloží sklenici na stůl* "Zacvaknu si na záchod. Hned jsem zpátky."',
-        choices:[
-          {label:'(Sledovat ji)', cls:'prim', fn:'q_jana_take_glass_back'}
-        ]
-      },
     ]
   },
 
@@ -280,6 +265,11 @@ const NPCS = {
       // stage 4 – po záchraně Jany, naštvaný
       {
         text:'"Ty vole, TY jsi ji odvlekl?!" *vstane* "To je celý tvůj problém, Hrubeši. Vždycky musíš hrát hrdinu. Nedostaneš ani korunu."',
+        choices:[{label:'(Odejít)', fn:'close'}]
+      },
+      // stage 5 – odměna vybrána, Jana ještě nedorazila
+      {
+        text:'"Díky za zprávu, čekám." *mává rukou* "Dej mi pokoj, připravuju se."',
         choices:[{label:'(Odejít)', fn:'close'}]
       },
     ]
@@ -606,9 +596,7 @@ const NPCS = {
         text:'"Fando..." *šeptá* "Ten chlap je úplně slizkej. Je na mě hrozně hrr na věc a já prostě nechci. Pomoz mi, prosím."',
         choices:[
           {label:'🚿 "Jak ti mám pomoct?"', cls:'special', fn:'q_jana_help_hint'},
-          {label:'🧻 "Mám lepší nápad – vytopíme ho." (dát hadr)', cls:'special', fn:'q_give_jana_rag', condFlag:'has_hadr'},
-          {label:'🥃 "Vezmu ti to pití, ať ti ho objednám čerstvý."', cls:'special', fn:'q_take_jana_drink'},
-          {label:'💊 (Šeptem do pití přilít prášek...)', cls:'danger', fn:'q_drug_drink_in_dialog', condFlag:'has_prasek'},
+          {label:'🧻 "Mám hadr – dáme mu co proto." (dát hadr)', cls:'special', fn:'q_give_jana_rag', condFlag:'has_hadr'},
           {label:'(Nechat ji tady)', cls:'danger', fn:'close'},
         ]
       },
