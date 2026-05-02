@@ -1,0 +1,13 @@
+# Claude Code interní soubory (worktrees, launch.json, settings.local)
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Node / dependencies (pokud někdy)
+node_modules/
