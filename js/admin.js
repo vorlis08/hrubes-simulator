@@ -339,70 +339,135 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── MISE TAB – teleport do fáze questu ──────────────────────────────────────
 
 const MISSION_TELEPORTS = [
+  // ─── Číhalová ──────────────────────────
   { cat:'Číhalová', steps:[
-    { name:'Přijmout úkol',           room:'ucebna', story:{}, inv:{}, obj:'main_cihalova', desc:'Mluv s Číhalovou' },
-    { name:'Doručit piko',             room:'ucebna', story:{cihalova:1}, inv:{piko:1}, desc:'Máš piko, jdi za Číhalovou' },
+    { name:'Přijmout úkol',           room:'ucebna', story:{}, desc:'Mluv s Číhalovou' },
+    { name:'Doručit piko',             room:'ucebna', story:{cihalova:1}, inv:{piko:1}, obj:'main_cihalova', desc:'Máš piko, jdi za Číhalovou' },
+    { name:'Overdose path',            room:'ucebna', story:{cihalova:1}, inv:{piko:1}, obj:'main_cihalova', desc:'Dej Číhalové celé balení' },
     { name:'Po doručení – krb',        room:'hospoda', story:{cihalova:2,cihalova_collapsed:true,cihalova_dead:true}, inv:{pytel:1}, obj:'quest_cihalova_burn', desc:'Číhalová mrtvá, zbav se těla v krbu' },
   ]},
+  // ─── Krejčí ────────────────────────────
   { cat:'Krejčí', steps:[
-    { name:'Přijmout úkol',           room:'ucebna', story:{}, obj:'side_krejci', desc:'Mluv s Krejčí' },
-    { name:'Vyřešeno – odměna',        room:'ucebna', story:{krejci:1,krejci_resolved:true}, desc:'Vrať se pro odměnu' },
+    { name:'Přijmout úkol',           room:'ucebna', story:{}, desc:'Mluv s Krejčí' },
+    { name:'Vyřešeno – odměna',        room:'ucebna', story:{krejci:1,krejci_resolved:true}, obj:'side_krejci', desc:'Vrať se pro odměnu' },
   ]},
-  { cat:'Figurová', steps:[
-    { name:'Přijmout špehování',       room:'ucebna', story:{}, obj:'side_figurova', desc:'Mluv s Figurovou' },
-    { name:'Dodat důkazy Figurové',    room:'ucebna', story:{figurova:1,milan_fig_evidence:true}, inv:{screenshot:1}, desc:'Máš screenshot, jdi za Figurovou' },
-    { name:'Dark path – kontrakt',     room:'ucebna', story:{figurova:2,figurova_dark_started:true}, desc:'Figurová nabízí temnou cestu' },
-    { name:'Zabít Matese',             room:'hospoda', story:{figurova_dark_contract:true}, inv:{fig_nuz:1}, obj:'quest_figurova_mates', desc:'Máš nůž, jdi za Matesem' },
-    { name:'Zabít Milana (voodoo)',    room:'kremze',  story:{figurova_dark_contract:true,mates_dead:true}, inv:{voodoo:1,nuz:1}, obj:'quest_figurova_milan', desc:'Máš voodoo, jdi za Milanem' },
-    { name:'Zabít Milana (pistole)',   room:'kremze',  story:{figurova_dark_contract:true,mates_dead:true}, inv:{fig_gun:1}, obj:'quest_figurova_milan', desc:'Máš pistoli, jdi za Milanem' },
-    { name:'Hotovo – Fábie odměna',    room:'ucebna',  story:{figurova_dark_done:true,mates_dead:true,milan_voodoo_dead:true}, desc:'Vrať se pro klíče od Fábie' },
-    { name:'Figurová – sanitka',       room:'ucebna',  story:{figurova:2,figurova_kratomed:true}, desc:'Figurová po kratomu' },
+  // ─── Figurová ──────────────────────────
+  { cat:'Figurová – špehování', steps:[
+    { name:'Přijmout špehování',       room:'ucebna', story:{}, desc:'Mluv s Figurovou' },
+    { name:'Dodat důkazy (screenshot)',room:'ucebna', story:{figurova:1,milan_fig_evidence:true}, inv:{screenshot:1,hlasovka:1}, obj:'side_figurova', desc:'Máš screenshot+hlasovku' },
+    { name:'Odměna (C2 cert path)',    room:'ucebna', story:{figurova:2}, desc:'Figurová dává certifikát' },
+    { name:'Kratom do kávy',           room:'ucebna', story:{figurova:1}, inv:{kratom_kava:1}, desc:'Přimíchej kratom do kávy' },
   ]},
-  { cat:'Milan – protiútok', steps:[
-    { name:'Sabotovat Figurovou',      room:'kremze', story:{milan_fig_evidence:true}, obj:'quest_milan_protiutok', desc:'Mluv s Milanem o sabotáži' },
+  { cat:'Figurová – dark path', steps:[
+    { name:'Dark path – kontrakt',     room:'ucebna', story:{figurova:2,figurova_dark_started:true,milan_fig_evidence:true}, desc:'Figurová nabízí temnou cestu' },
+    { name:'Zabít Matese (nůž)',       room:'hospoda', story:{figurova_dark_contract:true}, inv:{fig_nuz:1}, obj:'quest_figurova_mates', desc:'Máš nůž, jdi za Matesem' },
+    { name:'Zabít Milana (voodoo)',    room:'kremze',  story:{figurova_dark_contract:true,mates_dead:true}, inv:{voodoo:1,nuz:1}, obj:'quest_figurova_milan', desc:'Máš voodoo panenku+nůž' },
+    { name:'Zabít Milana (pistole)',   room:'kremze',  story:{figurova_dark_contract:true,mates_dead:true}, inv:{fig_gun:1}, obj:'quest_figurova_milan', desc:'Máš revolver' },
+    { name:'Hotovo – odměna Fábie',    room:'ucebna',  story:{figurova_dark_contract:true,figurova_dark_done:false,mates_dead:true,milan_voodoo_dead:true}, desc:'Vrať se pro klíče' },
   ]},
+  { cat:'Figurová – sklep', steps:[
+    { name:'Figurová jde do sklepa',   room:'ucebna', story:{figurova:2}, desc:'Spustit sklep quest' },
+    { name:'Figurová ve sklepě',       room:'sklep', story:{figurova_in_sklep:true}, desc:'Figurová čeká ve sklepě' },
+    { name:'Kopnout Figurovou',        room:'sklep', story:{figurova_in_sklep:true,figurova_arrived_door:true}, desc:'Figurová u dveří sklepa' },
+  ]},
+  { cat:'Figurová – omluvenka', steps:[
+    { name:'Žádat omluvenku',          room:'ucebna', story:{}, desc:'Mluv s Figurovou o omluvence' },
+    { name:'S propiskou',              room:'ucebna', story:{}, inv:{propiska:1}, desc:'Máš propisku, nabídni Figurové' },
+  ]},
+  // ─── Milan ─────────────────────────────
+  { cat:'Milan', steps:[
+    { name:'Milan – sabotáž Figurové', room:'kremze', story:{figurova:1,milan_fig_evidence:true}, obj:'quest_milan_protiutok', desc:'Mluv s Milanem o protiútoku' },
+    { name:'Milan – odměna za sabotáž',room:'kremze', story:{figurova_kratomed:true}, desc:'Vrať se za Milanem' },
+    { name:'Varovat Milana',           room:'kremze', story:{figurova_dark_contract:true}, desc:'Řekni Milanovi o kontraktu' },
+    { name:'Milan jde do sklepa',      room:'kremze', story:{milan_going_to_sklep:true}, desc:'Milan odchází do sklepa' },
+    { name:'Milan – dát telefon',      room:'kremze', story:{milan_fig_evidence:true}, inv:{milan_phone:1}, desc:'Máš Milanův telefon' },
+  ]},
+  // ─── Jana ──────────────────────────────
   { cat:'Jana', steps:[
-    { name:'Přijmout úkol (kratom)',   room:'billa',  story:{}, obj:'side_jana', desc:'Mluv s Janou' },
-    { name:'Dodat kratom',             room:'billa',  story:{jana:1}, inv:{kratom:20}, desc:'Máš 20g kratomu' },
-    { name:'Domluvit rande',           room:'billa',  story:{jana:2}, desc:'Požádej Janu o rande pro Johnnyho' },
+    { name:'Přijmout úkol (kratom)',   room:'billa',  story:{}, desc:'Mluv s Janou' },
+    { name:'Dodat kratom (20g)',       room:'billa',  story:{jana:1}, inv:{kratom:20}, obj:'side_jana', desc:'Máš 20g kratomu' },
+    { name:'Požádat o rande',          room:'billa',  story:{jana:2}, desc:'Požádej Janu o rande pro Johnnyho' },
+    { name:'Potvrdit rande (blend)',   room:'billa',  story:{jana:2,jana_rande_asked:true}, inv:{blend:1}, desc:'Máš blend, dej Janě' },
+    { name:'Jana – poděkování',        room:'billa',  story:{jana_rescued:true,jana_grateful:true}, desc:'Jana děkuje' },
   ]},
+  // ─── Johnny ────────────────────────────
   { cat:'Johnny', steps:[
-    { name:'Přijmout úkol (rande)',    room:'hospoda', story:{}, obj:'side_johnny', desc:'Mluv s Johnnym' },
-    { name:'Jana souhlasí – říct Johnnymu', room:'hospoda', story:{johnny:1,jana_rande_ok:true}, desc:'Řekni Johnnymu že Jana souhlasí' },
-    { name:'Odměna od Johnnyho',       room:'hospoda', story:{johnny:2}, desc:'Vrať se pro odměnu' },
+    { name:'Přijmout úkol (rande)',    room:'hospoda', story:{}, desc:'Mluv s Johnnym' },
+    { name:'Potvrdit rande',           room:'hospoda', story:{johnny:1,jana_rande_ok:true}, obj:'side_johnny', desc:'Jana souhlasí, řekni Johnnymu' },
+    { name:'Odměna',                   room:'hospoda', story:{johnny:2}, desc:'Vrať se pro odměnu' },
     { name:'Jana v hospodě – rande',   room:'hospoda', story:{johnny:2,jana_in_hospoda:true}, desc:'Jana čeká u baru' },
+    { name:'Webovky (hospoda)',        room:'hospoda', story:{}, inv:{membership_vaza:1}, desc:'Požádej Johnnyho o webovky' },
   ]},
-  { cat:'Koupelna (vila)', steps:[
-    { name:'Vila – plán briefing',     room:'johnny_vila', story:{jana_at_johnny:true}, desc:'Johnny a Jana ve vile' },
-    { name:'Koupelna – dveře',         room:'koupelna', story:{bathroom_plan_briefed:true}, desc:'Vyraz dveře koupelny' },
-    { name:'Po záchraně Jany',         room:'johnny_vila', story:{jana_handcuffed_johnny:true,jana_rescued:true}, desc:'Jana zachráněna' },
+  // ─── Vila + Koupelna ──────────────────
+  { cat:'Johnnyho vila', steps:[
+    { name:'Jana u Johnnyho',          room:'johnny_vila', story:{jana_at_johnny:true}, desc:'Johnny a Jana ve vile' },
+    { name:'Koupelna – šuplík',        room:'koupelna', story:{}, desc:'Otevři šuplík' },
+    { name:'Koupelna – briefing',      room:'johnny_vila', story:{bathroom_plan_briefed:true}, desc:'Jana má hadr, jde do koupelny' },
+    { name:'Koupelna – dveře',         room:'koupelna', story:{bathroom_plan_briefed:true,jana_in_bathroom:true}, desc:'Vyraz dveře' },
+    { name:'Po záchraně Jany',         room:'johnny_vila', story:{jana_handcuffed_johnny:true}, desc:'Jana zachráněna' },
+    { name:'Spoutat Johnnyho',         room:'johnny_vila', story:{jana_at_johnny:true}, inv:{zelizka:1}, desc:'Máš želízka' },
+    { name:'Webovky (vila)',           room:'johnny_vila', story:{johnny_cuffed:false}, inv:{membership_vaza:1}, desc:'Požádej Johnnyho o webovky' },
   ]},
+  // ─── Honza ─────────────────────────────
   { cat:'Honza', steps:[
-    { name:'Přijmout úkol',           room:'kremze', story:{}, obj:'side_honza_ukol', desc:'Mluv s Honzou' },
-    { name:'Úkol splněn – odměna',     room:'kremze', story:{honza_ukol:true,honza_ukol_done:true}, desc:'Vrať se pro odměnu' },
+    { name:'Přijmout úkol',           room:'kremze', story:{}, desc:'Mluv s Honzou' },
+    { name:'Úkol splněn – odměna',     room:'kremze', story:{honza_ukol:true,honza_ukol_done:true}, obj:'side_honza_ukol', desc:'Vrať se pro odměnu' },
+    { name:'Cibule – odměna',          room:'kremze', story:{bezdak_cibulka:true}, obj:'quest_honza_cibule', desc:'Vrať se za Honzou po cibuli' },
+    { name:'Propiska – ptát se',       room:'kremze', story:{}, desc:'Zeptej se Honzy na propisku' },
   ]},
+  // ─── Pája ──────────────────────────────
   { cat:'Pája', steps:[
-    { name:'Přijmout úkol (Betán)',    room:'ulice',  story:{}, obj:'side_paja', desc:'Mluv s Pájou' },
+    { name:'Půjčit peníze',            room:'ulice',  story:{}, desc:'Mluv s Pájou' },
+    { name:'Vyzvednout peníze',        room:'ulice',  story:{paja:2}, obj:'side_paja', desc:'Pája vrací 500 Kč' },
+    { name:'Krádež – vyšetřování',     room:'hospoda', story:{paja_jackpot:true,paja_in_hospoda:true}, obj:'quest_paja_theft', desc:'Pájovi ukradli peníze' },
+    { name:'Krádež – konfrontace Mik', room:'kremze',  story:{paja_investigating:true,paja_mates_done:true}, desc:'Konfrontuj Mikuláše' },
+    { name:'Krádež – konfrontace Krejčí',room:'ucebna', story:{paja_mik_confronted:true}, desc:'Jdi za Krejčí' },
+    { name:'Vrátit peníze Pájovi',     room:'ulice',  story:{paja_krejci_done:true}, inv:{pytel_penez:1}, desc:'Máš pytel peněz' },
   ]},
-  { cat:'Bezďák', steps:[
+  // ─── Bezďák / Cibulka ─────────────────
+  { cat:'Bezďák / Cibulka', steps:[
     { name:'Dát cibuli',               room:'ulice',  story:{}, inv:{cibule:1}, obj:'side_bezdak_cibule', desc:'Máš cibuli, jdi za bezďákem' },
+    { name:'Vzít prášek (KGB minihra)',room:'ulice',  story:{bezdak_cibulka:true}, desc:'Cibulka nabízí prášek' },
+    { name:'Ukázat průkaz Cibulkovi',  room:'ulice',  story:{bezdak_cibulka:true}, inv:{kgb_prukaz:1}, obj:'quest_kgb', desc:'Máš KGB průkaz od Krejčí' },
+    { name:'Koupit piko',              room:'ulice',  story:{}, desc:'Kup piko od bezďáka (600 Kč)' },
+    { name:'Vyměnit žemle za piko',    room:'ulice',  story:{}, inv:{zemle:2}, desc:'Máš 2 žemle na výměnu' },
   ]},
+  // ─── Mates ─────────────────────────────
   { cat:'Mates', steps:[
-    { name:'Interakce s Matesem',      room:'hospoda', story:{}, desc:'Mluv s Matesem' },
-    { name:'Dát Matesovi žemli',       room:'hospoda', story:{}, inv:{zemle:1}, desc:'Máš žemli' },
-    { name:'Dát Matesovi pivo',        room:'hospoda', story:{}, inv:{pivo:1}, desc:'Máš pivo' },
+    { name:'Interakce',                room:'hospoda', story:{}, desc:'Mluv s Matesem' },
+    { name:'Dát žemli',                room:'hospoda', story:{}, inv:{zemle:1}, desc:'Máš žemli' },
+    { name:'Koupit pytel',             room:'hospoda', story:{cihalova_collapsed:true}, desc:'Kup pytel od Matese' },
   ]},
-  { cat:'KGB minihra', steps:[
-    { name:'Ukázat průkaz Cibulkovi',  room:'ulice',  story:{}, inv:{kgb_prukaz:1}, obj:'quest_kgb', desc:'Máš KGB průkaz' },
+  // ─── Mikuláš ───────────────────────────
+  { cat:'Mikuláš', steps:[
+    { name:'Koupit kratom',            room:'kremze',  story:{}, desc:'Mluv s Mikulášem' },
+    { name:'Koupit blend pro Janu',    room:'kremze',  story:{jana_rande_asked:true}, desc:'Kup blend pro Janu' },
+    { name:'Tajemství Mikuláše',       room:'kremze',  story:{}, desc:'Odhal Mikulášovo tajemství' },
   ]},
-  { cat:'Mráz', steps:[
+  // ─── Kubátová / Mráz ──────────────────
+  { cat:'Kubátová / Mráz', steps:[
     { name:'Sklep – Kubátová',         room:'sklep',  story:{}, obj:'quest_mraz', desc:'Jdi za Kubátovou' },
+    { name:'Dostat voodoo+nůž',        room:'sklep',  story:{}, desc:'Kubátová dá předměty' },
+    { name:'Odměna za Mráze',          room:'sklep',  story:{mraz_done:true}, desc:'Vrať se pro odměnu' },
   ]},
+  // ─── Fábie ─────────────────────────────
   { cat:'Fábie', steps:[
     { name:'Nastartovat Fábii',        room:'kremze', story:{fabie_promised:true}, inv:{klice_fabie:1}, obj:'quest_fabie', desc:'Máš klíče, jdi k Fábii' },
+    { name:'Falešné klíče (Figurová)',  room:'kremze', story:{fabie_promised:true}, inv:{klice_fabie_fig:1}, desc:'Figurové klíče nefungují' },
   ]},
+  // ─── Pláteníková ───────────────────────
   { cat:'Pláteníková', steps:[
-    { name:'Říct pravdu',              room:'ucebna', story:{hlasovka_known:true}, inv:{hlasovka:1}, obj:'quest_platenikova', desc:'Máš hlasovku, jdi za Pláteníkovou' },
+    { name:'Říct pravdu (hlasovka)',   room:'ucebna', story:{hlasovka_known:true}, inv:{hlasovka:1}, obj:'quest_platenikova', desc:'Máš hlasovku, jdi za Pláteníkovou' },
+    { name:'Dramatická verze',         room:'ucebna', story:{hlasovka_known:true,figurova_dark_done:true}, inv:{hlasovka:1}, desc:'Po dark path – dramatický dialog' },
+  ]},
+  // ─── Šaman ─────────────────────────────
+  { cat:'Šaman', steps:[
+    { name:'Koupit kratom (50g)',      room:'hospoda', story:{}, desc:'Mluv se Šamanem' },
+    { name:'Heslo',                    room:'hospoda', story:{}, desc:'Zadej heslo šamanovi' },
+  ]},
+  // ─── Kasička ───────────────────────────
+  { cat:'Kasička (Pláteníková)', steps:[
+    { name:'Ukrást z kasičky',         room:'ucebna', story:{}, desc:'Zkus ukrást z kasičky' },
   ]},
 ];
 
