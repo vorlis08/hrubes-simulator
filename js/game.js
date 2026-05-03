@@ -160,7 +160,7 @@ function initRoom(spawnX, spawnY){
 
   // Spustit cutscenu v koupelně po prokopnutí dveří
   if(gs.room === 'koupelna' && gs.story.bathroom_door_broken && !gs.story.bathroom_cutscene_done && !gs.story.jana_handcuffed_johnny){
-    setTimeout(() => triggerBathroomCutscene(), 600);
+    setTimeout(() => triggerJohnnyGunScene(), 600);
   }
 
   // Render Johnny spoutaný u radiátoru ve villce
@@ -867,6 +867,17 @@ function update(dt){
       setTimeout(() => {
         addLog('💥 *Johnny vykopl dveře koupelny nohou.* Rána otřásla celou místností.', 'lw');
         screenShake(600);
+        const splinters = [];
+        for(let i=0;i<18;i++){
+          splinters.push({
+            t0: gs.ts, x: canvas.width*0.5 + (Math.random()-0.5)*canvas.width*0.10,
+            y: canvas.height*0.85, vx: (Math.random()-0.5)*220, vy: -80 - Math.random()*180,
+            rot: Math.random()*Math.PI*2, rotV: (Math.random()-0.5)*8,
+            w: 4+Math.random()*14, h: 2+Math.random()*6,
+            col: ['#5a3a50','#4a2a40','#6a4060','#7a5070','#3a1a30'][Math.floor(Math.random()*5)]
+          });
+        }
+        gs.door_kick_anim = { t0: gs.ts, splinters };
         gs.story.johnny_in_bathroom = true;
         currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
         addLog('*Johnny zmizel za dveřmi.* Vejdi za ním nebo uteč z vily!', 'ls');
@@ -879,8 +890,7 @@ function update(dt){
     gs.story.jana_escape_failed = true;
     gs.jana_escape_deadline = 0;
     if(gs.room === 'johnny_vila' || gs.room === 'koupelna'){
-      addLog('*Příliš pozdě. Johnny tě dohnal.* 💥', 'lw');
-      triggerDeath('Johnny tě dohnal v chodbě vily.\nMěl jsi utéct dřív.', 'DOSTIŽEN JOHNNYM', 'KONEC HRY · KREMŽE PLÁČE');
+      triggerJohnnyKillAnim();
     }
   }
   // Katana animace (Jana zabíjí hráče)
@@ -1257,12 +1267,13 @@ function updateVoodooAnim(dt){
 
 let _lastRenderTs = 0;
 function gameLoop(ts){
-  if(!gs.running && !gs.ca_active && !gs.voodoo_anim) return;
+  if(!gs.running && !gs.ca_active && !gs.voodoo_anim && !gs.johnny_kill_anim) return;
   try {
     const dt = Math.min(ts - lastTime, 50);
     lastTime = ts;
     if(gs.ca_active && gs.ca) updateCihalovaCA(dt);
     if(gs.voodoo_anim) updateVoodooAnim(dt);
+    if(gs.johnny_kill_anim) gs.ts += dt;
     if(gs.running) update(dt);
     // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
     if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }

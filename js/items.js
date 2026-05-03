@@ -176,6 +176,27 @@ function triggerDeath(msg, title = 'SMRT', sub = 'KONEC HRY · KŘEMŽE PLÁČE'
   }, 350);
 }
 
+// Johnny dožene hráče – animace útoku před death screenem
+function triggerJohnnyKillAnim(){
+  gs.running = false;
+  gs.johnny_kill_anim = { t0: gs.ts, phase: 1 };
+  screenShake(300);
+  addLog('*Johnny tě dohnal!* "TAK TY SI ZDE MYSLÍŠ..."', 'lw');
+  setTimeout(() => {
+    screenShake(500);
+    addLog('💥 *BUM!* Johnny tě praštil pistolí do hlavy.', 'lw');
+    gs.johnny_kill_anim.phase = 2;
+  }, 900);
+  setTimeout(() => {
+    screenShake(600);
+    gs.johnny_kill_anim.phase = 3;
+  }, 1400);
+  setTimeout(() => {
+    gs.johnny_kill_anim = null;
+    triggerDeath('Johnny tě dohnal a praštil pistolí do hlavy.\nMěl jsi utéct rychleji.', 'DOSTIŽEN JOHNNYM', 'KONEC HRY · KŘEMŽE PLÁČE', 'death_johnny');
+  }, 2400);
+}
+
 function triggerStabDeath(){
   gs.running = false; gs.dead = true;
   const ov = document.getElementById('stab-death');
@@ -290,8 +311,8 @@ function triggerJohnnyGunScene(){
   const seq = [
     { delay: 600,  log:'*Johnny stojí uprostřed zatopené koupelny. Voda mu sahá po kotníky. Vytáhne pistoli zpod saka.*', cls:'lw' },
     { delay: 2200, log:'"TY KURVA JANO! Tys mi tady schválně vytopila celý barák?!" *zamíří na ni*', cls:'lw', npc:'johnny_vila', text:'"Já tě naučím úctu, zlatíčko."' },
-    { delay: 2400, fn: () => { screenShake(350); addLog('💥 *BANG!* Kulka zaryla do dlaždice vedle Jany. Minul.*', 'lw'); gs.story.gun_shot1 = true; } },
-    { delay: 1400, fn: () => { screenShake(280); addLog('💥 *BANG!* Druhá rána – zaryla do stropu.*', 'lw'); gs.story.gun_shot2 = true; } },
+    { delay: 2400, fn: () => { screenShake(350); addLog('💥 *BANG!* Kulka zaryla do dlaždice vedle Jany. Minul.', 'lw'); gs.story.gun_shot1 = true; gs._shot1t = gs.ts; } },
+    { delay: 1400, fn: () => { screenShake(280); addLog('💥 *BANG!* Druhá rána – zaryla do stropu.', 'lw'); gs.story.gun_shot2 = true; gs._shot2t = gs.ts; } },
     { delay: 900,  log:'*Jana se zhroutí ke zdi, pak vyskočí.* "UTÍKEJ, HRUBEŠI!!!"', cls:'lw' },
     { delay: 400,  fn: () => triggerJanaFleeVilla() },
   ];
@@ -324,12 +345,19 @@ function triggerJanaFleeVilla(){
   }
 
   addLog('*Jana vyletí z koupelny a běží ke vchodovým dveřím!*', 'lw');
-  addLog('*Za ní Johnny, stále s pistolí v ruce, křičí.* "VRAŤ SE!"', 'lw');
-  addLog('Utíkej z vily! Máš asi 20 sekund než Johnny dostřelí.', 'ls');
-  fnotif('🏃 UTÍKEJ!', 'rep');
+  addLog('*Za ní Johnny, stále s pistolí v ruce, křičí.* "VRAŤ SE SEM, KURVO!!!"', 'lw');
+  addLog('⚠️ UTÍKEJ! Máš 10 sekund než tě Johnny dostihne!', 'ls');
+  fnotif('🏃 UTÍKEJ! 10s!', 'rep');
 
-  // Escapetimer – 20s na opuštění vily (do kremze)
-  gs.jana_escape_deadline = gs.ts + 20000;
+  // Escapetimer – 10s na opuštění vily
+  gs.jana_escape_deadline = gs.ts + 10000;
+
+  // Odpočítávání notifikací
+  setTimeout(() => { if(!gs.story.jana_escaped_success) fnotif('⏳ 7 sekund!', 'rep'); }, 3000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) fnotif('💀 5 sekund!!!', 'rep'); }, 5000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 3...', 'rep'); screenShake(200); } }, 7000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 2...', 'rep'); screenShake(250); } }, 8000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 1...', 'rep'); screenShake(300); } }, 9000);
 
   // Jana zmizí z vily (utekla)
   setTimeout(() => {

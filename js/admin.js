@@ -27,6 +27,7 @@ function closeAdminPanel(){
 function adminShowList(){
   document.getElementById('admin-list-view').style.display = '';
   document.getElementById('admin-edit-view').style.display = 'none';
+  document.getElementById('admin-missions-view').style.display = 'none';
 }
 
 function adminShowEdit(){
@@ -314,6 +315,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('adm-save-btn').addEventListener('click', adminSaveEdit);
 
+  // Taby
+  document.querySelectorAll('.adm-tab').forEach(t => {
+    t.addEventListener('click', () => adminSwitchTab(t.dataset.tab));
+  });
+  // Mission detail
+  document.getElementById('adm-mission-back').addEventListener('click', () => adminShowMissions());
+  document.getElementById('adm-mission-apply').addEventListener('click', () => {
+    if(window._adminTpCi != null) adminTeleport(window._adminTpCi, window._adminTpSi);
+  });
+
   document.querySelectorAll('.adm-toggle-all').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.dataset.section;
@@ -324,6 +335,153 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// ─── MISE TAB – teleport do fáze questu ──────────────────────────────────────
+
+const MISSION_TELEPORTS = [
+  { cat:'Číhalová', steps:[
+    { name:'Přijmout úkol',           room:'ucebna', story:{}, inv:{}, obj:'main_cihalova', desc:'Mluv s Číhalovou' },
+    { name:'Doručit piko',             room:'ucebna', story:{cihalova:1}, inv:{piko:1}, desc:'Máš piko, jdi za Číhalovou' },
+    { name:'Po doručení – krb',        room:'hospoda', story:{cihalova:2,cihalova_collapsed:true,cihalova_dead:true}, inv:{pytel:1}, obj:'quest_cihalova_burn', desc:'Číhalová mrtvá, zbav se těla v krbu' },
+  ]},
+  { cat:'Krejčí', steps:[
+    { name:'Přijmout úkol',           room:'ucebna', story:{}, obj:'side_krejci', desc:'Mluv s Krejčí' },
+    { name:'Vyřešeno – odměna',        room:'ucebna', story:{krejci:1,krejci_resolved:true}, desc:'Vrať se pro odměnu' },
+  ]},
+  { cat:'Figurová', steps:[
+    { name:'Přijmout špehování',       room:'ucebna', story:{}, obj:'side_figurova', desc:'Mluv s Figurovou' },
+    { name:'Dodat důkazy Figurové',    room:'ucebna', story:{figurova:1,milan_fig_evidence:true}, inv:{screenshot:1}, desc:'Máš screenshot, jdi za Figurovou' },
+    { name:'Dark path – kontrakt',     room:'ucebna', story:{figurova:2,figurova_dark_started:true}, desc:'Figurová nabízí temnou cestu' },
+    { name:'Zabít Matese',             room:'hospoda', story:{figurova_dark_contract:true}, inv:{fig_nuz:1}, obj:'quest_figurova_mates', desc:'Máš nůž, jdi za Matesem' },
+    { name:'Zabít Milana (voodoo)',    room:'kremze',  story:{figurova_dark_contract:true,mates_dead:true}, inv:{voodoo:1,nuz:1}, obj:'quest_figurova_milan', desc:'Máš voodoo, jdi za Milanem' },
+    { name:'Zabít Milana (pistole)',   room:'kremze',  story:{figurova_dark_contract:true,mates_dead:true}, inv:{fig_gun:1}, obj:'quest_figurova_milan', desc:'Máš pistoli, jdi za Milanem' },
+    { name:'Hotovo – Fábie odměna',    room:'ucebna',  story:{figurova_dark_done:true,mates_dead:true,milan_voodoo_dead:true}, desc:'Vrať se pro klíče od Fábie' },
+    { name:'Figurová – sanitka',       room:'ucebna',  story:{figurova:2,figurova_kratomed:true}, desc:'Figurová po kratomu' },
+  ]},
+  { cat:'Milan – protiútok', steps:[
+    { name:'Sabotovat Figurovou',      room:'kremze', story:{milan_fig_evidence:true}, obj:'quest_milan_protiutok', desc:'Mluv s Milanem o sabotáži' },
+  ]},
+  { cat:'Jana', steps:[
+    { name:'Přijmout úkol (kratom)',   room:'billa',  story:{}, obj:'side_jana', desc:'Mluv s Janou' },
+    { name:'Dodat kratom',             room:'billa',  story:{jana:1}, inv:{kratom:20}, desc:'Máš 20g kratomu' },
+    { name:'Domluvit rande',           room:'billa',  story:{jana:2}, desc:'Požádej Janu o rande pro Johnnyho' },
+  ]},
+  { cat:'Johnny', steps:[
+    { name:'Přijmout úkol (rande)',    room:'hospoda', story:{}, obj:'side_johnny', desc:'Mluv s Johnnym' },
+    { name:'Jana souhlasí – říct Johnnymu', room:'hospoda', story:{johnny:1,jana_rande_ok:true}, desc:'Řekni Johnnymu že Jana souhlasí' },
+    { name:'Odměna od Johnnyho',       room:'hospoda', story:{johnny:2}, desc:'Vrať se pro odměnu' },
+    { name:'Jana v hospodě – rande',   room:'hospoda', story:{johnny:2,jana_in_hospoda:true}, desc:'Jana čeká u baru' },
+  ]},
+  { cat:'Koupelna (vila)', steps:[
+    { name:'Vila – plán briefing',     room:'johnny_vila', story:{jana_at_johnny:true}, desc:'Johnny a Jana ve vile' },
+    { name:'Koupelna – dveře',         room:'koupelna', story:{bathroom_plan_briefed:true}, desc:'Vyraz dveře koupelny' },
+    { name:'Po záchraně Jany',         room:'johnny_vila', story:{jana_handcuffed_johnny:true,jana_rescued:true}, desc:'Jana zachráněna' },
+  ]},
+  { cat:'Honza', steps:[
+    { name:'Přijmout úkol',           room:'kremze', story:{}, obj:'side_honza_ukol', desc:'Mluv s Honzou' },
+    { name:'Úkol splněn – odměna',     room:'kremze', story:{honza_ukol:true,honza_ukol_done:true}, desc:'Vrať se pro odměnu' },
+  ]},
+  { cat:'Pája', steps:[
+    { name:'Přijmout úkol (Betán)',    room:'ulice',  story:{}, obj:'side_paja', desc:'Mluv s Pájou' },
+  ]},
+  { cat:'Bezďák', steps:[
+    { name:'Dát cibuli',               room:'ulice',  story:{}, inv:{cibule:1}, obj:'side_bezdak_cibule', desc:'Máš cibuli, jdi za bezďákem' },
+  ]},
+  { cat:'Mates', steps:[
+    { name:'Interakce s Matesem',      room:'hospoda', story:{}, desc:'Mluv s Matesem' },
+    { name:'Dát Matesovi žemli',       room:'hospoda', story:{}, inv:{zemle:1}, desc:'Máš žemli' },
+    { name:'Dát Matesovi pivo',        room:'hospoda', story:{}, inv:{pivo:1}, desc:'Máš pivo' },
+  ]},
+  { cat:'KGB minihra', steps:[
+    { name:'Ukázat průkaz Cibulkovi',  room:'ulice',  story:{}, inv:{kgb_prukaz:1}, obj:'quest_kgb', desc:'Máš KGB průkaz' },
+  ]},
+  { cat:'Mráz', steps:[
+    { name:'Sklep – Kubátová',         room:'sklep',  story:{}, obj:'quest_mraz', desc:'Jdi za Kubátovou' },
+  ]},
+  { cat:'Fábie', steps:[
+    { name:'Nastartovat Fábii',        room:'kremze', story:{fabie_promised:true}, inv:{klice_fabie:1}, obj:'quest_fabie', desc:'Máš klíče, jdi k Fábii' },
+  ]},
+  { cat:'Pláteníková', steps:[
+    { name:'Říct pravdu',              room:'ucebna', story:{hlasovka_known:true}, inv:{hlasovka:1}, obj:'quest_platenikova', desc:'Máš hlasovku, jdi za Pláteníkovou' },
+  ]},
+];
+
+function adminTeleport(catIdx, stepIdx){
+  const step = MISSION_TELEPORTS[catIdx].steps[stepIdx];
+  // Set story flags
+  Object.entries(step.story).forEach(([k,v]) => { gs.story[k] = v; });
+  // Set inventory
+  if(step.inv) Object.entries(step.inv).forEach(([k,v]) => { gs.inv[k] = v; });
+  // Activate objective
+  if(step.obj) addObj(step.obj);
+  // Teleport
+  gs.room = step.room;
+  initRoom(400, 360);
+  updateInv();
+  updateHUD();
+  renderObj();
+  closeAdminPanel();
+  showToast('⚡ ' + step.desc, 'ok');
+}
+
+function adminShowMissions(){
+  document.getElementById('admin-list-view').style.display = 'none';
+  document.getElementById('admin-edit-view').style.display = 'none';
+  document.getElementById('admin-missions-view').style.display = '';
+  document.getElementById('adm-mission-detail').style.display = 'none';
+  document.getElementById('adm-missions-list').style.display = '';
+  adminRenderMissionList();
+}
+
+function adminRenderMissionList(){
+  const el = document.getElementById('adm-missions-list');
+  let html = '';
+  MISSION_TELEPORTS.forEach((cat, ci) => {
+    html += `<div class="adm-mission-group"><div class="adm-mission-group-title">${cat.cat}</div>`;
+    cat.steps.forEach((s, si) => {
+      html += `<div class="adm-mission-row" data-ci="${ci}" data-si="${si}">
+        <span class="status">📍</span>
+        <span class="name">${s.name}</span>
+        <span class="adm-tp-room">${ROOMS[s.room]?.icon||''} ${ROOMS[s.room]?.name||s.room}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.adm-mission-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const ci = parseInt(row.dataset.ci);
+      const si = parseInt(row.dataset.si);
+      const step = MISSION_TELEPORTS[ci].steps[si];
+      // Show detail with description before teleporting
+      document.getElementById('adm-missions-list').style.display = 'none';
+      document.getElementById('adm-mission-detail').style.display = '';
+      document.getElementById('adm-mission-title').textContent =
+        MISSION_TELEPORTS[ci].cat + ' → ' + step.name;
+      const flagsEl = document.getElementById('adm-mission-flags');
+      let info = `<div class="adm-flag-row"><label><b>Popis:</b> ${step.desc}</label></div>`;
+      info += `<div class="adm-flag-row"><label><b>Místnost:</b> ${ROOMS[step.room]?.icon||''} ${ROOMS[step.room]?.name||step.room}</label></div>`;
+      if(step.story && Object.keys(step.story).length)
+        info += `<div class="adm-flag-row"><label><b>Story flagy:</b> ${Object.entries(step.story).map(([k,v])=>k+'='+v).join(', ')}</label></div>`;
+      if(step.inv && Object.keys(step.inv).length)
+        info += `<div class="adm-flag-row"><label><b>Inventář:</b> ${Object.entries(step.inv).map(([k,v])=>k+':'+v).join(', ')}</label></div>`;
+      flagsEl.innerHTML = info;
+      window._adminTpCi = ci;
+      window._adminTpSi = si;
+    });
+  });
+}
+
+function adminSwitchTab(tab){
+  document.querySelectorAll('.adm-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  if(tab === 'profiles'){
+    document.getElementById('admin-missions-view').style.display = 'none';
+    adminShowList();
+    adminLoadProfiles();
+  } else {
+    adminShowMissions();
+  }
+}
 
 /*
  ═══════════════════════════════════════════════════════

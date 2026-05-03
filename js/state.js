@@ -107,6 +107,8 @@ const gs = {
   jana_handcuffs_anim:    null,  // { phase, t0 }
   bathroom_cutscene_anim: null,  // { phase, t0, lineIndex }
   player_cuts_anim:       null,  // { startTime, parts:[], bloodPool:0 } – pro katana death
+  door_kick_anim:         null,  // { t0, splinters[] } – vizuální vykopnutí dveří koupelny
+  johnny_kill_anim:       null,  // { t0, phase } – Johnny útok při escape timeout
 };
 
 function resetGameState(){
@@ -196,6 +198,8 @@ function resetGameState(){
   gs.jana_handcuffs_anim    = null;
   gs.bathroom_cutscene_anim = null;
   gs.player_cuts_anim       = null;
+  gs.door_kick_anim         = null;
+  gs.johnny_kill_anim       = null;
   // Invalidate stale setTimeout callbacks from previous game runs
   gs._gen = (gs._gen || 0) + 1;
 }

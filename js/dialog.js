@@ -519,6 +519,8 @@ function showDialog(npc){
       choices.push({label:'🤝 Johnny tě chce vidět...', cls:'special', fn:'q_jana_rande'});
     if(gs.story.jana_rande_asked && gs.inv.blend > 0)
       choices.push({label:'🌿 Tady je ten blend', cls:'prim', fn:'q_jana_rande_confirm', sub:'Speciální blend od Mikuláše'});
+    if(gs.story.jana_rande_asked && !gs.inv.blend)
+      choices.push({label:'🌿 "Ještě nemám ten blend..."', cls:'danger', fn:'q_jana_rande_remind', sub:'Sežeň blend od Mikuláše'});
   }
   // Honza – práce ještě není hotová (Číhalová skolabovala ale nespálena)
   if(npc.id === 'honza' && gs.cihalova_collapsed && !gs.story.cihalova_burned)

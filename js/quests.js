@@ -462,6 +462,9 @@ const QF = {
     gs.story.jana_rande_asked = true;
     showNPCLine('jana_kosova', '"S Johnnym? 💅 Přines mi speciální blend od Mikuláše. Pak uvidíme."');
   },
+  q_jana_rande_remind(){
+    showNPCLine('jana_kosova', '"Fando, říkala jsem ti – sežeň mi speciální blend od Mikuláše. Bez toho nikam nejdu." 💅');
+  },
   q_jana_rande_confirm(){
     if(!gs.inv.blend){ addLog('Jana chce speciální blend od Mikuláše!','lw'); closeDialog(); return; }
     gs.inv.blend -= 1; updateInv();

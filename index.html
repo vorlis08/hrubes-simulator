@@ -1006,10 +1006,27 @@
       <button id="admin-close" class="adm-close-btn">✕</button>
     </div>
 
+    <!-- Taby -->
+    <div class="adm-tabs">
+      <button class="adm-tab active" data-tab="profiles">👤 Profily</button>
+      <button class="adm-tab" data-tab="missions">🎯 Mise</button>
+    </div>
+
     <!-- Seznam profilů -->
     <div id="admin-list-view">
       <div class="adm-section-title">Lokální profily</div>
       <div id="admin-profile-list"></div>
+    </div>
+
+    <!-- Mise view -->
+    <div id="admin-missions-view" style="display:none">
+      <div id="adm-missions-list"></div>
+      <div id="adm-mission-detail" style="display:none">
+        <button id="adm-mission-back" class="adm-back">← Zpět na mise</button>
+        <h3 id="adm-mission-title" class="adm-edit-title-label"></h3>
+        <div id="adm-mission-flags"></div>
+        <button id="adm-mission-apply" class="adm-save adm-tp-btn">⚡ TELEPORTOVAT</button>
+      </div>
     </div>
 
     <!-- Editor profilu -->
@@ -1138,14 +1155,14 @@
 <script src="js/objectives.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/items.js"></script>
-<script src="js/quests.js?v=2"></script>
-<script src="js/dialog.js?v=2"></script>
+<script src="js/quests.js?v=3"></script>
+<script src="js/dialog.js?v=3"></script>
 <script src="js/optimization.js"></script>
 <script src="js/effects.js"></script>
 <script src="js/render.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
-<script src="js/admin.js"></script>
+<script src="js/admin.js?v=3"></script>
 
 <script>
 /* NPC + auta na login obrazovce */
