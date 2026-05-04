@@ -2892,12 +2892,14 @@ function drawKoupelna(W,H,t){
     ctx.restore();
     // Úlomky s rotací a postupným pohasínáním
     if(gs.door_kick_anim.splinters){
+      let allDead = true;
       gs.door_kick_anim.splinters.forEach(sp => {
         const spEl2 = (t - sp.t0) * 0.001;
-        const spX2 = sp.x + sp.vx * spEl2;
-        const spY2 = sp.y + sp.vy * spEl2 + 200 * spEl2 * spEl2;
         const spA2 = Math.max(0, 1 - spEl2 * 1.0);
         if(spA2 <= 0) return;
+        allDead = false;
+        const spX2 = sp.x + sp.vx * spEl2;
+        const spY2 = sp.y + sp.vy * spEl2 + 200 * spEl2 * spEl2;
         ctx.save();
         ctx.globalAlpha = spA2;
         ctx.translate(spX2, spY2); ctx.rotate(sp.rot + spEl2 * sp.rotV);
@@ -2905,6 +2907,7 @@ function drawKoupelna(W,H,t){
         ctx.fillRect(-sp.w*0.5, -sp.h*0.5, sp.w, sp.h);
         ctx.restore();
       });
+      if(allDead) gs.door_kick_anim.splinters = null;
     }
     // Prachový mrak
     if(el < 2.0){

@@ -90,8 +90,8 @@ class ParticlePool {
     for (let i = this.active.length - 1; i >= 0; i--) {
       const p = this.active[i];
       p.life += dt;
-      p.x += p.vx * (dt / 16.667);
-      p.y += p.vy * (dt / 16.667);
+      p.x += p.vx * (dt / FRAME_MS);
+      p.y += p.vy * (dt / FRAME_MS);
 
       if (p.life >= p.maxLife) {
         this.inactive.push(this.active.splice(i, 1)[0]);

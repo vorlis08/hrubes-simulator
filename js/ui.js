@@ -22,6 +22,7 @@ function animateValue(el, start, end, suffix){
   const t0 = performance.now();
   const diff = end - start;
   function step(now){
+    if(!el.isConnected) return;
     const p = Math.min((now - t0) / dur, 1);
     const ease = 1 - Math.pow(1 - p, 3);
     el.textContent = Math.round(start + diff * ease) + suffix;
@@ -130,13 +131,17 @@ function fnotif(txt, type = 'pos'){
   addLog(txt, clsMap[type] || 'ls');
 }
 
+let _shakeIv = null;
 function screenShake(ms){
   const gc = document.getElementById('gc');
-  let t    = 0;
-  const iv = setInterval(() => {
-    gc.style.transform = `translate(${(Math.random()-.5)*12}px,${(Math.random()-.5)*12}px)`;
+  if(_shakeIv){ clearInterval(_shakeIv); gc.style.transform = ''; }
+  let t = 0;
+  _shakeIv = setInterval(() => {
+    const decay = 1 - t / ms;
+    const amp = 12 * decay;
+    gc.style.transform = `translate(${(Math.random()-.5)*amp}px,${(Math.random()-.5)*amp}px)`;
     t += 50;
-    if(t >= ms){ clearInterval(iv); gc.style.transform = ''; }
+    if(t >= ms){ clearInterval(_shakeIv); _shakeIv = null; gc.style.transform = ''; }
   }, 50);
 }
 

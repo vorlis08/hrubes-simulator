@@ -8,6 +8,7 @@
   --r:6px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+.game-paused *{animation-play-state:paused!important}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);color:#fff;font-family:var(--fb)}
 #gc{position:relative;width:100vw;height:100vh}
 canvas{display:block;width:100vw;height:100vh}
