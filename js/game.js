@@ -161,7 +161,7 @@ function initRoom(spawnX, spawnY){
   }
 
   // Spustit cutscenu v koupelně po prokopnutí dveří
-  if(gs.room === 'koupelna' && gs.story.bathroom_door_broken && !gs.story.bathroom_cutscene_done && !gs.story.jana_handcuffed_johnny){
+  if(gs.room === 'koupelna' && gs.story.bathroom_door_broken && !gs.story.gun_scene_done && !gs.story.jana_handcuffed_johnny){
     setTimeout(() => triggerJohnnyGunScene(), 600);
   }
 
@@ -266,13 +266,18 @@ function checkProx(){
   }
   // Koupelna – šuplík (želízka)
   if(gs.room === 'koupelna' && !gs.story.koupelna_drawer_opened){
-    const sdx = canvas.width * 0.40, sdy = canvas.height * 0.55;
+    const sdx = canvas.width * 0.50, sdy = canvas.height * 0.64;
     if(dist2(p, {x:sdx, y:sdy}) < PROX_R){ best = {isBathroomDrawer:true}; }
   }
   // Koupelna – umyvadlo
   if(gs.room === 'koupelna' && !gs.story.sink_used){
     const ux = canvas.width * 0.40, uy = canvas.height * 0.38;
     if(dist2(p, {x:ux, y:uy}) < PROX_R){ best = {isBathroomSink:true}; }
+  }
+  // Villa – šuplík u pohovky (prášek)
+  if(gs.room === 'johnny_vila' && !gs.story.villa_powder_taken && !gs.story.johnny_cuffed){
+    const drx = canvas.width * 0.23, dry = canvas.height * 0.75;
+    if(dist2(p, {x:drx, y:dry}) < PROX_R){ best = {isVillaPowder:true}; }
   }
   // Johnny spoutaný – vzít klíče
   if(gs.room === 'johnny_vila' && gs.story.johnny_cuffed && !gs.inv.klice_vila){
@@ -397,6 +402,8 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Vstoupit do koupelny';
     } else if(best.isVillaBathroomLocked){
       document.getElementById('ptxt').textContent = '🔒 Koupelna zamčená – Jana je uvnitř';
+    } else if(best.isVillaPowder){
+      document.getElementById('ptxt').textContent = 'Prohledat šuplík u pohovky';
     } else if(best.isBathroomDrawer){
       document.getElementById('ptxt').textContent = 'Otevřít šuplík';
     } else if(best.isBathroomSink){
@@ -531,9 +538,19 @@ function interact(){
       gs.room = 'koupelna'; initRoom(canvas.width * 0.5, canvas.height * 0.7); return;
     }
   }
+  // Villa – šuplík u pohovky (prášek pro Janin drink)
+  if(gs.room === 'johnny_vila' && !gs.story.villa_powder_taken && !gs.story.johnny_cuffed){
+    const drx = canvas.width * 0.23, dry = canvas.height * 0.75;
+    if(dist2(gs.player, {x:drx, y:dry}) < PROX_R){
+      gs.story.villa_powder_taken = true;
+      gs.inv.prasek = 1; updateInv();
+      addLog('V šuplíku u pohovky jsi našel sáček s bílým práškem. Tohle by mohlo Janu uspat.', 'lw');
+      fnotif('💊 Prášek','itm'); return;
+    }
+  }
   // Koupelna – šuplík
   if(gs.room === 'koupelna' && !gs.story.koupelna_drawer_opened){
-    const sdx = canvas.width * 0.40, sdy = canvas.height * 0.55;
+    const sdx = canvas.width * 0.50, sdy = canvas.height * 0.64;
     if(dist2(gs.player, {x:sdx, y:sdy}) < PROX_R){ runQF('q_koupelna_drawer'); return; }
   }
   // Koupelna – umyvadlo
