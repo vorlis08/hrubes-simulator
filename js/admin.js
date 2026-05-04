@@ -13,6 +13,7 @@ let adminSelectedUid = null; // jen Firebase mód
 // ─── Otevření / zavření ───────────────────────────────────────────────────────
 
 function openAdminPanel(){
+  keys = {};
   document.getElementById('admin-ov').classList.add('on');
   adminShowList();
   adminLoadProfiles();
