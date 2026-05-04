@@ -546,7 +546,8 @@ function startKGBMinigame(){
   let agents=[], bullets=[], particles=[], flashAlpha=0;
   let kills=0, passed=0, gameOver=false, won=false;
   let ts2=0, lastT=0, spawnTimer=0;
-  let ammo=40;
+  let ammo=50;
+  let noAmmoSince=0; // timestamp kdy došly náboje
   // trippy effect state
   let hueShift=0, warpT=0;
 
@@ -900,10 +901,11 @@ function startKGBMinigame(){
       kctx.fillText('Křemže kompromitována. Cibulka zmizel.',W/2,H*0.52);
     }
     kctx.fillStyle='rgba(255,255,255,0.40)'; kctx.font=`${Math.floor(W*0.016)}px JetBrains Mono,monospace`;
-    kctx.fillText('Klikni nebo stiskni Enter pro návrat',W/2,H*0.68);
+    kctx.fillText('Klikni nebo stiskni libovolnou klávesu pro návrat',W/2,H*0.68);
     mc.onclick=()=>endKGBMinigame(won);
-    const onEnter=e=>{ if(e.key==='Enter'){ window.removeEventListener('keydown',onEnter); endKGBMinigame(won); } };
-    window.addEventListener('keydown',onEnter);
+    document.getElementById('kgb-ov').onclick=()=>endKGBMinigame(won);
+    const onAnyKey=e=>{ window.removeEventListener('keydown',onAnyKey); endKGBMinigame(won); };
+    window.addEventListener('keydown',onAnyKey);
   }
 
   function loop(ts){
@@ -932,6 +934,12 @@ function startKGBMinigame(){
     const vig=kctx.createRadialGradient(W/2,H/2,H*0.18,W/2,H/2,Math.max(W,H)*0.78);
     vig.addColorStop(0,'transparent'); vig.addColorStop(1,'rgba(0,0,0,0.58)');
     kctx.fillStyle=vig; kctx.fillRect(0,0,W,H);
+
+    // Auto-fail: pokud nemáš náboje a nestíháš, po 3s prohra
+    if(ammo<=0 && kills<KILL_WIN){
+      if(!noAmmoSince) noAmmoSince=ts;
+      else if(ts-noAmmoSince>3000){ passed=MAX_PASS+1; }
+    }
 
     if(kills>=KILL_WIN){ gameOver=true; won=true; drawEndScreen(); return; }
     if(passed>MAX_PASS){
