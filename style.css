@@ -1173,6 +1173,9 @@ canvas.kratom-blend,#kgb-canvas.kratom-blend{animation:tripCanvasBlend 1.0s infi
   display:flex;flex-direction:column;overflow:hidden;
   box-shadow:0 0 60px rgba(255,180,0,.08);
 }
+#admin-list-view,#admin-edit-view,#admin-missions-view{
+  overflow-y:auto;flex:1;min-height:0;padding-bottom:12px;
+}
 
 .adm-header{
   display:flex;align-items:center;justify-content:space-between;

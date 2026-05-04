@@ -473,6 +473,28 @@ const MISSION_TELEPORTS = [
 
 function adminTeleport(catIdx, stepIdx){
   const step = MISSION_TELEPORTS[catIdx].steps[stepIdx];
+
+  const wasRunning = gs.running;
+
+  // If game isn't running, bootstrap the game UI without resetting state
+  if(!wasRunning){
+    resetGameState();
+    document.getElementById('start').style.display = 'none';
+    document.getElementById('lpanel').style.display = '';
+    document.getElementById('home-ov').classList.remove('on');
+    ['death','win','stab-death','dov','riddle-ov','kgb-ov'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el){ el.classList.remove('on'); el.classList.remove('visible'); }
+    });
+    document.getElementById('logc').innerHTML = '';
+    document.getElementById('piko-badge').classList.remove('on');
+    keys = {};
+    gs.ts = 0;
+    gs.lastDrain = 0;
+    lastTime = performance.now();
+    initObj();
+  }
+
   // Set story flags
   Object.entries(step.story).forEach(([k,v]) => { gs.story[k] = v; });
   // Set inventory
@@ -481,12 +503,16 @@ function adminTeleport(catIdx, stepIdx){
   if(step.obj) addObj(step.obj);
   // Teleport
   gs.room = step.room;
+  gs.running = true;
+  gs.dead = false;
   initRoom(400, 360);
   updateInv();
   updateHUD();
   renderObj();
   closeAdminPanel();
   showToast('⚡ ' + step.desc, 'ok');
+
+  if(!wasRunning) requestAnimationFrame(gameLoop);
 }
 
 function adminShowMissions(){
