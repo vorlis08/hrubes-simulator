@@ -141,6 +141,7 @@ function resetGameState(){
   gs.cihalova_deadline  = 0;
   gs.cihalova_coming    = false;
   gs.ca_active          = false;
+  gs.cutscene_active    = false;
   gs.ca                 = null;
   gs.cihalova_in_bag    = false;
   gs.cihalova_collapsed = false;

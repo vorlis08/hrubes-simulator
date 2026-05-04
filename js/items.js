@@ -307,6 +307,7 @@ function triggerJohnnyGunScene(){
   if(gs.story.gun_scene_done) return;
   gs.story.gun_scene_done = true;
   gs.running = false;
+  gs.cutscene_active = true;
 
   const seq = [
     { delay: 600,  log:'*Johnny stojí uprostřed zatopené koupelny. Voda mu sahá po kotníky. Vytáhne pistoli zpod saka.*', cls:'lw' },
@@ -336,6 +337,7 @@ function triggerJohnnyGunScene(){
 function triggerJanaFleeVilla(){
   gs.story.jana_fleeing = true;
   gs.story.johnny_chasing = true;
+  gs.cutscene_active = false;
   gs.running = true;
 
   // Vrátíme hráče do villa místnosti automaticky

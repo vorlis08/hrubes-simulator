@@ -1304,16 +1304,17 @@ function updateVoodooAnim(dt){
 
 let _lastRenderTs = 0;
 function gameLoop(ts){
-  const active = gs.running || gs.ca_active || gs.voodoo_anim || gs.johnny_kill_anim;
+  const active = gs.running || gs.ca_active || gs.voodoo_anim || gs.johnny_kill_anim || gs.cutscene_active;
   const gc = document.getElementById('gc');
   if(gc) gc.classList.toggle('game-paused', !active);
-  if(!active) return;
+  if(!active){ requestAnimationFrame(gameLoop); return; }
   try {
     const dt = Math.min(ts - lastTime, 50);
     lastTime = ts;
     if(gs.ca_active && gs.ca) updateCihalovaCA(dt);
     if(gs.voodoo_anim) updateVoodooAnim(dt);
     if(gs.johnny_kill_anim) gs.ts += dt;
+    if(gs.cutscene_active) gs.ts += dt;
     if(gs.running) update(dt);
     // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
     if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
