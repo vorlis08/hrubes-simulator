@@ -2095,29 +2095,42 @@ function drawKremze(W,H,t){
 }
 
 // ─── Johnnyho vila – obývák (propracovaný) ───────────────────────────────────
-function drawJohnnyVila(W,H,t){
-  const ft = t * 0.001;
-  // ── Podlaha – parketový vzor ──
-  ctx.fillStyle='#2a2028'; ctx.fillRect(0,0,W,H);
-  const floorG=ctx.createLinearGradient(0,H*0.48,0,H);
+// ── Offscreen cache pro statické pozadí johnny_vila ──
+let _vilaBgCanvas = null, _vilaBgW = 0, _vilaBgH = 0;
+function getVilaBg(W, H){
+  if(_vilaBgCanvas && _vilaBgW === W && _vilaBgH === H) return _vilaBgCanvas;
+  const oc = document.createElement('canvas');
+  oc.width = W; oc.height = H;
+  const ox = oc.getContext('2d');
+  // Podlaha
+  ox.fillStyle='#2a2028'; ox.fillRect(0,0,W,H);
+  const floorG=ox.createLinearGradient(0,H*0.48,0,H);
   floorG.addColorStop(0,'#483a50'); floorG.addColorStop(1,'#352840');
-  ctx.fillStyle=floorG; ctx.fillRect(0,H*0.48,W,H*0.52);
-  // Parkety
+  ox.fillStyle=floorG; ox.fillRect(0,H*0.48,W,H*0.52);
+  // Parkety – krok 40×18
+  ox.strokeStyle='rgba(90,60,80,0.30)'; ox.lineWidth=0.5;
   for(let px=0;px<W;px+=40) for(let py=H*0.48;py<H;py+=18){
     const off=(Math.floor(py/18)%2)*20;
-    ctx.strokeStyle='rgba(90,60,80,0.30)'; ctx.lineWidth=0.5;
-    ctx.strokeRect(px+off,py,40,18);
+    ox.strokeRect(px+off,py,40,18);
   }
-  // ── Tapeta – vínová s ornamentem ──
-  ctx.fillStyle='#302540'; ctx.fillRect(0,0,W,H*0.48);
+  // Tapeta
+  ox.fillStyle='#302540'; ox.fillRect(0,0,W,H*0.48);
+  ox.lineWidth=0.5;
   for(let rx=0;rx<W;rx+=60) for(let ry=0;ry<H*0.48;ry+=60){
-    ctx.strokeStyle='rgba(100,60,130,0.12)'; ctx.lineWidth=0.5;
-    ctx.strokeRect(rx,ry,60,60);
-    // Diamantový ornament
-    ctx.beginPath();
-    ctx.moveTo(rx+30,ry+8); ctx.lineTo(rx+52,ry+30); ctx.lineTo(rx+30,ry+52); ctx.lineTo(rx+8,ry+30);
-    ctx.closePath(); ctx.strokeStyle='rgba(140,80,170,0.10)'; ctx.stroke();
+    ox.strokeStyle='rgba(100,60,130,0.12)';
+    ox.strokeRect(rx,ry,60,60);
+    ox.beginPath();
+    ox.moveTo(rx+30,ry+8); ox.lineTo(rx+52,ry+30); ox.lineTo(rx+30,ry+52); ox.lineTo(rx+8,ry+30);
+    ox.closePath(); ox.strokeStyle='rgba(140,80,170,0.10)'; ox.stroke();
   }
+  _vilaBgCanvas = oc; _vilaBgW = W; _vilaBgH = H;
+  return oc;
+}
+
+function drawJohnnyVila(W,H,t){
+  const ft = t * 0.001;
+  // ── Statické pozadí z cache ──
+  ctx.drawImage(getVilaBg(W, H), 0, 0);
   // Lišta na zdi
   ctx.fillStyle='rgba(100,65,90,0.35)'; ctx.fillRect(0,H*0.46,W,H*0.04);
   ctx.strokeStyle='rgba(140,90,120,0.25)'; ctx.lineWidth=1;
@@ -2319,8 +2332,9 @@ function drawJohnnyVila(W,H,t){
   ctx.restore();
 
   // ── Kouř ze svíčky ──
+  const smokeCount = getParticleCount(6, fpsMonitor);
   ctx.save();
-  for(let i=0;i<8;i++){
+  for(let i=0;i<smokeCount;i++){
     const smLife=((t*0.00012+i*0.32)%1);
     const smX=candleX-W*0.005+Math.sin(smLife*Math.PI*2+i)*W*0.012*(1+smLife);
     const smY=candleY-H*0.04-smLife*H*0.22;
@@ -2372,7 +2386,7 @@ function drawJohnnyVila(W,H,t){
       ctx.fillStyle = wG; ctx.fillRect(0, waterLevel, W, waterH);
       // Vlny na hladině
       ctx.beginPath(); ctx.moveTo(0, waterLevel);
-      for(let wx2=0; wx2<=W; wx2+=6){
+      for(let wx2=0; wx2<=W; wx2+=14){
         const waveY = waterLevel + Math.sin(wx2*0.025 + ft2*2.5)*2.5 + Math.sin(wx2*0.05 + ft2*4)*1.2;
         ctx.lineTo(wx2, waveY);
       }
@@ -2556,47 +2570,53 @@ function drawJohnnyVila(W,H,t){
   }
 }
 
+// ── Offscreen cache pro statické pozadí koupelny ──
+let _koupelnaBgCanvas = null, _koupelnaBgW = 0, _koupelnaBgH = 0;
+function getKoupelnaBg(W, H){
+  if(_koupelnaBgCanvas && _koupelnaBgW === W && _koupelnaBgH === H) return _koupelnaBgCanvas;
+  const oc = document.createElement('canvas');
+  oc.width = W; oc.height = H;
+  const ox = oc.getContext('2d');
+  ox.fillStyle='#0e0c14'; ox.fillRect(0,0,W,H);
+  const flG=ox.createLinearGradient(0,H*0.42,0,H);
+  flG.addColorStop(0,'#1a1628'); flG.addColorStop(1,'#120f1e');
+  ox.fillStyle=flG; ox.fillRect(0,H*0.42,W,H*0.58);
+  ox.strokeStyle='rgba(60,50,90,0.35)'; ox.lineWidth=0.8;
+  for(let tx=0;tx<W;tx+=40) for(let ty=Math.floor(H*0.42/40)*40;ty<H;ty+=40){
+    ox.strokeRect(tx,ty,40,40);
+  }
+  const wetG=ox.createLinearGradient(0,H*0.55,0,H);
+  wetG.addColorStop(0,'transparent'); wetG.addColorStop(1,'rgba(100,130,200,0.09)');
+  ox.fillStyle=wetG; ox.fillRect(0,H*0.55,W,H*0.45);
+  const wallG=ox.createLinearGradient(0,0,0,H*0.42);
+  wallG.addColorStop(0,'#161220'); wallG.addColorStop(1,'#1c1828');
+  ox.fillStyle=wallG; ox.fillRect(0,0,W,H*0.42);
+  ox.strokeStyle='rgba(40,35,60,0.50)'; ox.lineWidth=0.6;
+  for(let row=0;row<8;row++){
+    const ry=row*(H*0.42/8);
+    const off=row%2 ? 24 : 0;
+    ox.beginPath(); ox.moveTo(0,ry); ox.lineTo(W,ry); ox.stroke();
+    for(let cx=off;cx<W;cx+=48){
+      ox.beginPath(); ox.moveTo(cx,ry); ox.lineTo(cx,ry+H*0.42/8); ox.stroke();
+    }
+  }
+  // Vlhkostní skvrny na stěně
+  [[W*0.08,H*0.05],[W*0.92,H*0.10],[W*0.55,H*0.02]].forEach(([sx,sy],i)=>{
+    const sG=ox.createRadialGradient(sx,sy,0,sx,sy,45+i*18);
+    sG.addColorStop(0,'rgba(20,40,70,0.60)'); sG.addColorStop(1,'transparent');
+    ox.fillStyle=sG; ox.beginPath(); ox.arc(sx,sy,45+i*18,0,Math.PI*2); ox.fill();
+  });
+  _koupelnaBgCanvas = oc; _koupelnaBgW = W; _koupelnaBgH = H;
+  return oc;
+}
+
 // ─── Koupelna ────────────────────────────────────────────────────────────────
 function drawKoupelna(W,H,t){
   const ft=t*0.001;
 
-  // ══ POZADÍ ══════════════════════════════════════════════════════════
-  // Temná podlaha – mokré mramorové dlaždice 40×40
-  ctx.fillStyle='#0e0c14'; ctx.fillRect(0,0,W,H);
-  const flG=ctx.createLinearGradient(0,H*0.42,0,H);
-  flG.addColorStop(0,'#1a1628'); flG.addColorStop(1,'#120f1e');
-  ctx.fillStyle=flG; ctx.fillRect(0,H*0.42,W,H*0.58);
-  // Dlaždice podlaha – větší, tmavší mřížka
-  ctx.strokeStyle='rgba(60,50,90,0.35)'; ctx.lineWidth=0.8;
-  for(let tx=0;tx<W;tx+=40) for(let ty=Math.floor(H*0.42/40)*40;ty<H;ty+=40){
-    ctx.strokeRect(tx,ty,40,40);
-  }
-  // Mokrý lesk na podlaze (obecný)
-  const wetG=ctx.createLinearGradient(0,H*0.55,0,H);
-  wetG.addColorStop(0,'transparent'); wetG.addColorStop(1,'rgba(100,130,200,0.09)');
-  ctx.fillStyle=wetG; ctx.fillRect(0,H*0.55,W,H*0.45);
-
-  // ══ STĚNY ════════════════════════════════════════════════════════════
-  // Zadní stěna – tmavé šedočerné obklady
-  const wallG=ctx.createLinearGradient(0,0,0,H*0.42);
-  wallG.addColorStop(0,'#161220'); wallG.addColorStop(1,'#1c1828');
-  ctx.fillStyle=wallG; ctx.fillRect(0,0,W,H*0.42);
-  // Obkladačky – cihla v posunutém vzoru
-  ctx.strokeStyle='rgba(40,35,60,0.50)'; ctx.lineWidth=0.6;
-  for(let row=0;row<8;row++){
-    const ry=row*(H*0.42/8);
-    const off=row%2 ? 24 : 0;
-    ctx.beginPath(); ctx.moveTo(0,ry); ctx.lineTo(W,ry); ctx.stroke();
-    for(let cx=off;cx<W;cx+=48){
-      ctx.beginPath(); ctx.moveTo(cx,ry); ctx.lineTo(cx,ry+H*0.42/8); ctx.stroke();
-    }
-  }
-  // Vlhkostní skvrny na stěně (nahoře v rozích)
-  [[W*0.08,H*0.05],[W*0.92,H*0.10],[W*0.55,H*0.02]].forEach(([sx,sy],i)=>{
-    const sG=ctx.createRadialGradient(sx,sy,0,sx,sy,45+i*18);
-    sG.addColorStop(0,'rgba(20,40,70,0.60)'); sG.addColorStop(1,'transparent');
-    ctx.fillStyle=sG; ctx.beginPath(); ctx.arc(sx,sy,45+i*18,0,Math.PI*2); ctx.fill();
-  });
+  // ══ POZADÍ z cache ══════════════════════════════════════════════════
+  ctx.drawImage(getKoupelnaBg(W, H), 0, 0);
+  // Vlhkostní skvrny jsou v cache (getKoupelnaBg)
 
   // ══ OSVĚTLENÍ – NEONOVÉ PÁSKY NAD ZRCADLEM ════════════════════════════
   const neonFlick = 0.88 + 0.12 * Math.abs(Math.sin(ft * 3.7));
