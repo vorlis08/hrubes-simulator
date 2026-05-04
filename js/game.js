@@ -1314,7 +1314,7 @@ function gameLoop(ts){
     if(gs.ca_active && gs.ca) updateCihalovaCA(dt);
     if(gs.voodoo_anim) updateVoodooAnim(dt);
     if(gs.johnny_kill_anim) gs.ts += dt;
-    if(gs.cutscene_active) gs.ts += dt;
+    if(gs.cutscene_active){ gs.ts += dt; if(gs.dodge) _dodgeUpdate(); }
     if(gs.running) update(dt);
     // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
     if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }

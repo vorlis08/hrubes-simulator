@@ -3066,6 +3066,100 @@ function drawKoupelna(W,H,t){
     ctx.fillText('Jana', janx2, jany2-56);
   }
 
+  // ══ DODGE MINIHRA HUD ══════════════════════════════════════════
+  if(gs.dodge){
+    const d = gs.dodge;
+    const phase = d.phase;
+    const cx = W*0.5, cy = H*0.82;
+
+    // Player position indicator (during dodge phase)
+    if(phase.startsWith('dodge') || phase.startsWith('result')){
+      const px = cx + d.playerPos * W*0.18;
+      const py = cy;
+      // Player shadow
+      ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(px,py+20,16,6,0,0,Math.PI*2); ctx.fill();
+      // Player figure
+      ctx.fillStyle = d.playerDodged ? '#4ade80' : '#fde8c8';
+      ctx.beginPath(); ctx.arc(px,py,14,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#1a1a2e'; ctx.beginPath(); ctx.arc(px,py-10,10,Math.PI,0); ctx.fill();
+      // "TY" label
+      ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='bold 10px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.fillText('TY',px,py+4);
+    }
+
+    // Aim phase — "PŘIPRAV SE!" text
+    if(phase === 'aim1' || phase === 'aim2'){
+      const pulse = 0.7 + 0.3*Math.sin(t*0.008);
+      ctx.fillStyle=`rgba(255,80,80,${pulse})`; ctx.font='bold 28px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('⚠️ PŘIPRAV SE!', cx, H*0.35);
+      ctx.textBaseline='alphabetic';
+    }
+
+    // Dodge phase — direction prompt + countdown bar
+    if(phase === 'dodge1' || phase === 'dodge2'){
+      const elapsed = gs.ts - d.dodgeStart;
+      const remaining = Math.max(0, 1 - elapsed / d.dodgeWindow);
+
+      // Direction arrows
+      const dirText = d.dodgeDir === 'left' ? '⬅️  UHNI DOLEVA  (A)' : 'UHNI DOPRAVA  (D)  ➡️';
+      const pulse2 = 0.8 + 0.2*Math.sin(t*0.015);
+      ctx.fillStyle=`rgba(255,220,60,${pulse2})`; ctx.font='bold 26px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(dirText, cx, H*0.33);
+
+      // Arrow indicator on the side
+      const arrowX = d.dodgeDir === 'left' ? cx - W*0.25 : cx + W*0.25;
+      const arrowBob = Math.sin(t*0.012)*8;
+      ctx.font='42px sans-serif';
+      ctx.fillText(d.dodgeDir === 'left' ? '👈' : '👉', arrowX + arrowBob, H*0.50);
+
+      // Countdown bar
+      const barW = W*0.5, barH = 10;
+      const barX = cx - barW/2, barY = H*0.42;
+      ctx.fillStyle='rgba(40,0,0,0.6)'; rrect(barX,barY,barW,barH,4); ctx.fill();
+      // Remaining portion — green to red
+      const r = Math.floor(255*(1-remaining)), g2 = Math.floor(255*remaining);
+      ctx.fillStyle=`rgb(${r},${g2},40)`; rrect(barX,barY,barW*remaining,barH,4); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=1; rrect(barX,barY,barW,barH,4); ctx.stroke();
+
+      ctx.textBaseline='alphabetic';
+
+      // Danger vignette pulsing
+      const vigA = (1-remaining)*0.35;
+      const vigG = ctx.createRadialGradient(cx,H*0.5,W*0.15,cx,H*0.5,W*0.7);
+      vigG.addColorStop(0,'transparent'); vigG.addColorStop(1,`rgba(180,0,0,${vigA})`);
+      ctx.fillStyle=vigG; ctx.fillRect(0,0,W,H);
+    }
+
+    // Result flash — success green or hit red
+    if(d.successFlash > 0){
+      const sf = Math.max(0, 1 - (gs.ts - d.successFlash)*0.003);
+      if(sf > 0){ ctx.fillStyle=`rgba(80,255,120,${sf*0.3})`; ctx.fillRect(0,0,W,H); }
+    }
+    if(d.hitFlash > 0){
+      const hf = Math.max(0, 1 - (gs.ts - d.hitFlash)*0.002);
+      if(hf > 0){ ctx.fillStyle=`rgba(255,0,0,${hf*0.5})`; ctx.fillRect(0,0,W,H); }
+    }
+
+    // Result text
+    if(phase === 'result1' || phase === 'result2'){
+      ctx.fillStyle='rgba(80,255,120,0.9)'; ctx.font='bold 22px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.fillText('✓ UHNUL JSI!', cx, H*0.35);
+    }
+    if(phase === 'flee'){
+      const pulse3 = 0.7 + 0.3*Math.sin(t*0.01);
+      ctx.fillStyle=`rgba(255,200,60,${pulse3})`; ctx.font='bold 30px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.fillText('🏃 UTÍKEJ!', cx, H*0.35);
+    }
+    if(phase === 'dead'){
+      const da = Math.min(1, (gs.ts - d.hitFlash)*0.002);
+      ctx.fillStyle=`rgba(255,0,0,${da*0.4})`; ctx.fillRect(0,0,W,H);
+    }
+
+    ctx.textAlign='left';
+  }
+
   // ══ VÝCHOD ══════════════════════════════════════════════════════
   if(!gs.story.bathroom_door_broken && !gs.door_kick_anim){
     ctx.fillStyle='rgba(255,255,255,0.10)'; ctx.font='10px monospace'; ctx.textAlign='center';
