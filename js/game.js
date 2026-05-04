@@ -20,6 +20,8 @@ const PICKABLE_ART_KEYS = new Set(['saman_hlava','milan_phone','podprsenka','fot
 
 // ─── Utilitky ─────────────────────────────────────────────────────────────
 
+const FRAME_MS = 1000 / 60;
+
 function rr(a, b){ return a + Math.random() * (b - a); }
 function dist2(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
 
@@ -775,7 +777,7 @@ function update(dt){
       const dx = p.x - fig.x, dy = p.y - fig.y;
       const d = Math.hypot(dx, dy);
       if(d > 65){
-        const spd = 2.6 * dt / 16.667;
+        const spd = 2.6 * dt / FRAME_MS;
         fig.x += (dx / d) * spd;
         fig.y += (dy / d) * spd;
       }
@@ -790,7 +792,10 @@ function update(dt){
       const dx = a.targetX - a.x, dy = a.targetY - a.y;
       const d = Math.hypot(dx, dy);
       if(d > 4){
-        const spd = 2.6 * dt / 16.667;
+        if(!a.startDist) a.startDist = d;
+        const progress = 1 - d / a.startDist;
+        const ease = progress < 0.3 ? progress / 0.3 : (progress > 0.7 ? (1 - progress) / 0.3 : 1);
+        const spd = 2.6 * Math.max(0.3, ease) * dt / FRAME_MS;
         a.x += (dx / d) * spd;
         a.y += (dy / d) * spd;
         a.flipX = dx < 0 ? -1 : 1;
@@ -807,7 +812,10 @@ function update(dt){
       const dx = a.targetX - a.x, dy = a.targetY - a.y;
       const d = Math.hypot(dx, dy);
       if(d > 4){
-        const spd = 2.8 * dt / 16.667;
+        if(!a.startDist) a.startDist = d;
+        const progress = 1 - d / a.startDist;
+        const ease = progress < 0.3 ? progress / 0.3 : (progress > 0.7 ? (1 - progress) / 0.3 : 1);
+        const spd = 2.8 * Math.max(0.3, ease) * dt / FRAME_MS;
         a.x += (dx / d) * spd;
         a.y += (dy / d) * spd;
         a.flipX = dx < 0 ? -1 : 1;
@@ -823,7 +831,10 @@ function update(dt){
     const d = Math.hypot(dx, dy);
     if(a.phase === 'walking'){
       if(d > 4){
-        const spd = 2.5 * dt / 16.667;
+        if(!a.startDist) a.startDist = d;
+        const progress = 1 - d / a.startDist;
+        const ease = progress < 0.3 ? progress / 0.3 : (progress > 0.7 ? (1 - progress) / 0.3 : 1);
+        const spd = 2.5 * Math.max(0.3, ease) * dt / FRAME_MS;
         a.x += (dx / d) * spd; a.y += (dy / d) * spd;
         a.flipX = dx < 0 ? -1 : 1;
       } else {
@@ -831,14 +842,17 @@ function update(dt){
       }
     }
     if(a.phase === 'in_toilet' && gs.ts >= a.returnAt){
-      // Návrat na původní pozici (gauč)
       a.phase = 'returning';
       a.targetX = canvas.width * 0.55;
       a.targetY = canvas.height * 0.60;
+      a.startDist = 0;
     }
     if(a.phase === 'returning'){
       if(d > 4){
-        const spd = 2.5 * dt / 16.667;
+        if(!a.startDist) a.startDist = d;
+        const progress = 1 - d / a.startDist;
+        const ease = progress < 0.3 ? progress / 0.3 : (progress > 0.7 ? (1 - progress) / 0.3 : 1);
+        const spd = 2.5 * Math.max(0.3, ease) * dt / FRAME_MS;
         a.x += (dx / d) * spd; a.y += (dy / d) * spd;
         a.flipX = dx < 0 ? -1 : 1;
       } else {
@@ -905,9 +919,9 @@ function update(dt){
     const elapsed = (gs.ts - c.startTime) / 1000;
     if(c.parts && c.parts.length){
       c.parts.forEach(p => {
-        p.x += p.vx * dt / 16.667;
-        p.y += p.vy * dt / 16.667;
-        p.vy += 0.4 * dt / 16.667; // gravitace
+        p.x += p.vx * dt / FRAME_MS;
+        p.y += p.vy * dt / FRAME_MS;
+        p.vy += 0.4 * dt / FRAME_MS; // gravitace
       });
     }
     c.bloodPool = Math.min(1, elapsed / 3);
@@ -919,7 +933,10 @@ function update(dt){
     const dx = a.targetX - a.x, dy = a.targetY - a.y;
     const d = Math.hypot(dx, dy);
     if(d > 4){
-      const spd = 3.8 * dt / 16.667;
+      if(!a.startDist) a.startDist = d;
+      const progress = 1 - d / a.startDist;
+      const ease = progress < 0.3 ? progress / 0.3 : (progress > 0.7 ? (1 - progress) / 0.3 : 1);
+      const spd = 3.8 * Math.max(0.3, ease) * dt / FRAME_MS;
       a.x += (dx / d) * spd;
       a.y += (dy / d) * spd;
       a.flipX = dx < 0 ? -1 : 1;
@@ -930,7 +947,7 @@ function update(dt){
   if(gs.saman_naked_anim && gs.room === 'hospoda' && gs.saman_naked_anim.phase === 'running'){
     const a = gs.saman_naked_anim;
     const W = canvas.width, H = canvas.height;
-    const k = dt / 16.667;
+    const k = dt / FRAME_MS;
     a.x += a.vx * k;
     a.y += a.vy * k;
     // odraz od krajů místnosti (zhruba podlaha hospody)
@@ -983,7 +1000,7 @@ function update(dt){
                    keys['ArrowUp']||keys['ArrowDown']||keys['ArrowLeft']||keys['ArrowRight'];
     p.mv = !!anyKey;
     const inHeaven = gs.room === 'heaven' || gs.room === 'heaven_gate';
-    const spd = p.spd * (inHeaven ? 0.38 : 1) * dt / 16.667; // frame-rate nezávislý pohyb
+    const spd = p.spd * (inHeaven ? 0.38 : 1) * dt / FRAME_MS; // frame-rate nezávislý pohyb
     if(keys['w'] || keys['ArrowUp'])    p.y -= spd;
     if(keys['s'] || keys['ArrowDown'])  p.y += spd;
     if(keys['a'] || keys['ArrowLeft'])  { p.x -= spd; p.face = 'l'; }
@@ -1137,8 +1154,8 @@ function update(dt){
   }
 
   currentNPCs.forEach(n => {
-    n.bob += n.bobDir * dt * 0.00075;
-    if(Math.abs(n.bob) > 0.08) n.bobDir *= -1;
+    n.bobT = (n.bobT || 0) + dt * 0.002;
+    n.bob = Math.sin(n.bobT) * 0.08;
   });
 
   currentItems.forEach(i => { i.p = (i.p + dt * 0.004) % (Math.PI * 2); });
@@ -1231,10 +1248,13 @@ function updateVoodooAnim(dt){
     }
   } else if(vm.phase === 2){
     // Běh ke kašně – přidávej krvavý trail každých 40ms
-    const speed = 2.8 * dt / 16.667;
     const dx = vm.fnX - vm.x, dy = vm.fnY - vm.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
     if(dist > 18){
+      if(!vm.startDist) vm.startDist = dist;
+      const progress = 1 - dist / vm.startDist;
+      const ease = progress < 0.2 ? progress / 0.2 : (progress > 0.8 ? (1 - progress) / 0.2 : 1);
+      const speed = 2.8 * Math.max(0.3, ease) * dt / FRAME_MS;
       vm.x += (dx / dist) * speed;
       vm.y += (dy / dist) * speed;
       if(vm.phaseT % 40 < dt){ // přibližně každých 40ms
@@ -1267,7 +1287,10 @@ function updateVoodooAnim(dt){
 
 let _lastRenderTs = 0;
 function gameLoop(ts){
-  if(!gs.running && !gs.ca_active && !gs.voodoo_anim && !gs.johnny_kill_anim) return;
+  const active = gs.running || gs.ca_active || gs.voodoo_anim || gs.johnny_kill_anim;
+  const gc = document.getElementById('gc');
+  if(gc) gc.classList.toggle('game-paused', !active);
+  if(!active) return;
   try {
     const dt = Math.min(ts - lastTime, 50);
     lastTime = ts;
