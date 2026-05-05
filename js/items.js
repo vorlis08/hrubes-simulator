@@ -315,12 +315,13 @@ function triggerJohnnyGunScene(){
     t0: gs.ts,
     shotNum: 0,
     dodgeDir: null,        // 'left' or 'right' — required direction
-    dodgeWindow: 1400,     // ms to react
+    dodgeWindow: 1600,     // ms to react (1st shot)
     dodgeStart: 0,         // timestamp when dodge window opens
     playerDodged: false,
     playerPos: 0,          // -1 left, 0 center, 1 right
     hitFlash: 0,
     successFlash: 0,
+    slowmo: 0,             // slowmo timestamp for dramatic effect
   };
 
   addLog('*Johnny stojí uprostřed zatopené koupelny. Vytáhne pistoli zpod saka.*', 'lw');
@@ -338,6 +339,7 @@ function _startDodgeRound(shotNum){
   if(!d) return;
   d.shotNum = shotNum;
   d.dodgeDir = Math.random() < 0.5 ? 'left' : 'right';
+  d.dodgeWindow = shotNum === 1 ? 1600 : 1200; // 2. výstřel těžší
   d.playerDodged = false;
   d.playerPos = 0;
   d.phase = 'aim' + shotNum;
@@ -365,6 +367,10 @@ function _startDodgeRound(shotNum){
       if(correct){
         d.playerDodged = true;
         window.removeEventListener('keydown', onDodge);
+      } else {
+        // Špatný směr – krátký trest (ztráta času + vizuální feedback)
+        d.dodgeStart -= 300; // urychlí countdown
+        screenShake(150);
       }
     };
     window.addEventListener('keydown', onDodge);
@@ -384,26 +390,30 @@ function _dodgeUpdate(){
       // Dodged successfully
       d.phase = 'result' + shotNum;
       d.successFlash = gs.ts;
+      d.slowmo = gs.ts;
       if(d._dodgeListener) window.removeEventListener('keydown', d._dodgeListener);
-      screenShake(350);
+      screenShake(400);
       if(shotNum === 1){
         gs.story.gun_shot1 = true; gs._shot1t = gs.ts;
-        addLog('💥 *BANG!* Uhnuls! Kulka zaryla do dlaždice vedle tebe.', 'lm');
+        addLog('💥 *BANG!* Uhnuls v poslední chvíli! Kulka zaryla do dlaždice.', 'lm');
       } else {
         gs.story.gun_shot2 = true; gs._shot2t = gs.ts;
-        addLog('💥 *BANG!* Znovu jsi uhnul! Rána do stropu!', 'lm');
+        addLog('💥 *BANG!* Další kulka letí kolem hlavy! Ale chybí!', 'lm');
       }
       setTimeout(() => {
         if(shotNum === 1){
-          addLog('"STŮJ, KURVA!" *Johnny přebíjí*', 'lw');
-          setTimeout(() => _startDodgeRound(2), 800);
+          addLog('"STŮJ, KURVA!" *Johnny přebíjí, ruce se mu třesou vzteky*', 'lw');
+          setTimeout(() => _startDodgeRound(2), 1000);
         } else {
           d.phase = 'flee';
-          addLog('*Jana vyskočí.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
-          fnotif('🏃 UTÍKEJ!', 'rep');
-          setTimeout(() => triggerJanaFleeVilla(), 1200);
+          addLog('*"DOST!" Johnny mrští pistolí o zeď.*', 'lw');
+          setTimeout(() => {
+            addLog('*Jana vyskočí a chytí tě za ruku.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
+            fnotif('🏃 UTÍKEJ!', 'rep');
+            setTimeout(() => triggerJanaFleeVilla(), 800);
+          }, 600);
         }
-      }, 1000);
+      }, 1200);
       return;
     }
 
@@ -444,11 +454,12 @@ function triggerJanaFleeVilla(){
   // Vrátíme hráče do villa místnosti automaticky
   if(gs.room === 'koupelna'){
     gs.room = 'johnny_vila';
-    initRoom(canvas.width * 0.92, canvas.height * 0.45);
+    gs.villa_door_burst = gs.ts; // vizuální efekt vyběhnutí z koupelny
+    initRoom(canvas.width * 0.88, canvas.height * 0.42);
   }
 
-  addLog('*Jana vyletí z koupelny a běží ke vchodovým dveřím!*', 'lw');
-  addLog('*Za ní Johnny, stále s pistolí v ruce, křičí.* "VRAŤ SE SEM, KURVO!!!"', 'lw');
+  addLog('*Vyrazíš z koupelny! Jana běží ke vchodovým dveřím!*', 'lw');
+  addLog('*Johnny za vámi: "VRAŤ SE SEM, KURVO!!!"*', 'lw');
   addLog('⚠️ UTÍKEJ! Máš 10 sekund než tě Johnny dostihne!', 'ls');
   fnotif('🏃 UTÍKEJ! 10s!', 'rep');
 

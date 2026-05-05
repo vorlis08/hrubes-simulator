@@ -1314,7 +1314,17 @@ function gameLoop(ts){
     if(gs.ca_active && gs.ca) updateCihalovaCA(dt);
     if(gs.voodoo_anim) updateVoodooAnim(dt);
     if(gs.johnny_kill_anim) gs.ts += dt;
-    if(gs.cutscene_active){ gs.ts += dt; if(gs.dodge) _dodgeUpdate(); }
+    if(gs.cutscene_active){
+      // Slowmo efekt po úspěšném dodge
+      let cdt = dt;
+      if(gs.dodge && gs.dodge.slowmo > 0){
+        const smElapsed = gs.ts - gs.dodge.slowmo;
+        if(smElapsed < 600) cdt = dt * 0.3; // dramatické zpomalení
+        else gs.dodge.slowmo = 0;
+      }
+      gs.ts += cdt;
+      if(gs.dodge) _dodgeUpdate();
+    }
     if(gs.running) update(dt);
     // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
     if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
