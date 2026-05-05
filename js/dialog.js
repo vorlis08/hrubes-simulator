@@ -417,6 +417,7 @@ function getStage(id){
       return 0;
     case 'jana_vila':
       if(s.jana_handcuffed_johnny) return 5;
+      if(s.drink_drugged && !s.jana_at_toilet && !s.jana_drank_potion) return 4;
       if(s.bathroom_plan_briefed && !s.jana_in_bathroom_locked) return 3;
       if(s.johnny_return_visit) return 2;
       if(s.johnny_cuffed) return 1;
