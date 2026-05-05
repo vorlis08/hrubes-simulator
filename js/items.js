@@ -289,19 +289,20 @@ function triggerJanaToBathroom(){
   };
   currentNPCs = currentNPCs.filter(n => n.id !== 'jana_vila');
   setTimeout(() => {
-    addLog('*Cvak. Dveře koupelny jsou zamčené zevnitř.*', 'lm');
-    fnotif('🔒 Koupelna zamčená', 'pos');
     gs.story.jana_in_bathroom_locked = true;
     gs.jana_to_bathroom_anim = null;
-    setTimeout(() => triggerBathroomFlood(), 4000);
+    fnotif('🔒 Koupelna zamčená', 'pos');
+    showNPCLine('jana_vila', '*Cvak.* Dveře koupelny se zamknou zevnitř. Slyšíš šplouchání vody.', () => {
+      setTimeout(() => triggerBathroomFlood(), 2500);
+    });
   }, 3000);
 }
 
 function triggerBathroomFlood(){
   if(gs.bathroom_flood_anim) return;
   gs.bathroom_flood_anim = { progress: 0, startTime: gs.ts, johnnyBroke: false };
-  addLog('*Pod dveřmi koupelny se začíná rozlévat voda...* 💧', 'lw');
   fnotif('💧 Povodeň začíná', 'rep');
+  showNPCLine('jana_vila', '*Pod dveřmi koupelny se začíná rozlévat voda...* 💧 Slyšíš Janin smích za dveřmi.');
 }
 
 // Johnny vstoupí do koupelny se zbraní – gun scene (voláno když hráč vstoupí do koupelny po johnnyBroke)
@@ -498,11 +499,12 @@ function triggerJanaFleeVilla(){
   gs.maze = {
     t0: gs.ts,
     px: startC + 0.5, py: startR + 0.5,
-    jx: startC + 0.5, jy: startR - 2,
+    jx: 13.5, jy: 1.5,
+    jDelay: gs.ts + 3000,
     exitR, exitC,
     items,
     bullets: [],
-    lastShot: gs.ts,
+    lastShot: gs.ts + 4000,
     speedBoost: 0,
     speedBoostEnd: 0,
     won: false,
@@ -510,9 +512,13 @@ function triggerJanaFleeVilla(){
     jPath: [],
     jPathT: 0,
     shakeT: 0,
+    intro: true,
+    introEnd: gs.ts + 2200,
+    introDoorX: 13.5, introDoorY: 0.5,
   };
 
   gs.room = 'maze_escape';
+  screenShake(400);
 }
 
 function _mazeWall(r,c){
@@ -550,9 +556,18 @@ function _mazeUpdate(dt){
   const tNorm = dt / FRAME_MS;
   const wounded = gs.story.leg_shot;
 
+  // Intro fáze – Johnny vyběhne z koupelny
+  if(m.intro){
+    const ip = Math.min(1, (gs.ts - m.t0) / 2000);
+    m.jx = m.introDoorX + (1.5 - m.introDoorX) * ip;
+    m.jy = m.introDoorY + (1.5 - m.introDoorY) * ip;
+    if(gs.ts >= m.introEnd) m.intro = false;
+    return;
+  }
+
   // Hráč pohyb
-  let baseSpd = wounded ? 0.045 : 0.065;
-  if(m.speedBoostEnd > gs.ts) baseSpd *= 1.5;
+  let baseSpd = wounded ? 0.058 : 0.075;
+  if(m.speedBoostEnd > gs.ts) baseSpd *= 1.4;
   const spd = baseSpd * tNorm;
   let nx = m.px, ny = m.py;
   if(keys['w']||keys['ArrowUp'])    ny -= spd;
@@ -562,7 +577,7 @@ function _mazeUpdate(dt){
 
   // Wobble při postřelení
   if(wounded){
-    nx += Math.sin(gs.ts * 0.005) * 0.015 * tNorm;
+    nx += Math.sin(gs.ts * 0.005) * 0.008 * tNorm;
   }
 
   // Kolize se zdí (kruh r=0.3)
@@ -617,23 +632,27 @@ function _mazeUpdate(dt){
     return;
   }
 
-  // Johnny pathfinding (every 500ms)
-  if(gs.ts - m.jPathT > 500){
-    m.jPathT = gs.ts;
-    m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),Math.floor(m.py),Math.floor(m.px));
-  }
+  const jActive = !m.jDelay || gs.ts >= m.jDelay;
 
-  // Johnny movement
-  const jSpd = (wounded ? 0.032 : 0.042) * tNorm;
-  if(m.jPath.length > 1){
-    const [tr,tc] = m.jPath[1];
-    const tdx = (tc+0.5)-m.jx, tdy = (tr+0.5)-m.jy;
-    const td = Math.sqrt(tdx*tdx+tdy*tdy);
-    if(td > 0.1){
-      m.jx += (tdx/td)*jSpd;
-      m.jy += (tdy/td)*jSpd;
-    } else {
-      m.jPath.shift();
+  if(jActive){
+    // Johnny pathfinding (every 500ms)
+    if(gs.ts - m.jPathT > 500){
+      m.jPathT = gs.ts;
+      m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),Math.floor(m.py),Math.floor(m.px));
+    }
+
+    // Johnny movement
+    const jSpd = (wounded ? 0.025 : 0.035) * tNorm;
+    if(m.jPath.length > 1){
+      const [tr,tc] = m.jPath[1];
+      const tdx = (tc+0.5)-m.jx, tdy = (tr+0.5)-m.jy;
+      const td = Math.sqrt(tdx*tdx+tdy*tdy);
+      if(td > 0.1){
+        m.jx += (tdx/td)*jSpd;
+        m.jy += (tdy/td)*jSpd;
+      } else {
+        m.jPath.shift();
+      }
     }
   }
 
@@ -648,8 +667,8 @@ function _mazeUpdate(dt){
     return;
   }
 
-  // Johnny střílí kulky (každé 2.5s, pokud vidí hráče ve stejné řadě/sloupci)
-  if(gs.ts - m.lastShot > 2500){
+  // Johnny střílí kulky (každé 3.5s, pokud vidí hráče ve stejné řadě/sloupci)
+  if(jActive && gs.ts - m.lastShot > 3500){
     const jr=Math.floor(m.jy), jc=Math.floor(m.jx);
     const prr=Math.floor(m.py), prc=Math.floor(m.px);
     let shootDir = null;
@@ -667,7 +686,7 @@ function _mazeUpdate(dt){
     }
     if(shootDir){
       m.lastShot = gs.ts;
-      m.bullets.push({x:m.jx, y:m.jy, dx:shootDir[1]*0.15, dy:shootDir[0]*0.15, t0:gs.ts});
+      m.bullets.push({x:m.jx, y:m.jy, dx:shootDir[1]*0.12, dy:shootDir[0]*0.12, t0:gs.ts});
       m.shakeT = gs.ts;
       screenShake(150);
     }
@@ -794,6 +813,37 @@ function drawMazeEscape(W,H,t){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('🚪',ex+cellW/2,ey+cellH/2);
 
+  // Rozražené dveře koupelny (top-right area)
+  const doorX = m.introDoorX * cellW, doorY = m.introDoorY * cellH;
+  ctx.fillStyle='#4a3540';
+  ctx.fillRect(doorX-cellW*0.1, doorY, cellW*1.2, cellH);
+  // Rozražené dveře – nakloněné panely
+  ctx.save();
+  ctx.translate(doorX+cellW*0.2, doorY+cellH*0.5);
+  ctx.rotate(-0.4);
+  ctx.fillStyle='#6a4a55'; ctx.fillRect(-cellW*0.3,-cellH*0.4,cellW*0.5,cellH*0.8);
+  ctx.strokeStyle='rgba(180,130,110,0.5)'; ctx.lineWidth=1;
+  ctx.strokeRect(-cellW*0.3,-cellH*0.4,cellW*0.5,cellH*0.8);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(doorX+cellW*0.7, doorY+cellH*0.3);
+  ctx.rotate(0.3);
+  ctx.fillStyle='#5a3a48'; ctx.fillRect(-cellW*0.2,-cellH*0.3,cellW*0.4,cellH*0.6);
+  ctx.restore();
+  // Třísky
+  ctx.fillStyle='#7a5a60';
+  for(let i=0;i<5;i++){
+    const sx2=doorX+Math.sin(i*1.7)*cellW*0.5+cellW*0.5;
+    const sy2=doorY+Math.cos(i*2.3)*cellH*0.3+cellH*0.5;
+    ctx.fillRect(sx2,sy2,3+i%3,2);
+  }
+  // Voda vytékající z koupelny
+  const waterAlpha = 0.15+0.05*Math.sin(t*0.003);
+  ctx.fillStyle=`rgba(80,140,200,${waterAlpha})`;
+  ctx.beginPath();
+  ctx.ellipse(doorX+cellW*0.5, doorY+cellH*1.2, cellW*0.8, cellH*0.4, 0, 0, Math.PI*2);
+  ctx.fill();
+
   // Itemy
   for(const it of m.items){
     if(it.taken) continue;
@@ -864,7 +914,13 @@ function drawMazeEscape(W,H,t){
   ctx.fillRect(0,0,W,28);
   ctx.fillStyle='#fff'; ctx.font='bold 14px Outfit,sans-serif';
   ctx.textAlign='left';
-  ctx.fillText('🏃 UTEČ Z VILY!'+(legW?' 🦵 Kulháš!':''),10,18);
+  if(m.intro){
+    ctx.fillText('💥 Johnny vyráží z koupelny!',10,18);
+    ctx.fillStyle='rgba(255,60,60,0.7)'; ctx.textAlign='right';
+    ctx.fillText('PŘIPRAV SE!',W-10,18);
+  } else {
+    ctx.fillText('🏃 UTEČ Z VILY!'+(legW?' 🦵 Kulháš!':''),10,18);
+  }
   // Boost timer
   if(m.speedBoostEnd > gs.ts){
     const rem = Math.ceil((m.speedBoostEnd-gs.ts)/1000);

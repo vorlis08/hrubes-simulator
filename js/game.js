@@ -565,7 +565,7 @@ function interact(){
     const hrx = canvas.width * 0.89, hry = canvas.height * 0.35;
     if(dist2(gs.player, {x:hrx, y:hry}) < PROX_R){
       gs.inv.hadr = 1; updateInv();
-      addLog('Stáhls mokrý hadr z topení. Ještě teplý. K něčemu se hodí.', 'lw');
+      showPlayerLine('*Stáhneš mokrý hadr z topení.* Ještě teplý. K něčemu se hodí.');
       fnotif('🧻 Hadr','itm'); return;
     }
   }
@@ -915,9 +915,7 @@ function update(dt){
     if(!f.johnnyBroke && f.progress > 0.6){
       f.johnnyBroke = true;
       gs.story.bathroom_door_broken = true;
-      addLog('*Johnny vstane ze sedačky.* "CO TO SAKRA...?!" *míří ke koupelně*', 'lw');
-      setTimeout(() => {
-        addLog('💥 *Johnny vykopl dveře koupelny nohou.* Rána otřásla celou místností.', 'lw');
+      showNPCLine('johnny_vila', '"CO TO SAKRA...?!" *Johnny vstane ze sedačky a míří ke koupelně.*', () => {
         screenShake(600);
         const splinters = [];
         for(let i=0;i<18;i++){
@@ -932,9 +930,10 @@ function update(dt){
         gs.door_kick_anim = { t0: gs.ts, splinters };
         gs.story.johnny_in_bathroom = true;
         currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
-        addLog('*Johnny zmizel za dveřmi.* Vejdi za ním nebo uteč z vily!', 'ls');
-        fnotif('🚪 Koupelna – vstoupit?', 'rep');
-      }, 1200);
+        showNPCLine('johnny_vila', '💥 *Johnny vykopl dveře koupelny!* Rána otřásla celou místností. Vejdi za ním nebo uteč z vily!', () => {
+          fnotif('🚪 Koupelna – vstoupit?', 'rep');
+        });
+      });
     }
   }
   // Johnny chase – sleduje hráče ve vile během útěku
