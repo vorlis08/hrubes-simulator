@@ -398,7 +398,7 @@ function _dodgeUpdate(){
         addLog('💥 *BANG!* Uhnuls v poslední chvíli! Kulka zaryla do dlaždice.', 'lm');
       } else {
         gs.story.gun_shot2 = true; gs._shot2t = gs.ts;
-        addLog('💥 *BANG!* Další kulka letí kolem hlavy! Ale chybí!', 'lm');
+        addLog('💥 *BANG!* Uhnuls hlavou, ale kulka škrábla nohu!', 'lm');
       }
       setTimeout(() => {
         if(shotNum === 1){
@@ -406,10 +406,11 @@ function _dodgeUpdate(){
           setTimeout(() => _startDodgeRound(2), 1000);
         } else {
           d.phase = 'flee';
-          addLog('*"DOST!" Johnny mrští pistolí o zeď.*', 'lw');
+          gs.story.leg_shot = true;
+          addLog('*Noha tě pálí, ale stojíš. Johnny mrští pistolí o zeď.*', 'lw');
           setTimeout(() => {
             addLog('*Jana vyskočí a chytí tě za ruku.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
-            fnotif('🏃 UTÍKEJ!', 'rep');
+            fnotif('🏃 UTÍKEJ! (postřelená noha)', 'rep');
             setTimeout(() => triggerJanaFleeVilla(), 800);
           }, 600);
         }
@@ -460,18 +461,21 @@ function triggerJanaFleeVilla(){
 
   addLog('*Vyrazíš z koupelny! Jana běží ke vchodovým dveřím!*', 'lw');
   addLog('*Johnny za vámi: "VRAŤ SE SEM, KURVO!!!"*', 'lw');
-  addLog('⚠️ UTÍKEJ! Máš 10 sekund než tě Johnny dostihne!', 'ls');
-  fnotif('🏃 UTÍKEJ! 10s!', 'rep');
+  const escapeTime = gs.story.leg_shot ? 13000 : 10000;
+  const escLabel = gs.story.leg_shot ? '13' : '10';
+  addLog('⚠️ UTÍKEJ! Máš ' + escLabel + ' sekund než tě Johnny dostihne!' + (gs.story.leg_shot ? ' *Kulháš, ale běž!*' : ''), 'ls');
+  fnotif('🏃 UTÍKEJ! ' + escLabel + 's!' + (gs.story.leg_shot ? ' 🦵' : ''), 'rep');
 
-  // Escapetimer – 10s na opuštění vily
-  gs.jana_escape_deadline = gs.ts + 10000;
+  // Escapetimer
+  gs.jana_escape_deadline = gs.ts + escapeTime;
 
   // Odpočítávání notifikací
-  setTimeout(() => { if(!gs.story.jana_escaped_success) fnotif('⏳ 7 sekund!', 'rep'); }, 3000);
-  setTimeout(() => { if(!gs.story.jana_escaped_success) fnotif('💀 5 sekund!!!', 'rep'); }, 5000);
-  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 3...', 'rep'); screenShake(200); } }, 7000);
-  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 2...', 'rep'); screenShake(250); } }, 8000);
-  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 1...', 'rep'); screenShake(300); } }, 9000);
+  const et = escapeTime;
+  setTimeout(() => { if(!gs.story.jana_escaped_success) fnotif('⏳ ' + Math.ceil((et-3000)/1000) + ' sekund!', 'rep'); }, 3000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) fnotif('💀 5 sekund!!!', 'rep'); }, et - 5000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 3...', 'rep'); screenShake(200); } }, et - 3000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 2...', 'rep'); screenShake(250); } }, et - 2000);
+  setTimeout(() => { if(!gs.story.jana_escaped_success) { fnotif('☠️ 1...', 'rep'); screenShake(300); } }, et - 1000);
 
   // Jana zmizí z vily (utekla)
   setTimeout(() => {

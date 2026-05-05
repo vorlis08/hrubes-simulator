@@ -946,7 +946,7 @@ function update(dt){
     const dx2 = gs.player.x - jc.x, dy2 = gs.player.y - jc.y;
     const dist3 = Math.sqrt(dx2*dx2+dy2*dy2);
     if(dist3 > 5){
-      const chaseSpd = 2.8 * dt / 16.67; // o něco pomalejší než hráč
+      const chaseSpd = 2.2 * dt / 16.67; // pomalejší – hráč kulhá ale stihne utéct
       jc.x += (dx2/dist3)*chaseSpd;
       jc.y += (dy2/dist3)*chaseSpd;
     }
@@ -1053,11 +1053,16 @@ function update(dt){
                    keys['ArrowUp']||keys['ArrowDown']||keys['ArrowLeft']||keys['ArrowRight'];
     p.mv = !!anyKey;
     const inHeaven = gs.room === 'heaven' || gs.room === 'heaven_gate';
-    const spd = p.spd * (inHeaven ? 0.38 : 1) * dt / FRAME_MS; // frame-rate nezávislý pohyb
+    const legWounded = gs.story.leg_shot && !gs.story.leg_bandaged;
+    const spd = p.spd * (inHeaven ? 0.38 : legWounded ? 0.55 : 1) * dt / FRAME_MS;
     if(keys['w'] || keys['ArrowUp'])    p.y -= spd;
     if(keys['s'] || keys['ArrowDown'])  p.y += spd;
     if(keys['a'] || keys['ArrowLeft'])  { p.x -= spd; p.face = 'l'; }
     if(keys['d'] || keys['ArrowRight']) { p.x += spd; p.face = 'r'; }
+    // Postřelená noha – hráč se kymácí do stran při chůzi
+    if(legWounded && p.mv){
+      p.x += Math.sin(gs.ts * 0.006) * 1.2 * dt / FRAME_MS;
+    }
   } else {
     p.mv = false;
   }
@@ -1081,6 +1086,16 @@ function update(dt){
         gs.johnny_chase_pos = null;
         setTimeout(() => {
           addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
+          if(gs.story.leg_shot){
+            setTimeout(() => {
+              addLog('*Jana si všimne krve na nohavici.* "Ježíši, on tě trefil! Sedni si."', 'lw');
+              setTimeout(() => {
+                addLog('*Jana ti strhne kus látky z košile a pevně ovine nohu.*', 'lm');
+                fnotif('🩹 Jana obvázala nohu', 'pos');
+                gs.story.leg_bandaged = true;
+              }, 1500);
+            }, 1200);
+          }
           gainRep(12, 'Utekl s Janou z Johnnyho vily');
           gs.inv.klice_vila = 1; updateInv();
           gs.story.jana_rescued_villa = true;
