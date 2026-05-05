@@ -1021,15 +1021,19 @@ function drawMazeEscape(W,H,t){
   ctx.fillStyle='#5f5';
   ctx.fillRect(mmX+m.exitC*mmS, mmY+m.exitR*mmS, mmS, mmS);
 
-  // Exit direction arrow
+  // Exit direction arrow + distance
   if(!m.intro && !m.won && !m.dead){
     const aDx = (m.exitC+0.5)-m.px, aDy = (m.exitR+0.5)-m.py;
+    const aDist = Math.sqrt(aDx*aDx+aDy*aDy);
     const aAng = Math.atan2(aDy, aDx);
-    const aX = px, aY = py - cellH*0.55;
+    const aX = px, aY = py - cellH*0.7;
     ctx.save(); ctx.translate(aX, aY); ctx.rotate(aAng);
-    ctx.fillStyle='rgba(80,255,100,0.7)';
-    ctx.beginPath(); ctx.moveTo(10,0); ctx.lineTo(-4,-5); ctx.lineTo(-4,5); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(80,255,100,0.85)';
+    ctx.beginPath(); ctx.moveTo(16,0); ctx.lineTo(-6,-7); ctx.lineTo(-6,7); ctx.closePath(); ctx.fill();
     ctx.restore();
+    ctx.fillStyle='rgba(80,255,100,0.7)'; ctx.font='bold 9px Outfit,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(Math.round(aDist)+'m', px, py-cellH*1.0);
   }
 
   // HUD
@@ -1041,10 +1045,25 @@ function drawMazeEscape(W,H,t){
     ctx.fillText('💥 Johnny vyráží z koupelny!',10,18);
     ctx.fillStyle='rgba(255,60,60,0.7)'; ctx.textAlign='right';
     ctx.fillText('PŘIPRAV SE!',W-10,18);
+    // Velký intro overlay s instrukcemi
+    const iAlpha = Math.min(1, Math.max(0, 1 - (gs.ts - m.t0)/2000));
+    ctx.fillStyle=`rgba(0,0,0,${0.7*iAlpha})`;
+    ctx.fillRect(0,H*0.25,W,H*0.5);
+    ctx.fillStyle=`rgba(255,255,255,${iAlpha})`;
+    ctx.font='bold 28px Outfit,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('🏃 ÚTĚK Z VILY',W/2,H*0.38);
+    ctx.font='18px Outfit,sans-serif';
+    ctx.fillStyle=`rgba(200,200,200,${iAlpha})`;
+    ctx.fillText('Pohyb: WASD nebo šipky',W/2,H*0.46);
+    ctx.fillText('Cíl: Doběhni ke dveřím 🚪 (zelená šipka)',W/2,H*0.53);
+    ctx.fillText('Sbírej itemy 💉🍺🦯 pro rychlost',W/2,H*0.60);
+    ctx.font='bold 16px Outfit,sans-serif';
+    ctx.fillStyle=`rgba(255,80,80,${iAlpha})`;
+    ctx.fillText('⚠ Johnny tě pronásleduje a střílí!',W/2,H*0.68);
   } else {
     ctx.fillText('🏃 UTEČ Z VILY! [WASD/šipky]'+(legW?' 🦵 Kulháš!':''),10,18);
     ctx.fillStyle='rgba(180,180,180,0.6)'; ctx.font='11px Outfit,sans-serif';
-    ctx.fillText('Sbírej itemy pro boost · Doběhni ke 🚪',10,H-8);
+    ctx.fillText('Sleduj zelenou šipku → ke dveřím 🚪',10,H-8);
   }
   // Boost timer
   if(m.speedBoostEnd > gs.ts){
