@@ -918,13 +918,18 @@ function update(dt){
       showNPCLine('johnny_vila', '"CO TO SAKRA...?!" *Johnny vstane ze sedačky a míří ke koupelně.*', () => {
         screenShake(600);
         const splinters = [];
-        for(let i=0;i<18;i++){
+        for(let i=0;i<30;i++){
+          const big = i < 4;
           splinters.push({
-            t0: gs.ts, x: canvas.width*0.5 + (Math.random()-0.5)*canvas.width*0.10,
-            y: canvas.height*0.85, vx: (Math.random()-0.5)*220, vy: -80 - Math.random()*180,
-            rot: Math.random()*Math.PI*2, rotV: (Math.random()-0.5)*8,
-            w: 4+Math.random()*14, h: 2+Math.random()*6,
-            col: ['#5a3a50','#4a2a40','#6a4060','#7a5070','#3a1a30'][Math.floor(Math.random()*5)]
+            t0: gs.ts, x: canvas.width*0.5 + (Math.random()-0.5)*canvas.width*0.12,
+            y: canvas.height*0.84 + Math.random()*canvas.height*0.02,
+            vx: (Math.random()-0.5)*(big ? 300 : 180),
+            vy: -60 - Math.random()*(big ? 250 : 160),
+            rot: Math.random()*Math.PI*2, rotV: (Math.random()-0.5)*10,
+            w: big ? 12+Math.random()*18 : 3+Math.random()*10,
+            h: big ? 4+Math.random()*8 : 2+Math.random()*4,
+            life: 0.8 + Math.random()*0.8,
+            col: ['#5a3a50','#4a2a40','#6a4060','#7a5070','#3a1a30','#8a6078'][Math.floor(Math.random()*6)]
           });
         }
         gs.door_kick_anim = { t0: gs.ts, splinters };
