@@ -451,17 +451,27 @@ function _dodgeUpdate(){
 // MAZE ESCAPE MINIGAME – top-down bludiště, hráč utíká z vily
 // ═══════════════════════════════════════════════════════════════════
 
-// Mapa bludiště – 1=zeď, 0=cesta, 2=start, 3=exit, 4=item(adrenalin), 5=item(hůl)
+// Mapa bludiště – 1=zeď, 0=cesta, 2=start, 3=exit, 4=item(adrenalin), 5=item(hůl), 6=item(pivo)
 const MAZE_MAP = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
-  [1,0,1,0,1,0,1,1,1,0,1,0,1,0,1],
-  [1,0,1,0,0,0,0,4,1,0,0,0,1,0,1],
-  [1,0,1,1,1,1,0,1,1,1,1,0,1,0,1],
-  [1,0,0,0,0,1,0,0,0,0,1,0,0,0,1],
-  [1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],
-  [1,2,0,0,0,0,0,0,0,0,0,5,0,0,3],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
+  [1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1],
+  [1,0,1,0,0,0,0,4,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1],
+  [1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
+  [1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1],
+  [1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1],
+  [1,0,1,0,0,0,1,0,0,0,1,0,1,0,0,6,0,0,0,0,0,0,0,0,1,0,1],
+  [1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,1,1,0,1],
+  [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
+  [1,1,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1],
+  [1,5,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,4,1,0,1],
+  [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],
+  [1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+  [1,0,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1],
+  [1,2,0,0,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,3],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 const MAZE_ROWS = MAZE_MAP.length;
 const MAZE_COLS = MAZE_MAP[0].length;
@@ -494,12 +504,13 @@ function triggerJanaFleeVilla(){
   for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
     if(MAZE_MAP[r][c]===4) items.push({r,c,type:'adrenalin',taken:false});
     if(MAZE_MAP[r][c]===5) items.push({r,c,type:'hul',taken:false});
+    if(MAZE_MAP[r][c]===6) items.push({r,c,type:'pivo',taken:false});
   }
 
   gs.maze = {
     t0: gs.ts,
     px: startC + 0.5, py: startR + 0.5,
-    jx: 13.5, jy: 1.5,
+    jx: 25.5, jy: 1.5,
     jDelay: gs.ts + 3000,
     exitR, exitC,
     items,
@@ -514,7 +525,7 @@ function triggerJanaFleeVilla(){
     shakeT: 0,
     intro: true,
     introEnd: gs.ts + 2200,
-    introDoorX: 13.5, introDoorY: 0.5,
+    introDoorX: 25.5, introDoorY: 0.5,
   };
 
   gs.room = 'maze_escape';
@@ -559,7 +570,7 @@ function _mazeUpdate(dt){
   // Intro fáze – Johnny vyběhne z koupelny
   if(m.intro){
     const ip = Math.min(1, (gs.ts - m.t0) / 2000);
-    m.jx = m.introDoorX + (1.5 - m.introDoorX) * ip;
+    m.jx = m.introDoorX + (23.5 - m.introDoorX) * ip;
     m.jy = m.introDoorY + (1.5 - m.introDoorY) * ip;
     if(gs.ts >= m.introEnd) m.intro = false;
     return;
@@ -616,6 +627,9 @@ function _mazeUpdate(dt){
       if(it.type==='adrenalin'){
         m.speedBoostEnd = gs.ts + 4000;
         fnotif('💉 Adrenalin! +4s rychlost', 'pos');
+      } else if(it.type==='pivo'){
+        m.speedBoostEnd = gs.ts + 6000;
+        fnotif('🍺 Pivo! +6s tekutá odvaha', 'pos');
       } else {
         m.speedBoostEnd = gs.ts + 5000;
         fnotif('🦯 Hůl! +5s rychlost', 'pos');
@@ -935,7 +949,7 @@ function drawMazeEscape(W,H,t){
     ctx.beginPath(); ctx.arc(ix,iy+iBob,cellW*0.3,0,Math.PI*2); ctx.fill();
     ctx.font=`${Math.min(cellW,cellH)*0.45}px monospace`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(it.type==='adrenalin'?'💉':'🦯',ix,iy+iBob);
+    ctx.fillText(it.type==='adrenalin'?'💉':it.type==='pivo'?'🍺':'🦯',ix,iy+iBob);
   }
 
   // Kulky
@@ -991,8 +1005,35 @@ function drawMazeEscape(W,H,t){
   ctx.fillStyle='rgba(100,180,255,0.9)'; ctx.font='bold 10px Outfit,sans-serif';
   ctx.textAlign='center'; ctx.fillText('FRANTA',px,py-cellH*0.35);
 
+  // Minimap
+  const mmS = 4;
+  const mmX = W - MAZE_COLS*mmS - 10, mmY = 34;
+  ctx.fillStyle='rgba(0,0,0,0.7)';
+  ctx.fillRect(mmX-2, mmY-2, MAZE_COLS*mmS+4, MAZE_ROWS*mmS+4);
+  for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
+    ctx.fillStyle = MAZE_MAP[r][c]===1 ? '#3a2845' : '#1a1520';
+    ctx.fillRect(mmX+c*mmS, mmY+r*mmS, mmS, mmS);
+  }
+  ctx.fillStyle='#5cf';
+  ctx.fillRect(mmX+Math.floor(m.px)*mmS, mmY+Math.floor(m.py)*mmS, mmS, mmS);
+  ctx.fillStyle='#f44';
+  ctx.fillRect(mmX+Math.floor(m.jx)*mmS, mmY+Math.floor(m.jy)*mmS, mmS, mmS);
+  ctx.fillStyle='#5f5';
+  ctx.fillRect(mmX+m.exitC*mmS, mmY+m.exitR*mmS, mmS, mmS);
+
+  // Exit direction arrow
+  if(!m.intro && !m.won && !m.dead){
+    const aDx = (m.exitC+0.5)-m.px, aDy = (m.exitR+0.5)-m.py;
+    const aAng = Math.atan2(aDy, aDx);
+    const aX = px, aY = py - cellH*0.55;
+    ctx.save(); ctx.translate(aX, aY); ctx.rotate(aAng);
+    ctx.fillStyle='rgba(80,255,100,0.7)';
+    ctx.beginPath(); ctx.moveTo(10,0); ctx.lineTo(-4,-5); ctx.lineTo(-4,5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
   // HUD
-  ctx.fillStyle='rgba(0,0,0,0.6)';
+  ctx.fillStyle='rgba(0,0,0,0.7)';
   ctx.fillRect(0,0,W,28);
   ctx.fillStyle='#fff'; ctx.font='bold 14px Outfit,sans-serif';
   ctx.textAlign='left';
@@ -1001,7 +1042,9 @@ function drawMazeEscape(W,H,t){
     ctx.fillStyle='rgba(255,60,60,0.7)'; ctx.textAlign='right';
     ctx.fillText('PŘIPRAV SE!',W-10,18);
   } else {
-    ctx.fillText('🏃 UTEČ Z VILY!'+(legW?' 🦵 Kulháš!':''),10,18);
+    ctx.fillText('🏃 UTEČ Z VILY! [WASD/šipky]'+(legW?' 🦵 Kulháš!':''),10,18);
+    ctx.fillStyle='rgba(180,180,180,0.6)'; ctx.font='11px Outfit,sans-serif';
+    ctx.fillText('Sbírej itemy pro boost · Doběhni ke 🚪',10,H-8);
   }
   // Boost timer
   if(m.speedBoostEnd > gs.ts){
