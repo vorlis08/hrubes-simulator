@@ -2287,6 +2287,61 @@ function drawJohnnyVila(W,H,t){
     ctx.fillText('🚿',bdr+W*0.04,bdy-4); ctx.textAlign='left';
   }
 
+  // ── Johnny chase – běží za hráčem ──
+  if(gs.johnny_chase_pos && gs.jana_escape_deadline && !gs.story.jana_escape_failed){
+    const jc = gs.johnny_chase_pos;
+    const jcBob = Math.abs(Math.sin(t*0.014))*5;
+    const jcFace = jc.x < (gs.player ? gs.player.x : W*0.5) ? 1 : -1;
+    ctx.save(); ctx.translate(jc.x, jc.y - jcBob);
+    // Zuřivá červená aura
+    const chaseP = 0.3+0.15*Math.sin(t*0.008);
+    const chaseG = ctx.createRadialGradient(0,0,0,0,0,55);
+    chaseG.addColorStop(0,`rgba(200,40,0,${chaseP})`);
+    chaseG.addColorStop(0.6,`rgba(160,20,0,${chaseP*0.3})`);
+    chaseG.addColorStop(1,'transparent');
+    ctx.fillStyle=chaseG; ctx.beginPath(); ctx.arc(0,0,55,0,Math.PI*2); ctx.fill();
+    // Stín
+    ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0,jcBob+22,18,6,0,0,Math.PI*2); ctx.fill();
+    // Nohy (běh animace)
+    const legPhase = t*0.018;
+    ctx.fillStyle='#3a3040';
+    ctx.fillRect(-8+Math.sin(legPhase)*4, 10, 5, 14);
+    ctx.fillRect(3-Math.sin(legPhase)*4, 10, 5, 14);
+    // Tělo
+    ctx.fillStyle='#c0a030'; ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.fill();
+    // Hlava
+    ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(0,-18,16,0,Math.PI*2); ctx.fill();
+    // Naštvaný obličej
+    ctx.fillStyle='#1a1a2e';
+    // Oči - úzké, zuřivé
+    ctx.fillRect(-7*jcFace-3,-20,6,2);
+    ctx.fillRect(7*jcFace-3,-20,6,2);
+    // Zuby
+    ctx.fillStyle='#fff'; ctx.fillRect(-4,-10,8,3);
+    ctx.fillStyle='#1a1a2e'; ctx.fillRect(-1,-10,2,3);
+    // Pistole v ruce
+    ctx.fillStyle='#3a3a3a';
+    ctx.save(); ctx.translate(jcFace*18, -2); ctx.rotate(jcFace*-0.3);
+    ctx.fillRect(0,-3,jcFace*22,6);
+    ctx.restore();
+    // Jméno
+    ctx.fillStyle='rgba(255,60,60,0.9)'; ctx.font='bold 11px Outfit,sans-serif';
+    ctx.textAlign='center'; ctx.fillText('JOHNNY',0,-40);
+    ctx.fillStyle='rgba(255,150,150,0.6)'; ctx.font='8px JetBrains Mono,monospace';
+    ctx.fillText('PRONÁSLEDUJE TĚ',0,-28);
+    ctx.restore();
+    // Stopy (prachové oblaky za Johnnym)
+    for(let fi=0;fi<4;fi++){
+      const fpLife = ((t*0.003+fi*0.25)%1);
+      const fpX = jc.x - jcFace*15 - jcFace*fpLife*20 + Math.sin(fi*3)*5;
+      const fpY = jc.y + 20;
+      const fpA = 0.15*(1-fpLife);
+      const fpR = 3+fpLife*6;
+      ctx.fillStyle=`rgba(180,160,140,${fpA})`;
+      ctx.beginPath(); ctx.arc(fpX,fpY,fpR,0,Math.PI*2); ctx.fill();
+    }
+  }
+
   // ── Door burst efekt (vyběhnutí z koupelny) ──
   if(gs.villa_door_burst){
     const dbEl = (gs.ts - gs.villa_door_burst) * 0.001;
@@ -2647,34 +2702,57 @@ function getKoupelnaBg(W, H){
   const oc = document.createElement('canvas');
   oc.width = W; oc.height = H;
   const ox = oc.getContext('2d');
-  ox.fillStyle='#0e0c14'; ox.fillRect(0,0,W,H);
+
+  // Podlaha – tmavé dlaždice s mírným leskem
   const flG=ox.createLinearGradient(0,H*0.42,0,H);
-  flG.addColorStop(0,'#1a1628'); flG.addColorStop(1,'#120f1e');
+  flG.addColorStop(0,'#1e1a2a'); flG.addColorStop(0.5,'#181425'); flG.addColorStop(1,'#14101e');
   ox.fillStyle=flG; ox.fillRect(0,H*0.42,W,H*0.58);
-  ox.strokeStyle='rgba(60,50,90,0.35)'; ox.lineWidth=0.8;
-  for(let tx=0;tx<W;tx+=40) for(let ty=Math.floor(H*0.42/40)*40;ty<H;ty+=40){
-    ox.strokeRect(tx,ty,40,40);
+  // Dlaždice na podlaze – šachovnicový vzor
+  const tileSize = 36;
+  for(let tx=0;tx<W;tx+=tileSize) for(let ty=Math.floor(H*0.42/tileSize)*tileSize;ty<H;ty+=tileSize){
+    const isLight = ((Math.floor(tx/tileSize)+Math.floor(ty/tileSize))%2===0);
+    ox.fillStyle = isLight ? 'rgba(50,42,72,0.25)' : 'rgba(35,28,55,0.15)';
+    ox.fillRect(tx,ty,tileSize,tileSize);
+    ox.strokeStyle='rgba(70,58,100,0.20)'; ox.lineWidth=0.5;
+    ox.strokeRect(tx,ty,tileSize,tileSize);
   }
+  // Mokrý odlesk na podlaze
   const wetG=ox.createLinearGradient(0,H*0.55,0,H);
-  wetG.addColorStop(0,'transparent'); wetG.addColorStop(1,'rgba(100,130,200,0.09)');
+  wetG.addColorStop(0,'transparent'); wetG.addColorStop(1,'rgba(80,110,180,0.10)');
   ox.fillStyle=wetG; ox.fillRect(0,H*0.55,W,H*0.45);
+
+  // Stěny – obklady s reliéfem
   const wallG=ox.createLinearGradient(0,0,0,H*0.42);
-  wallG.addColorStop(0,'#161220'); wallG.addColorStop(1,'#1c1828');
+  wallG.addColorStop(0,'#1c1830'); wallG.addColorStop(0.7,'#201a32'); wallG.addColorStop(1,'#241e38');
   ox.fillStyle=wallG; ox.fillRect(0,0,W,H*0.42);
-  ox.strokeStyle='rgba(40,35,60,0.50)'; ox.lineWidth=0.6;
-  for(let row=0;row<8;row++){
-    const ry=row*(H*0.42/8);
-    const off=row%2 ? 24 : 0;
-    ox.beginPath(); ox.moveTo(0,ry); ox.lineTo(W,ry); ox.stroke();
-    for(let cx=off;cx<W;cx+=48){
-      ox.beginPath(); ox.moveTo(cx,ry); ox.lineTo(cx,ry+H*0.42/8); ox.stroke();
+  // Obkladačky – menší, se spárami
+  const wtSize = 32;
+  const wtH2 = 18;
+  ox.lineWidth=0.4;
+  for(let row=0;row<Math.ceil(H*0.42/wtH2);row++){
+    const ry=row*wtH2;
+    const off=row%2 ? wtSize/2 : 0;
+    for(let cx=-wtSize+off;cx<W+wtSize;cx+=wtSize){
+      // Jemný gradient na každé obkladačce
+      const tileL = 0.02+Math.abs(Math.sin(cx*0.07+row*0.9))*0.04;
+      ox.fillStyle=`rgba(160,150,200,${tileL})`;
+      ox.fillRect(cx+1,ry+1,wtSize-2,wtH2-2);
+      // Spára
+      ox.strokeStyle='rgba(30,25,45,0.6)';
+      ox.strokeRect(cx,ry,wtSize,wtH2);
     }
   }
-  // Vlhkostní skvrny na stěně
-  [[W*0.08,H*0.05],[W*0.92,H*0.10],[W*0.55,H*0.02]].forEach(([sx,sy],i)=>{
-    const sG=ox.createRadialGradient(sx,sy,0,sx,sy,45+i*18);
-    sG.addColorStop(0,'rgba(20,40,70,0.60)'); sG.addColorStop(1,'transparent');
-    ox.fillStyle=sG; ox.beginPath(); ox.arc(sx,sy,45+i*18,0,Math.PI*2); ox.fill();
+  // Lišta přechodu stěna/podlaha
+  ox.fillStyle='rgba(80,65,110,0.4)'; ox.fillRect(0,H*0.41,W,H*0.02);
+  ox.strokeStyle='rgba(60,50,85,0.5)'; ox.lineWidth=1;
+  ox.beginPath(); ox.moveTo(0,H*0.41); ox.lineTo(W,H*0.41); ox.stroke();
+  ox.beginPath(); ox.moveTo(0,H*0.43); ox.lineTo(W,H*0.43); ox.stroke();
+
+  // Vlhkostní skvrny
+  [[W*0.08,H*0.05,40],[W*0.92,H*0.10,50],[W*0.55,H*0.02,35],[W*0.30,H*0.35,30]].forEach(([sx,sy,r])=>{
+    const sG=ox.createRadialGradient(sx,sy,0,sx,sy,r);
+    sG.addColorStop(0,'rgba(15,30,55,0.45)'); sG.addColorStop(0.6,'rgba(20,35,60,0.15)'); sG.addColorStop(1,'transparent');
+    ox.fillStyle=sG; ox.beginPath(); ox.arc(sx,sy,r,0,Math.PI*2); ox.fill();
   });
   _koupelnaBgCanvas = oc; _koupelnaBgW = W; _koupelnaBgH = H;
   return oc;
@@ -2852,9 +2930,19 @@ function drawKoupelna(W,H,t){
     const ry2=rdy+r*(rdH/6);
     ctx.beginPath(); ctx.moveTo(rdx,ry2); ctx.lineTo(rdx+rdW,ry2); ctx.stroke();
   }
-  // Mokrý ručník
+  // Mokrý ručník (vždy viditelný)
   ctx.fillStyle='rgba(180,100,70,0.22)'; ctx.fillRect(rdx+2,rdy+rdH*0.15,rdW-4,rdH*0.22);
-  ctx.fillStyle='rgba(160,80,55,0.15)'; ctx.fillRect(rdx+2,rdy+rdH*0.45,rdW-4,rdH*0.18);
+  // Hadr – interaktivní item (svítí když ještě nevzatý)
+  if(!gs.inv.hadr){
+    const hadPulse = 0.22+0.10*Math.sin(t*0.005);
+    ctx.fillStyle=`rgba(220,210,190,${hadPulse+0.15})`; ctx.fillRect(rdx+2,rdy+rdH*0.45,rdW-4,rdH*0.18);
+    // Jemná záře kolem hadru
+    const hadG = ctx.createRadialGradient(rdx+rdW/2,rdy+rdH*0.54,0,rdx+rdW/2,rdy+rdH*0.54,rdW*0.8);
+    hadG.addColorStop(0,`rgba(255,240,200,${hadPulse*0.3})`); hadG.addColorStop(1,'transparent');
+    ctx.fillStyle=hadG; ctx.beginPath(); ctx.arc(rdx+rdW/2,rdy+rdH*0.54,rdW*0.8,0,Math.PI*2); ctx.fill();
+  } else {
+    ctx.fillStyle='rgba(160,80,55,0.15)'; ctx.fillRect(rdx+2,rdy+rdH*0.45,rdW-4,rdH*0.18);
+  }
 
   // ══ OKÉNKO (matné, zamlžené) ══════════════════════════════════════
   const wox=W*0.82, woy=H*0.03, woW=W*0.12, woH=H*0.12;

@@ -718,9 +718,9 @@ const QF = {
   q_koupelna_drawer(){
     if(gs.story.koupelna_drawer_opened){ addLog('Šuplík je prázdný.','lw'); return; }
     gs.story.koupelna_drawer_opened = true;
-    gs.inv.zelizka = 1; gs.inv.hadr = 1; updateInv();
-    addLog('V šuplíku pod umyvadlem najdeš želízka (Johnnyho "hračky") a vespod čistý bílý hadr.', 'lw');
-    fnotif('⛓️ Želízka, 🧻 Hadr','itm');
+    gs.inv.zelizka = 1; updateInv();
+    addLog('V šuplíku pod umyvadlem najdeš želízka (Johnnyho "hračky"). Zajímavý koníček.', 'lw');
+    fnotif('⛓️ Želízka','itm');
   },
   // Koupelna – umyvadlo
   q_koupelna_sink(){

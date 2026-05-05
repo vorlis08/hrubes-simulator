@@ -130,6 +130,11 @@ function initRoom(spawnX, spawnY){
   // Johnny vila – schovat v ložnici
   if(gs.room === 'johnny_vila' && gs.story.johnny_bedroom)
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
+  // Gun scene / dodge – Johnny a Jana jsou v koupelně, ne ve vile
+  if(gs.room === 'koupelna' && gs.story.gun_scene_done && !gs.story.jana_fleeing)
+    currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
+  if(gs.dodge || (gs.story.jana_fleeing && !gs.story.jana_escaped_success && !gs.story.jana_escape_failed))
+    currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
   // Johnny – schovat v hospodě pokud je spoutaný, je vila hotová, nebo odešel s Janou domů
   if(gs.story.johnny_cuffed || gs.story.johnny_villa_rewards || gs.story.johnny_took_jana)
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny');
@@ -269,6 +274,11 @@ function checkProx(){
     const sdx = canvas.width * 0.50, sdy = canvas.height * 0.64;
     if(dist2(p, {x:sdx, y:sdy}) < PROX_R){ best = {isBathroomDrawer:true}; }
   }
+  // Koupelna – hadr na topení
+  if(gs.room === 'koupelna' && !gs.inv.hadr){
+    const hrx = canvas.width * 0.89, hry = canvas.height * 0.35;
+    if(dist2(p, {x:hrx, y:hry}) < PROX_R){ best = {isBathroomRag:true}; }
+  }
   // Koupelna – umyvadlo
   if(gs.room === 'koupelna' && !gs.story.sink_used){
     const ux = canvas.width * 0.40, uy = canvas.height * 0.38;
@@ -404,6 +414,8 @@ function checkProx(){
       document.getElementById('ptxt').textContent = '🔒 Koupelna zamčená – Jana je uvnitř';
     } else if(best.isVillaPowder){
       document.getElementById('ptxt').textContent = 'Prohledat šuplík u pohovky';
+    } else if(best.isBathroomRag){
+      document.getElementById('ptxt').textContent = 'Vzít hadr z topení';
     } else if(best.isBathroomDrawer){
       document.getElementById('ptxt').textContent = 'Otevřít šuplík';
     } else if(best.isBathroomSink){
@@ -546,6 +558,15 @@ function interact(){
       gs.inv.prasek = 1; updateInv();
       addLog('V šuplíku u pohovky jsi našel sáček s bílým práškem. Tohle by mohlo Janu uspat.', 'lw');
       fnotif('💊 Prášek','itm'); return;
+    }
+  }
+  // Koupelna – hadr na topení
+  if(gs.room === 'koupelna' && !gs.inv.hadr){
+    const hrx = canvas.width * 0.89, hry = canvas.height * 0.35;
+    if(dist2(gs.player, {x:hrx, y:hry}) < PROX_R){
+      gs.inv.hadr = 1; updateInv();
+      addLog('Stáhls mokrý hadr z topení. Ještě teplý. K něčemu se hodí.', 'lw');
+      fnotif('🧻 Hadr','itm'); return;
     }
   }
   // Koupelna – šuplík
@@ -916,10 +937,25 @@ function update(dt){
       }, 1200);
     }
   }
+  // Johnny chase – sleduje hráče ve vile během útěku
+  if(gs.jana_escape_deadline && gs.room === 'johnny_vila' && !gs.story.jana_escape_failed){
+    if(!gs.johnny_chase_pos){
+      gs.johnny_chase_pos = { x: canvas.width*0.88, y: canvas.height*0.42 };
+    }
+    const jc = gs.johnny_chase_pos;
+    const dx2 = gs.player.x - jc.x, dy2 = gs.player.y - jc.y;
+    const dist3 = Math.sqrt(dx2*dx2+dy2*dy2);
+    if(dist3 > 5){
+      const chaseSpd = 2.8 * dt / 16.67; // o něco pomalejší než hráč
+      jc.x += (dx2/dist3)*chaseSpd;
+      jc.y += (dy2/dist3)*chaseSpd;
+    }
+  }
   // Escape timer – Jana utíká, hráč musí dostat ven z vily
   if(gs.jana_escape_deadline && gs.ts > gs.jana_escape_deadline && !gs.story.jana_escape_failed){
     gs.story.jana_escape_failed = true;
     gs.jana_escape_deadline = 0;
+    gs.johnny_chase_pos = null;
     if(gs.room === 'johnny_vila' || gs.room === 'koupelna'){
       triggerJohnnyKillAnim();
     }
@@ -1042,6 +1078,7 @@ function update(dt){
       if(gs.jana_escape_deadline && gs.ts < gs.jana_escape_deadline && !gs.story.jana_escaped_success){
         gs.story.jana_escaped_success = true;
         gs.jana_escape_deadline = 0;
+        gs.johnny_chase_pos = null;
         setTimeout(() => {
           addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
           gainRep(12, 'Utekl s Janou z Johnnyho vily');

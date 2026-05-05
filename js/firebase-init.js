@@ -62,6 +62,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Usernames – čtení pro všechny (kontrola dostupnosti), zápis jen auth uživatel
+    match /usernames/{username} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
   }
 }
 */
