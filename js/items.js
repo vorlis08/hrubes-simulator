@@ -465,6 +465,14 @@ const MAZE_MAP = [
 const MAZE_ROWS = MAZE_MAP.length;
 const MAZE_COLS = MAZE_MAP[0].length;
 
+function _mazeHideUI(hide){
+  const ids = ['rpanel','map-card','inv','lpanel','room-name','cL','cR','cU','cD','music-btn'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = hide ? 'none' : '';
+  });
+}
+
 function triggerJanaFleeVilla(){
   gs.story.jana_fleeing = true;
   gs.story.johnny_chasing = true;
@@ -472,11 +480,9 @@ function triggerJanaFleeVilla(){
   gs.dodge = null;
   gs.running = true;
 
-  addLog('*Vyrazíš z koupelny! Musíš se dostat ven z vily!*', 'lw');
-  addLog('*Johnny za tebou: "VRAŤ SE SEM, KURVO!!!"*', 'lw');
-  fnotif('🏃 BLUDIŠTĚ – uteč z vily!', 'rep');
+  _mazeHideUI(true);
 
-  let startR=7,startC=1,exitR=7,exitC=14;
+  let startR=7, startC=1, exitR=7, exitC=14;
   for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
     if(MAZE_MAP[r][c]===2){startR=r;startC=c;}
     if(MAZE_MAP[r][c]===3){exitR=r;exitC=c;}
@@ -693,6 +699,7 @@ function _mazeUpdate(dt){
 
 function _mazeFinish(success){
   gs.maze = null;
+  _mazeHideUI(false);
   if(success){
     gs.story.jana_escaped_success = true;
     gs.jana_escape_deadline = 0;
