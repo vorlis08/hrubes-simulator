@@ -2301,8 +2301,28 @@ function drawJohnnyVila(W,H,t){
   ctx.arc(W*0.05,H*0.54,40,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#7a6050'; rrect(W*0.03,H*0.50,W*0.04,H*0.06,2); ctx.fill();
 
+  // ── Výstupní dveře (dole) ──
+  {
+    const edx=W*0.44, edy=H*0.90, edw=W*0.12, edh=H*0.10;
+    ctx.fillStyle='#3a2838'; rrect(edx,edy,edw,edh,3); ctx.fill();
+    ctx.strokeStyle='rgba(160,120,100,0.5)'; ctx.lineWidth=1.5; rrect(edx,edy,edw,edh,3); ctx.stroke();
+    ctx.fillStyle='rgba(200,160,60,0.5)'; ctx.beginPath(); ctx.arc(edx+edw*0.8,edy+edh*0.4,3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText('🚪 VEN',edx+edw/2,edy-4); ctx.textAlign='left';
+  }
+
+  // ── Dveře do ložnice (vlevo) ──
+  {
+    const ldx=W*0.02, ldy=H*0.26, ldw=W*0.06, ldh=H*0.22;
+    ctx.fillStyle='#3a2838'; rrect(ldx,ldy,ldw,ldh,2); ctx.fill();
+    ctx.strokeStyle='rgba(160,120,100,0.4)'; ctx.lineWidth=1; rrect(ldx,ldy,ldw,ldh,2); ctx.stroke();
+    ctx.fillStyle='rgba(200,160,60,0.4)'; ctx.beginPath(); ctx.arc(ldx+ldw*0.75,ldy+ldh*0.5,2.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText('🔒',ldx+ldw/2,ldy-4); ctx.textAlign='left';
+  }
+
   // ── Dveře do koupelny ──
-  if(gs.story.jana_hint_given && !gs.story.johnny_cuffed){
+  {
     const bdr=W*0.90, bdy=H*0.26, bdw=W*0.08, bdh=H*0.22;
     if(gs.story.bathroom_door_broken){
       // Rozbitý rám
