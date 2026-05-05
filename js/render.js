@@ -159,6 +159,7 @@ function drawRoom(rm,W,H,t){
     case 'heaven_gate':  drawHeavenGate(W,H,t);  break;
     case 'doma':         drawDoma(W,H,t);        break;
     case 'cibulka_lab':  drawCibulkaLab(W,H,t);  break;
+    case 'maze_escape':  drawMazeEscape(W,H,t);  break;
     default: ctx.fillStyle=rm.bg; ctx.fillRect(0,0,W,H);
   }
 }
@@ -4468,6 +4469,9 @@ function render(){
   if(!fpsMonitor || fpsMonitor.fps > 45){
     drawAmbientOcclusion(ctx, W, H, 0.08);
   }
+
+  // Maze – skip normal game rendering
+  if(gs.room === 'maze_escape'){ ctx.restore && 0; return; }
 
   // Items
   currentItems.forEach(item=>{

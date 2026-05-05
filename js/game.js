@@ -1377,7 +1377,8 @@ function gameLoop(ts){
       gs.ts += cdt;
       if(gs.dodge) _dodgeUpdate();
     }
-    if(gs.running) update(dt);
+    if(gs.maze){ gs.ts += dt; _mazeUpdate(dt); }
+    else if(gs.running) update(dt);
     // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
     if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
   } catch(e) {
