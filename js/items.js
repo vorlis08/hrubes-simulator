@@ -251,8 +251,10 @@ function useGlassDrug(){
     addLog('Nemáš prášek na nasypání. Najdi ho v šuplíku ve villce.','lw');
     return;
   }
-  if(gs.story.drink_drugged){ addLog('Už jsi do toho jednou nasypal.','lw'); return; }
-  runQF('q_drug_jana_drink');
+  gs.story.drink_drugged = true;
+  gs.inv.prasek -= 1; updateInv();
+  addLog('*Opatrně vysypeš prášek do sklenice. Rozpustí se okamžitě.*', 'lw');
+  fnotif('💊 Drink otrávený', 'rep');
 }
 
 // ─── Janina × Johnny questline animace ──────────────────────────────────

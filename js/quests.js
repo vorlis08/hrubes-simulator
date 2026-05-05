@@ -407,6 +407,50 @@ const QF = {
     }, 300);
   },
 
+  // Jana jde na záchod – hráč si může vzít sklenici
+  q_jana_take_glass_back(){
+    closeDialog();
+    gs.story.jana_at_toilet = true;
+    // Jana jde na WC – animace
+    const jana = currentNPCs.find(n => n.id === 'jana_vila');
+    if(jana){
+      gs.jana_to_toilet_anim = {
+        phase:'walking', x:jana.x, y:jana.y,
+        targetX:canvas.width*0.78, targetY:canvas.height*0.55,
+        flipX:1, t0:gs.ts,
+      };
+      currentNPCs = currentNPCs.filter(n => n.id !== 'jana_vila');
+    }
+    addLog('*Jana odchází na záchod.* Její sklenice zůstala na stole.', 'ls');
+    fnotif('🥃 Sklenice na stole', 'rep');
+    // Sklenici lze sebrat v checkProx (game.js)
+    setTimeout(() => {
+      if(gs.story.jana_at_toilet){
+        gs.inv.sklenice_jana = 1; updateInv();
+        addLog('Sebral jsi Janinu sklenici ze stolu.', 'ls');
+        fnotif('🥃 Sklenice','itm');
+      }
+    }, 2500);
+  },
+  // Vrátit sklenici na stůl
+  q_return_glass_to_table(){
+    gs.inv.sklenice_jana = 0; updateInv();
+    addLog('*Položíš sklenici zpět na stůl.*' + (gs.story.drink_drugged ? ' Prášek se rozpustil beze stopy.' : ''), 'ls');
+    fnotif('🥃 Sklenice vrácena','rep');
+    // Jana se vrátí z WC po chvíli
+    setTimeout(() => {
+      if(gs.jana_to_toilet_anim) return;
+      const jvNPC = NPCS['jana_vila'];
+      if(!jvNPC) return;
+      gs.jana_to_toilet_anim = {
+        phase:'walking',
+        x:canvas.width*0.78, y:canvas.height*0.55,
+        targetX:jvNPC.rx*canvas.width, targetY:jvNPC.ry*canvas.height,
+        flipX:-1, t0:gs.ts,
+      };
+    }, 3000);
+  },
+
   // Villa: po stage 8 dialogu Jana odejde do koupelny s hadrem
   q_jana_go_bathroom(){
     closeDialog();

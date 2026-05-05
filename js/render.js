@@ -2703,328 +2703,356 @@ function getKoupelnaBg(W, H){
   oc.width = W; oc.height = H;
   const ox = oc.getContext('2d');
 
-  // Podlaha – tmavé dlaždice s mírným leskem
-  const flG=ox.createLinearGradient(0,H*0.42,0,H);
-  flG.addColorStop(0,'#1e1a2a'); flG.addColorStop(0.5,'#181425'); flG.addColorStop(1,'#14101e');
-  ox.fillStyle=flG; ox.fillRect(0,H*0.42,W,H*0.58);
-  // Dlaždice na podlaze – šachovnicový vzor
-  const tileSize = 36;
-  for(let tx=0;tx<W;tx+=tileSize) for(let ty=Math.floor(H*0.42/tileSize)*tileSize;ty<H;ty+=tileSize){
-    const isLight = ((Math.floor(tx/tileSize)+Math.floor(ty/tileSize))%2===0);
-    ox.fillStyle = isLight ? 'rgba(50,42,72,0.25)' : 'rgba(35,28,55,0.15)';
-    ox.fillRect(tx,ty,tileSize,tileSize);
-    ox.strokeStyle='rgba(70,58,100,0.20)'; ox.lineWidth=0.5;
-    ox.strokeRect(tx,ty,tileSize,tileSize);
+  // ── Podlaha – luxusní tmavý mramor ──
+  const flG=ox.createLinearGradient(0,H*0.40,0,H);
+  flG.addColorStop(0,'#1a1520'); flG.addColorStop(0.5,'#151018'); flG.addColorStop(1,'#100c14');
+  ox.fillStyle=flG; ox.fillRect(0,H*0.40,W,H*0.60);
+  // Velkoformátové mramorové dlaždice
+  const tW=64, tH2=48;
+  for(let tx=0;tx<W;tx+=tW) for(let ty=Math.floor(H*0.40/tH2)*tH2;ty<H;ty+=tH2){
+    // Žilky v mramoru
+    const seed=tx*73+ty*137;
+    const veinA=0.03+Math.abs(Math.sin(seed*0.017))*0.04;
+    ox.fillStyle=`rgba(100,80,130,${veinA})`;
+    ox.fillRect(tx+2,ty+2,tW-4,tH2-4);
+    // Diagonální žilka
+    ox.strokeStyle=`rgba(120,100,150,${veinA*0.7})`; ox.lineWidth=0.5;
+    ox.beginPath();
+    ox.moveTo(tx+Math.sin(seed)*tW*0.3, ty);
+    ox.quadraticCurveTo(tx+tW*0.5+Math.cos(seed*2)*10, ty+tH2*0.5, tx+tW-Math.sin(seed*3)*tW*0.2, ty+tH2);
+    ox.stroke();
+    // Spára
+    ox.strokeStyle='rgba(40,30,55,0.45)'; ox.lineWidth=0.8;
+    ox.strokeRect(tx,ty,tW,tH2);
   }
-  // Mokrý odlesk na podlaze
-  const wetG=ox.createLinearGradient(0,H*0.55,0,H);
-  wetG.addColorStop(0,'transparent'); wetG.addColorStop(1,'rgba(80,110,180,0.10)');
-  ox.fillStyle=wetG; ox.fillRect(0,H*0.55,W,H*0.45);
+  // Mokrý lesk
+  const wetG=ox.createRadialGradient(W*0.4,H*0.65,0,W*0.4,H*0.65,W*0.5);
+  wetG.addColorStop(0,'rgba(100,130,200,0.08)'); wetG.addColorStop(1,'transparent');
+  ox.fillStyle=wetG; ox.fillRect(0,H*0.40,W,H*0.60);
 
-  // Stěny – obklady s reliéfem
-  const wallG=ox.createLinearGradient(0,0,0,H*0.42);
-  wallG.addColorStop(0,'#1c1830'); wallG.addColorStop(0.7,'#201a32'); wallG.addColorStop(1,'#241e38');
-  ox.fillStyle=wallG; ox.fillRect(0,0,W,H*0.42);
-  // Obkladačky – menší, se spárami
-  const wtSize = 32;
-  const wtH2 = 18;
-  ox.lineWidth=0.4;
-  for(let row=0;row<Math.ceil(H*0.42/wtH2);row++){
-    const ry=row*wtH2;
-    const off=row%2 ? wtSize/2 : 0;
-    for(let cx=-wtSize+off;cx<W+wtSize;cx+=wtSize){
-      // Jemný gradient na každé obkladačce
-      const tileL = 0.02+Math.abs(Math.sin(cx*0.07+row*0.9))*0.04;
-      ox.fillStyle=`rgba(160,150,200,${tileL})`;
-      ox.fillRect(cx+1,ry+1,wtSize-2,wtH2-2);
-      // Spára
-      ox.strokeStyle='rgba(30,25,45,0.6)';
-      ox.strokeRect(cx,ry,wtSize,wtH2);
+  // ── Stěny – velkoformátové tmavé obklady ──
+  const wallG=ox.createLinearGradient(0,0,0,H*0.40);
+  wallG.addColorStop(0,'#18142a'); wallG.addColorStop(0.6,'#1c1630'); wallG.addColorStop(1,'#201a35');
+  ox.fillStyle=wallG; ox.fillRect(0,0,W,H*0.40);
+  // Velké obkladačky (60×30) s jemným reliéfem
+  const owW=60, owH=30;
+  for(let row=0;row<Math.ceil(H*0.40/owH);row++){
+    const ry=row*owH;
+    const off=row%2 ? owW/2 : 0;
+    for(let cx=-owW+off;cx<W+owW;cx+=owW){
+      const tileL = 0.015+Math.abs(Math.sin(cx*0.04+row*1.2))*0.025;
+      ox.fillStyle=`rgba(140,130,180,${tileL})`;
+      ox.fillRect(cx+1,ry+1,owW-2,owH-2);
+      ox.strokeStyle='rgba(25,20,40,0.5)'; ox.lineWidth=0.6;
+      ox.strokeRect(cx,ry,owW,owH);
     }
   }
-  // Lišta přechodu stěna/podlaha
-  ox.fillStyle='rgba(80,65,110,0.4)'; ox.fillRect(0,H*0.41,W,H*0.02);
-  ox.strokeStyle='rgba(60,50,85,0.5)'; ox.lineWidth=1;
+  // Lišta přechodu
+  ox.fillStyle='rgba(90,75,120,0.35)'; ox.fillRect(0,H*0.39,W,H*0.02);
+  ox.strokeStyle='rgba(60,50,85,0.4)'; ox.lineWidth=1;
+  ox.beginPath(); ox.moveTo(0,H*0.39); ox.lineTo(W,H*0.39); ox.stroke();
   ox.beginPath(); ox.moveTo(0,H*0.41); ox.lineTo(W,H*0.41); ox.stroke();
-  ox.beginPath(); ox.moveTo(0,H*0.43); ox.lineTo(W,H*0.43); ox.stroke();
 
-  // Vlhkostní skvrny
-  [[W*0.08,H*0.05,40],[W*0.92,H*0.10,50],[W*0.55,H*0.02,35],[W*0.30,H*0.35,30]].forEach(([sx,sy,r])=>{
+  // ── Vlhkostní skvrny / plíseň ──
+  [[W*0.05,H*0.08,45],[W*0.88,H*0.12,40],[W*0.50,H*0.02,30],[W*0.15,H*0.33,25]].forEach(([sx,sy,r])=>{
     const sG=ox.createRadialGradient(sx,sy,0,sx,sy,r);
-    sG.addColorStop(0,'rgba(15,30,55,0.45)'); sG.addColorStop(0.6,'rgba(20,35,60,0.15)'); sG.addColorStop(1,'transparent');
+    sG.addColorStop(0,'rgba(10,25,50,0.40)'); sG.addColorStop(0.6,'rgba(15,30,55,0.12)'); sG.addColorStop(1,'transparent');
     ox.fillStyle=sG; ox.beginPath(); ox.arc(sx,sy,r,0,Math.PI*2); ox.fill();
   });
+
   _koupelnaBgCanvas = oc; _koupelnaBgW = W; _koupelnaBgH = H;
   return oc;
 }
 
-// ─── Koupelna ────────────────────────────────────────────────────────────────
+// ─── Koupelna (luxusní, zanedbaná – Johnnyho vila) ──────────────────────────
 function drawKoupelna(W,H,t){
   const ft=t*0.001;
 
   // ══ POZADÍ z cache ══════════════════════════════════════════════════
   ctx.drawImage(getKoupelnaBg(W, H), 0, 0);
-  // Vlhkostní skvrny jsou v cache (getKoupelnaBg)
 
-  // ══ OSVĚTLENÍ – NEONOVÉ PÁSKY NAD ZRCADLEM ════════════════════════════
-  const neonFlick = 0.88 + 0.12 * Math.abs(Math.sin(ft * 3.7));
-  // Neonová trubice (studená bílá)
-  const nX = W*0.28, nY = H*0.12, nW = W*0.44, nH = 6;
-  const nG = ctx.createLinearGradient(nX, nY, nX+nW, nY);
-  nG.addColorStop(0, `rgba(180,210,255,${neonFlick*0.15})`);
-  nG.addColorStop(0.5, `rgba(220,235,255,${neonFlick*0.95})`);
-  nG.addColorStop(1, `rgba(180,210,255,${neonFlick*0.15})`);
-  ctx.fillStyle = nG; ctx.fillRect(nX, nY, nW, nH);
-  // Záře neonové trubice dolů
-  const neonGlowG = ctx.createLinearGradient(nX+nW/2, nY, nX+nW/2, nY+H*0.38);
-  neonGlowG.addColorStop(0, `rgba(180,210,255,${neonFlick*0.18})`);
-  neonGlowG.addColorStop(0.4, `rgba(160,190,240,${neonFlick*0.07})`);
-  neonGlowG.addColorStop(1, 'transparent');
-  ctx.fillStyle = neonGlowG; ctx.fillRect(nX-W*0.08, nY, nW+W*0.16, H*0.38);
+  // ══ LED PÁSEK PO OBVODU STROPU ═════════════════════════════════════
+  const ledFlick = 0.82 + 0.18 * Math.abs(Math.sin(ft * 4.1));
+  // Jemné bliknutí
+  const ledGlitch = Math.sin(ft*17.3) > 0.97 ? 0.3 : 1;
+  const ledA = ledFlick * ledGlitch;
+  // Horní pásek
+  ctx.fillStyle=`rgba(100,160,255,${ledA*0.6})`; ctx.fillRect(0,0,W,2);
+  // Záře dolů od LED
+  const ledGlow=ctx.createLinearGradient(0,0,0,H*0.15);
+  ledGlow.addColorStop(0,`rgba(100,160,255,${ledA*0.12})`); ledGlow.addColorStop(1,'transparent');
+  ctx.fillStyle=ledGlow; ctx.fillRect(0,0,W,H*0.15);
+  // Boční pásky (levý + pravý)
+  ctx.fillStyle=`rgba(100,160,255,${ledA*0.35})`; ctx.fillRect(0,0,2,H*0.40); ctx.fillRect(W-2,0,2,H*0.40);
 
-  // ══ ZRCADLO – VELKÉ, PŘES CELOU ŠÍŘI ═══════════════════════════════
-  const mX=W*0.26, mY=H*0.14, mW=W*0.48, mH=H*0.30;
-  // Rám zrcadla (kovový, tmavý)
-  ctx.fillStyle='#1a1828';
-  rrect(mX-3, mY-3, mW+6, mH+6, 4); ctx.fill();
-  ctx.strokeStyle='rgba(80,70,110,0.6)'; ctx.lineWidth=2;
-  rrect(mX-3, mY-3, mW+6, mH+6, 4); ctx.stroke();
-  // Plocha zrcadla – tmavý odraz s modrým nádechem
+  // ══ VANA S JACUZZI (vlevo nahoře) ═══════════════════════════════════
+  const vx=W*0.02, vy=H*0.10, vW=W*0.28, vH=H*0.50;
+  // Vnější tělo vany – zaoblené rohy
+  const vanaG=ctx.createLinearGradient(vx,vy,vx,vy+vH);
+  vanaG.addColorStop(0,'rgba(200,200,215,0.18)'); vanaG.addColorStop(1,'rgba(160,160,180,0.10)');
+  ctx.fillStyle=vanaG; rrect(vx,vy,vW,vH,8); ctx.fill();
+  ctx.strokeStyle='rgba(180,185,205,0.30)'; ctx.lineWidth=2; rrect(vx,vy,vW,vH,8); ctx.stroke();
+  // Vnitřek vany (tmavý)
+  ctx.fillStyle='rgba(15,12,25,0.65)'; rrect(vx+5,vy+5,vW-10,vH-10,6); ctx.fill();
+  // Voda ve vaně (stojatá, lehce zbarvená)
+  const waterLvl=vy+vH*0.25;
+  const bathG=ctx.createLinearGradient(vx,waterLvl,vx,vy+vH-5);
+  bathG.addColorStop(0,'rgba(60,100,160,0.25)'); bathG.addColorStop(1,'rgba(40,70,130,0.35)');
+  ctx.fillStyle=bathG; rrect(vx+6,waterLvl,vW-12,vy+vH-5-waterLvl,5); ctx.fill();
+  // Bubliny jacuzzi (občasné)
+  for(let b=0;b<6;b++){
+    const bPhase=((ft*0.6+b*0.37)%1);
+    const bx2=vx+10+b*(vW-20)/5;
+    const by2=vy+vH-10-bPhase*(vH*0.55);
+    const bA2=bPhase<0.7?(0.3-bPhase*0.2):0;
+    if(bA2>0){
+      ctx.strokeStyle=`rgba(150,190,240,${bA2})`; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.arc(bx2+Math.sin(ft+b*2)*3,by2,1.5+Math.sin(b*1.3)*0.5,0,Math.PI*2); ctx.stroke();
+    }
+  }
+  // Baterie vany (chromová, na pravé straně)
+  ctx.fillStyle='rgba(180,185,200,0.50)'; ctx.fillRect(vx+vW-18,vy+vH*0.15,8,vH*0.12);
+  ctx.fillStyle='rgba(200,200,215,0.45)'; ctx.beginPath(); ctx.arc(vx+vW-14,vy+vH*0.15,5,0,Math.PI*2); ctx.fill();
+  // Svíčky kolem vany
+  const candles=[[vx-3,vy+vH*0.05],[vx+vW*0.15,vy-6],[vx+vW*0.45,vy-5],[vx+vW-8,vy+vH*0.02]];
+  candles.forEach(([cx2,cy2],ci)=>{
+    // Svíčka tělo
+    const cH2=8+ci*2;
+    ctx.fillStyle=ci<2?'rgba(200,180,140,0.50)':'rgba(150,140,130,0.30)';
+    ctx.fillRect(cx2-2,cy2,4,cH2);
+    // Plamen (jen první dvě hoří)
+    if(ci < 2){
+      const flameH=4+Math.sin(ft*8+ci*3)*1.5;
+      const flameA=0.6+Math.sin(ft*12+ci*5)*0.15;
+      ctx.fillStyle=`rgba(255,200,60,${flameA})`; ctx.beginPath(); ctx.ellipse(cx2,cy2-flameH*0.5,2,flameH,0,0,Math.PI*2); ctx.fill();
+      // Záře
+      const cG=ctx.createRadialGradient(cx2,cy2-2,0,cx2,cy2-2,18);
+      cG.addColorStop(0,`rgba(255,180,50,${flameA*0.15})`); cG.addColorStop(1,'transparent');
+      ctx.fillStyle=cG; ctx.beginPath(); ctx.arc(cx2,cy2-2,18,0,Math.PI*2); ctx.fill();
+    } else {
+      // Vyhořelé – knot
+      ctx.fillStyle='rgba(60,50,40,0.5)'; ctx.fillRect(cx2-0.5,cy2-2,1,2);
+    }
+  });
+
+  // ══ DVOJITÉ UMYVADLO + VELKÉ ZRCADLO (střed nahoře) ════════════════
+  const mX=W*0.32, mY=H*0.04, mW=W*0.40, mH=H*0.22;
+  // LED podsvícení zrcadla
+  const mirLedA = ledA * 0.5;
+  const mirLedG=ctx.createRadialGradient(mX+mW/2,mY+mH/2,mW*0.3,mX+mW/2,mY+mH/2,mW*0.7);
+  mirLedG.addColorStop(0,`rgba(180,210,255,${mirLedA*0.15})`); mirLedG.addColorStop(1,'transparent');
+  ctx.fillStyle=mirLedG; ctx.fillRect(mX-15,mY-15,mW+30,mH+30);
+  // Rám (tenký, chromový)
+  ctx.strokeStyle=`rgba(160,170,200,${0.35+mirLedA*0.15})`; ctx.lineWidth=2;
+  rrect(mX-2,mY-2,mW+4,mH+4,5); ctx.stroke();
+  // Plocha zrcadla
   ctx.save();
-  ctx.beginPath(); rrect(mX, mY, mW, mH, 2); ctx.clip();
-  const mirG = ctx.createLinearGradient(mX, mY, mX, mY+mH);
-  mirG.addColorStop(0, '#1a1e2e'); mirG.addColorStop(1, '#12141e');
-  ctx.fillStyle = mirG; ctx.fillRect(mX, mY, mW, mH);
-  // Hráčova silueta v odrazu (tmavá)
-  ctx.fillStyle = 'rgba(180,190,210,0.10)';
-  ctx.beginPath(); ctx.arc(mX+mW*0.5, mY+mH*0.38, 10, 0, Math.PI*2); ctx.fill();
-  ctx.fillRect(mX+mW*0.5-7, mY+mH*0.48, 14, mH*0.28);
-  // Kondenzace na zrcadle – orosený efekt
-  ctx.fillStyle = 'rgba(200,215,240,0.18)';
-  ctx.fillRect(mX, mY, mW, mH);
-  // Stíraný pruh (průhledné okénko)
-  ctx.save();
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); rrect(mX,mY,mW,mH,4); ctx.clip();
+  const mirG=ctx.createLinearGradient(mX,mY,mX,mY+mH);
+  mirG.addColorStop(0,'#191d2a'); mirG.addColorStop(1,'#111420');
+  ctx.fillStyle=mirG; ctx.fillRect(mX,mY,mW,mH);
+  // Hráčova silueta
+  ctx.fillStyle='rgba(180,190,210,0.08)';
+  ctx.beginPath(); ctx.arc(mX+mW*0.5,mY+mH*0.35,8,0,Math.PI*2); ctx.fill();
+  ctx.fillRect(mX+mW*0.5-5,mY+mH*0.48,10,mH*0.35);
+  // Orosení
+  ctx.fillStyle='rgba(200,215,240,0.15)'; ctx.fillRect(mX,mY,mW,mH);
+  // Stíraný pruh
+  ctx.save(); ctx.globalCompositeOperation='destination-out'; ctx.fillStyle='rgba(0,0,0,0.22)';
   ctx.beginPath();
-  ctx.moveTo(mX+mW*0.22, mY+mH*0.25);
-  ctx.quadraticCurveTo(mX+mW*0.48, mY+mH*0.18, mX+mW*0.72, mY+mH*0.30);
-  ctx.quadraticCurveTo(mX+mW*0.68, mY+mH*0.38, mX+mW*0.18, mY+mH*0.35);
-  ctx.closePath(); ctx.fill();
-  ctx.restore();
-  // Neonový odraz v zrcadle
-  const nRefG = ctx.createLinearGradient(mX, mY, mX, mY+mH*0.18);
-  nRefG.addColorStop(0, `rgba(160,190,255,${neonFlick*0.22})`);
-  nRefG.addColorStop(1, 'transparent');
-  ctx.fillStyle = nRefG; ctx.fillRect(mX, mY, mW, mH*0.18);
-  // Lesk rohů
-  ctx.fillStyle = 'rgba(255,255,255,0.06)';
-  ctx.beginPath(); ctx.moveTo(mX,mY); ctx.lineTo(mX+mW*0.28,mY); ctx.lineTo(mX,mY+mH*0.30); ctx.closePath(); ctx.fill();
+  ctx.moveTo(mX+mW*0.18,mY+mH*0.25);
+  ctx.quadraticCurveTo(mX+mW*0.50,mY+mH*0.15,mX+mW*0.78,mY+mH*0.28);
+  ctx.quadraticCurveTo(mX+mW*0.72,mY+mH*0.40,mX+mW*0.15,mY+mH*0.38);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+  // LED odraz v zrcadle
+  ctx.fillStyle=`rgba(100,160,255,${mirLedA*0.18})`;
+  ctx.fillRect(mX,mY,mW,3);
+  ctx.fillRect(mX,mY+mH-3,mW,3);
+  // Rohový lesk
+  ctx.fillStyle='rgba(255,255,255,0.05)';
+  ctx.beginPath(); ctx.moveTo(mX,mY); ctx.lineTo(mX+mW*0.25,mY); ctx.lineTo(mX,mY+mH*0.30); ctx.closePath(); ctx.fill();
   ctx.restore();
 
-  // ══ UMYVADLO + BATERIE ══════════════════════════════════════════════
-  const ux=W*0.35, uy=H*0.44;
-  // Tělo umyvadla (obdélníkové, moderní)
-  const sinkG = ctx.createLinearGradient(ux, uy, ux, uy+H*0.13);
-  sinkG.addColorStop(0,'rgba(200,200,215,0.30)'); sinkG.addColorStop(1,'rgba(160,165,185,0.18)');
-  ctx.fillStyle = sinkG; rrect(ux, uy, W*0.30, H*0.13, 3); ctx.fill();
-  ctx.strokeStyle='rgba(180,185,205,0.35)'; ctx.lineWidth=1.5;
-  rrect(ux, uy, W*0.30, H*0.13, 3); ctx.stroke();
-  // Vnitřek
-  ctx.fillStyle='rgba(20,18,30,0.55)'; rrect(ux+4, uy+5, W*0.30-8, H*0.08, 2); ctx.fill();
-  // Odtok
-  ctx.fillStyle='rgba(60,55,85,0.6)'; ctx.beginPath(); ctx.arc(ux+W*0.15, uy+H*0.10, 4, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(80,70,110,0.5)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.arc(ux+W*0.15, uy+H*0.10, 7, 0, Math.PI*2); ctx.stroke();
-  // Baterie (moderní, páková)
-  ctx.fillStyle='rgba(180,185,200,0.55)'; ctx.fillRect(ux+W*0.13, uy-H*0.07, W*0.04, H*0.07);
-  ctx.fillStyle='rgba(200,200,215,0.5)'; ctx.beginPath(); ctx.arc(ux+W*0.15, uy-H*0.07, 5, 0, Math.PI*2); ctx.fill();
-  // Páka vody
-  ctx.fillStyle='rgba(170,175,190,0.5)'; ctx.save(); ctx.translate(ux+W*0.15, uy-H*0.07);
-  ctx.fillRect(2,-3,W*0.04,H*0.01); ctx.restore();
-  // Kapající voda (puls)
+  // Umyvadlo levé
+  const u1x=mX+mW*0.05, u1y=H*0.28;
+  ctx.fillStyle='rgba(190,190,205,0.22)'; rrect(u1x,u1y,mW*0.38,H*0.10,3); ctx.fill();
+  ctx.strokeStyle='rgba(170,175,195,0.28)'; ctx.lineWidth=1; rrect(u1x,u1y,mW*0.38,H*0.10,3); ctx.stroke();
+  ctx.fillStyle='rgba(15,12,25,0.50)'; rrect(u1x+3,u1y+3,mW*0.38-6,H*0.06,2); ctx.fill();
+  ctx.fillStyle='rgba(55,50,80,0.55)'; ctx.beginPath(); ctx.arc(u1x+mW*0.19,u1y+H*0.07,3,0,Math.PI*2); ctx.fill();
+  // Baterie levá
+  ctx.fillStyle='rgba(180,185,200,0.50)'; ctx.fillRect(u1x+mW*0.16,u1y-H*0.05,W*0.02,H*0.05);
+  ctx.fillStyle='rgba(200,200,215,0.45)'; ctx.beginPath(); ctx.arc(u1x+mW*0.17,u1y-H*0.05,4,0,Math.PI*2); ctx.fill();
+
+  // Umyvadlo pravé (špinavé)
+  const u2x=mX+mW*0.57, u2y=H*0.28;
+  ctx.fillStyle='rgba(180,175,190,0.20)'; rrect(u2x,u2y,mW*0.38,H*0.10,3); ctx.fill();
+  ctx.strokeStyle='rgba(160,155,175,0.25)'; ctx.lineWidth=1; rrect(u2x,u2y,mW*0.38,H*0.10,3); ctx.stroke();
+  ctx.fillStyle='rgba(15,12,25,0.50)'; rrect(u2x+3,u2y+3,mW*0.38-6,H*0.06,2); ctx.fill();
+  // Špinavé skvrny v pravém umyvadle
+  ctx.fillStyle='rgba(120,90,60,0.18)'; ctx.beginPath(); ctx.arc(u2x+mW*0.12,u2y+H*0.05,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(100,80,50,0.12)'; ctx.beginPath(); ctx.arc(u2x+mW*0.24,u2y+H*0.04,3,0,Math.PI*2); ctx.fill();
+  // Baterie pravá
+  ctx.fillStyle='rgba(170,175,190,0.45)'; ctx.fillRect(u2x+mW*0.16,u2y-H*0.05,W*0.02,H*0.05);
+  // Kapající voda z pravé baterie
   for(let d=0;d<3;d++){
-    const dPh=((ft*0.55+d*0.35)%1);
-    const dY=uy-H*0.02+dPh*H*0.09;
-    const dA=(1-dPh)*0.7;
-    ctx.fillStyle=`rgba(160,195,240,${dA})`;
-    ctx.beginPath(); ctx.ellipse(ux+W*0.15,dY,1.5,3.5,0,0,Math.PI*2); ctx.fill();
+    const dPh=((ft*0.5+d*0.35)%1);
+    const dY=u2y-H*0.01+dPh*H*0.07;
+    ctx.fillStyle=`rgba(160,195,240,${(1-dPh)*0.6})`;
+    ctx.beginPath(); ctx.ellipse(u2x+mW*0.17,dY,1.2,3,0,0,Math.PI*2); ctx.fill();
   }
 
-  // ══ ŠUPLÍK POD UMYVADLEM ════════════════════════════════════════════
-  const sdx=ux-W*0.02, sdy=uy+H*0.14;
-  ctx.fillStyle='#1e1a2c'; rrect(sdx,sdy,W*0.34,H*0.12,3); ctx.fill();
-  ctx.strokeStyle='rgba(70,60,100,0.40)'; ctx.lineWidth=1; rrect(sdx,sdy,W*0.34,H*0.12,3); ctx.stroke();
+  // ══ SKŘÍŇKA POD UMYVADLY (šuplík) ═════════════════════════════════
+  const sdx=mX+mW*0.02, sdy=H*0.39;
+  ctx.fillStyle='#1a162a'; rrect(sdx,sdy,mW*0.96,H*0.10,3); ctx.fill();
+  ctx.strokeStyle='rgba(65,55,95,0.35)'; ctx.lineWidth=1; rrect(sdx,sdy,mW*0.96,H*0.10,3); ctx.stroke();
   if(!gs.story.koupelna_drawer_opened){
-    // Úchytka šuplíku (chromová)
-    const hx=sdx+W*0.14, hy=sdy+H*0.055;
-    ctx.fillStyle='rgba(190,190,200,0.45)'; rrect(hx,hy,W*0.06,H*0.015,2); ctx.fill();
-    ctx.strokeStyle='rgba(220,220,230,0.25)'; ctx.lineWidth=1; rrect(hx,hy,W*0.06,H*0.015,2); ctx.stroke();
+    const hx=sdx+mW*0.40, hy=sdy+H*0.04;
+    ctx.fillStyle='rgba(190,190,200,0.40)'; rrect(hx,hy,mW*0.16,H*0.012,2); ctx.fill();
+    ctx.strokeStyle='rgba(220,220,230,0.20)'; ctx.lineWidth=1; rrect(hx,hy,mW*0.16,H*0.012,2); ctx.stroke();
   } else {
-    // Otevřený šuplík
-    ctx.fillStyle='#141020'; rrect(sdx+4,sdy+4,W*0.34-8,H*0.12-8,2); ctx.fill();
-    ctx.fillStyle='rgba(90,80,120,0.25)'; ctx.font='8px monospace'; ctx.textAlign='center';
-    ctx.fillText('prázdný',sdx+W*0.17,sdy+H*0.075); ctx.textAlign='left';
+    ctx.fillStyle='#100c1c'; rrect(sdx+3,sdy+3,mW*0.96-6,H*0.10-6,2); ctx.fill();
+    ctx.fillStyle='rgba(90,80,120,0.20)'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText('prázdný',sdx+mW*0.48,sdy+H*0.06); ctx.textAlign='left';
   }
 
-  // ══ SPRCHOVÝ KOT (vlevo) ═════════════════════════════════════════
-  const spx=W*0.03, spy=H*0.12, spW=W*0.17, spH=H*0.65;
-  // Sprcha – tmavé prosklené stěny
-  ctx.fillStyle='rgba(30,35,55,0.25)'; ctx.fillRect(spx,spy,spW,spH);
-  // Skleněná stěna (pravá)
-  ctx.fillStyle='rgba(140,165,210,0.10)'; ctx.fillRect(spx+spW-4,spy,4,spH);
-  ctx.strokeStyle='rgba(100,130,180,0.30)'; ctx.lineWidth=1.5;
-  ctx.strokeRect(spx,spy,spW,spH);
-  // Sprchová hlavice – moderní kruhová
-  ctx.fillStyle='rgba(170,175,195,0.50)'; ctx.beginPath(); ctx.arc(spx+spW*0.55,spy+H*0.04,spW*0.25,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(200,205,220,0.35)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.arc(spx+spW*0.55,spy+H*0.04,spW*0.25,0,Math.PI*2); ctx.stroke();
-  // Díry na sprchové hlavici
-  for(let si=0;si<7;si++){
-    const ang=si*Math.PI*2/7, sr=spW*0.14;
-    ctx.fillStyle='rgba(20,18,30,0.5)';
-    ctx.beginPath(); ctx.arc(spx+spW*0.55+Math.cos(ang)*sr, spy+H*0.04+Math.sin(ang)*sr, 1.2, 0, Math.PI*2); ctx.fill();
-  }
-  // Hadice sprchy
-  ctx.strokeStyle='rgba(120,125,145,0.40)'; ctx.lineWidth=3; ctx.lineCap='round';
-  ctx.beginPath(); ctx.moveTo(spx+spW*0.55,spy+H*0.065); ctx.quadraticCurveTo(spx+spW*0.55,spy+H*0.15,spx+spW*0.75,spy+H*0.25); ctx.stroke();
-  ctx.lineCap='butt';
-  // Vodní proud (kapky padající)
-  for(let d=0;d<18;d++){
-    const dPh=((ft*1.5+d*0.07)%1);
-    const dXs=spx+spW*0.18+( d%6)*spW*0.10;
-    const dYs=spy+H*0.06+dPh*spH*0.82;
-    const dAs=(1-dPh*0.55)*0.45;
-    ctx.fillStyle=`rgba(140,170,220,${dAs})`;
-    ctx.fillRect(dXs,dYs,1.2,6);
-  }
-  // Odtok na podlaze sprchy
-  ctx.fillStyle='rgba(60,55,85,0.55)'; ctx.beginPath(); ctx.arc(spx+spW*0.5,spy+spH-10,6,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(80,75,110,0.4)'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(spx+spW*0.5,spy+spH-10,10,0,Math.PI*2); ctx.stroke();
+  // ══ WC + BIDET (vpravo) ════════════════════════════════════════════
+  // Záchod (závěsný, moderní)
+  const tox=W*0.75, toy=H*0.50;
+  ctx.fillStyle='rgba(195,195,210,0.18)'; rrect(tox,toy-H*0.08,W*0.08,H*0.08,2); ctx.fill();
+  ctx.strokeStyle='rgba(165,170,190,0.22)'; ctx.lineWidth=1; rrect(tox,toy-H*0.08,W*0.08,H*0.08,2); ctx.stroke();
+  ctx.fillStyle='rgba(190,190,205,0.18)';
+  ctx.beginPath(); ctx.ellipse(tox+W*0.04,toy+H*0.07,W*0.042,H*0.07,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(170,175,195,0.22)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.ellipse(tox+W*0.04,toy+H*0.07,W*0.042,H*0.07,0,0,Math.PI*2); ctx.stroke();
+  // Splachovací tlačítko (dvojité)
+  ctx.fillStyle='rgba(175,180,200,0.35)'; rrect(tox+W*0.02,toy-H*0.06,W*0.04,H*0.03,2); ctx.fill();
+  ctx.strokeStyle='rgba(140,145,165,0.3)'; ctx.lineWidth=0.5;
+  ctx.beginPath(); ctx.moveTo(tox+W*0.04,toy-H*0.06); ctx.lineTo(tox+W*0.04,toy-H*0.03); ctx.stroke();
+  // Bidet (menší, vedle WC)
+  const bix=W*0.75, biy=H*0.68;
+  ctx.fillStyle='rgba(185,185,200,0.14)';
+  ctx.beginPath(); ctx.ellipse(bix+W*0.04,biy+H*0.04,W*0.032,H*0.045,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(160,165,185,0.18)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.ellipse(bix+W*0.04,biy+H*0.04,W*0.032,H*0.045,0,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle='rgba(175,180,195,0.30)'; ctx.fillRect(bix+W*0.03,biy-H*0.01,W*0.02,H*0.02);
 
-  // ══ WC (vpravo) ═══════════════════════════════════════════════════
-  const tox=W*0.68, toy=H*0.55;
-  // Nádržka (obdélník)
-  ctx.fillStyle='rgba(185,185,200,0.22)'; rrect(tox,toy-H*0.10,W*0.10,H*0.10,3); ctx.fill();
-  ctx.strokeStyle='rgba(160,165,185,0.30)'; ctx.lineWidth=1; rrect(tox,toy-H*0.10,W*0.10,H*0.10,3); ctx.stroke();
-  // Mísa – elipsa
-  ctx.fillStyle='rgba(190,190,205,0.22)';
-  ctx.beginPath(); ctx.ellipse(tox+W*0.05,toy+H*0.10,W*0.055,H*0.09,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(165,170,190,0.28)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.ellipse(tox+W*0.05,toy+H*0.10,W*0.055,H*0.09,0,0,Math.PI*2); ctx.stroke();
-  // Sedátko
-  ctx.strokeStyle='rgba(185,190,210,0.22)'; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.ellipse(tox+W*0.05,toy+H*0.08,W*0.045,H*0.07,0,0,Math.PI*2); ctx.stroke();
-  // Splachovací tlačítko
-  ctx.fillStyle='rgba(170,175,195,0.40)'; ctx.beginPath(); ctx.arc(tox+W*0.05,toy-H*0.05,3,0,Math.PI*2); ctx.fill();
-
-  // ══ TOPENÍ NA RUČNÍKY (pravá stěna) ══════════════════════════════
-  const rdx=W*0.83, rdy=H*0.18, rdW=W*0.12, rdH=H*0.38;
-  ctx.strokeStyle='rgba(150,155,175,0.30)'; ctx.lineWidth=3;
-  // Svislé trubky
+  // ══ RADIÁTOR NA RUČNÍKY (pravá stěna) ══════════════════════════════
+  const rdx=W*0.86, rdy=H*0.10, rdW=W*0.10, rdH=H*0.35;
+  ctx.strokeStyle='rgba(150,155,175,0.28)'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(rdx,rdy); ctx.lineTo(rdx,rdy+rdH); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(rdx+rdW,rdy); ctx.lineTo(rdx+rdW,rdy+rdH); ctx.stroke();
-  // Vodorovné příčky
   ctx.lineWidth=2.5;
   for(let r=0;r<7;r++){
     const ry2=rdy+r*(rdH/6);
     ctx.beginPath(); ctx.moveTo(rdx,ry2); ctx.lineTo(rdx+rdW,ry2); ctx.stroke();
   }
-  // Mokrý ručník (vždy viditelný)
-  ctx.fillStyle='rgba(180,100,70,0.22)'; ctx.fillRect(rdx+2,rdy+rdH*0.15,rdW-4,rdH*0.22);
-  // Hadr – interaktivní item (svítí když ještě nevzatý)
+  // Mokrý ručník (vždy)
+  ctx.fillStyle='rgba(180,100,70,0.20)'; ctx.fillRect(rdx+2,rdy+rdH*0.12,rdW-4,rdH*0.20);
+  // Hadr – interaktivní item
   if(!gs.inv.hadr){
-    const hadPulse = 0.22+0.10*Math.sin(t*0.005);
-    ctx.fillStyle=`rgba(220,210,190,${hadPulse+0.15})`; ctx.fillRect(rdx+2,rdy+rdH*0.45,rdW-4,rdH*0.18);
-    // Jemná záře kolem hadru
-    const hadG = ctx.createRadialGradient(rdx+rdW/2,rdy+rdH*0.54,0,rdx+rdW/2,rdy+rdH*0.54,rdW*0.8);
+    const hadPulse=0.20+0.10*Math.sin(t*0.005);
+    ctx.fillStyle=`rgba(220,210,190,${hadPulse+0.15})`; ctx.fillRect(rdx+2,rdy+rdH*0.42,rdW-4,rdH*0.18);
+    const hadG=ctx.createRadialGradient(rdx+rdW/2,rdy+rdH*0.51,0,rdx+rdW/2,rdy+rdH*0.51,rdW*0.8);
     hadG.addColorStop(0,`rgba(255,240,200,${hadPulse*0.3})`); hadG.addColorStop(1,'transparent');
-    ctx.fillStyle=hadG; ctx.beginPath(); ctx.arc(rdx+rdW/2,rdy+rdH*0.54,rdW*0.8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=hadG; ctx.beginPath(); ctx.arc(rdx+rdW/2,rdy+rdH*0.51,rdW*0.8,0,Math.PI*2); ctx.fill();
   } else {
-    ctx.fillStyle='rgba(160,80,55,0.15)'; ctx.fillRect(rdx+2,rdy+rdH*0.45,rdW-4,rdH*0.18);
+    ctx.fillStyle='rgba(160,80,55,0.12)'; ctx.fillRect(rdx+2,rdy+rdH*0.42,rdW-4,rdH*0.18);
   }
 
-  // ══ OKÉNKO (matné, zamlžené) ══════════════════════════════════════
-  const wox=W*0.82, woy=H*0.03, woW=W*0.12, woH=H*0.12;
-  ctx.fillStyle='rgba(60,75,110,0.22)'; rrect(wox,woy,woW,woH,3); ctx.fill();
-  ctx.strokeStyle='rgba(100,115,150,0.35)'; ctx.lineWidth=1.5; rrect(wox,woy,woW,woH,3); ctx.stroke();
-  // Matné sklo – rozmyté světlo zvenčí
-  const wGl=ctx.createRadialGradient(wox+woW/2,woy+woH/2,0,wox+woW/2,woy+woH/2,woW*0.7);
-  wGl.addColorStop(0,'rgba(120,155,210,0.15)'); wGl.addColorStop(1,'transparent');
+  // ══ MATNÉ OKÉNKO (pravá stěna nahoře) ══════════════════════════════
+  const wox=W*0.86, woy=H*0.01, woW=W*0.10, woH=H*0.07;
+  ctx.fillStyle='rgba(55,70,105,0.20)'; rrect(wox,woy,woW,woH,2); ctx.fill();
+  ctx.strokeStyle='rgba(95,110,145,0.30)'; ctx.lineWidth=1.5; rrect(wox,woy,woW,woH,2); ctx.stroke();
+  const wGl=ctx.createRadialGradient(wox+woW/2,woy+woH/2,0,wox+woW/2,woy+woH/2,woW*0.6);
+  wGl.addColorStop(0,'rgba(110,145,200,0.12)'); wGl.addColorStop(1,'transparent');
   ctx.fillStyle=wGl; ctx.fillRect(wox,woy,woW,woH);
-  // Kříž rámu
-  ctx.strokeStyle='rgba(80,90,130,0.35)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(75,85,120,0.30)'; ctx.lineWidth=0.8;
   ctx.beginPath(); ctx.moveTo(wox+woW/2,woy); ctx.lineTo(wox+woW/2,woy+woH); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(wox,woy+woH/2); ctx.lineTo(wox+woW,woy+woH/2); ctx.stroke();
+
+  // ══ PRÁDELNÍ KOŠ (vlevo dole) ═════════════════════════════════════
+  const pkx=W*0.04, pky=H*0.65, pkW=W*0.08, pkH=H*0.15;
+  ctx.fillStyle='rgba(80,65,50,0.25)'; rrect(pkx,pky,pkW,pkH,3); ctx.fill();
+  ctx.strokeStyle='rgba(100,85,65,0.30)'; ctx.lineWidth=1; rrect(pkx,pky,pkW,pkH,3); ctx.stroke();
+  // Pletený vzor
+  for(let pr=0;pr<4;pr++){
+    ctx.strokeStyle='rgba(110,90,65,0.15)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(pkx,pky+pr*pkH/3.5); ctx.lineTo(pkx+pkW,pky+pr*pkH/3.5); ctx.stroke();
+  }
+  // Oblečení trčící z koše
+  ctx.fillStyle='rgba(60,90,140,0.30)'; // tričko
+  ctx.beginPath(); ctx.moveTo(pkx+pkW*0.2,pky-2); ctx.quadraticCurveTo(pkx+pkW*0.3,pky-8,pkx+pkW*0.5,pky-3); ctx.lineTo(pkx+pkW*0.2,pky+2); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(180,60,60,0.25)'; // ponožka
+  ctx.beginPath(); ctx.moveTo(pkx+pkW*0.7,pky); ctx.quadraticCurveTo(pkx+pkW*0.9,pky-10,pkx+pkW*0.8,pky-5); ctx.lineTo(pkx+pkW*0.65,pky+2); ctx.closePath(); ctx.fill();
+
+  // ══ PODLAHOVÁ VPUSŤ (chromová, uprostřed) ═════════════════════════
+  const drainX=W*0.48, drainY=H*0.62;
+  ctx.fillStyle='rgba(60,55,80,0.45)'; ctx.beginPath(); ctx.arc(drainX,drainY,7,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(130,125,155,0.35)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(drainX,drainY,7,0,Math.PI*2); ctx.stroke();
+  // Mřížka
+  for(let gi=0;gi<3;gi++){
+    ctx.strokeStyle='rgba(120,115,145,0.30)'; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.moveTo(drainX-5,drainY-3+gi*3); ctx.lineTo(drainX+5,drainY-3+gi*3); ctx.stroke();
+  }
 
   // ══ PÁRA ══════════════════════════════════════════════════════════
   ctx.save();
-  for(let i=0;i<16;i++){
-    const sl=((t*0.000085+i*0.145)%1);
-    const smX=W*0.05+Math.abs(Math.sin(i*41+t*0.00018))*W*0.70;
-    const smY=H*0.35-sl*H*0.32;
-    const smR=W*0.04+sl*W*0.06;
-    const smA=0.10*(1-sl);
+  for(let i=0;i<12;i++){
+    const sl=((t*0.00008+i*0.16)%1);
+    const smX=W*0.08+Math.abs(Math.sin(i*37+t*0.00015))*W*0.65;
+    const smY=H*0.38-sl*H*0.35;
+    const smR=W*0.035+sl*W*0.05;
+    const smA=0.08*(1-sl);
     const sG=ctx.createRadialGradient(smX,smY,0,smX,smY,smR);
     sG.addColorStop(0,`rgba(200,215,240,${smA})`); sG.addColorStop(1,'transparent');
     ctx.fillStyle=sG; ctx.beginPath(); ctx.arc(smX,smY,smR,0,Math.PI*2); ctx.fill();
   }
-  const topSt=ctx.createLinearGradient(0,0,0,H*0.15);
-  topSt.addColorStop(0,'rgba(180,200,230,0.12)'); topSt.addColorStop(1,'transparent');
-  ctx.fillStyle=topSt; ctx.fillRect(0,0,W,H*0.15);
   ctx.restore();
 
-  // ══ VODNÍ ANIMACE (povodeň v koupelně – propracovaná) ══════
+  // ══ VODNÍ ANIMACE (povodeň v koupelně) ═════════════════════════════
   if(gs.bathroom_flood_anim && gs.room === 'koupelna'){
     const fp=gs.bathroom_flood_anim.progress;
     const floodH2=H*0.25*fp;
     const waterTop=H-floodH2;
-    // Hlavní vodní objem
     const floodG2=ctx.createLinearGradient(0,waterTop,0,H);
     floodG2.addColorStop(0,`rgba(50,100,190,${0.25+fp*0.30})`);
     floodG2.addColorStop(0.4,`rgba(40,85,170,${0.30+fp*0.25})`);
     floodG2.addColorStop(1,`rgba(30,65,140,${0.40+fp*0.25})`);
     ctx.fillStyle=floodG2; ctx.fillRect(0,waterTop,W,floodH2);
     // Zvlněná hladina
-    ctx.beginPath(); ctx.moveTo(0, waterTop);
+    ctx.beginPath(); ctx.moveTo(0,waterTop);
     for(let wx3=0;wx3<=W;wx3+=5){
-      const waveY2=waterTop+Math.sin(wx3*0.03+ft*2.8)*3+Math.sin(wx3*0.07+ft*4.5)*1.5;
-      ctx.lineTo(wx3, waveY2);
+      ctx.lineTo(wx3,waterTop+Math.sin(wx3*0.03+ft*2.8)*3+Math.sin(wx3*0.07+ft*4.5)*1.5);
     }
-    ctx.lineTo(W, waterTop+10); ctx.lineTo(0, waterTop+10); ctx.closePath();
+    ctx.lineTo(W,waterTop+10); ctx.lineTo(0,waterTop+10); ctx.closePath();
     ctx.fillStyle=`rgba(90,160,230,${0.20+fp*0.20})`; ctx.fill();
     // Odlesky na hladině
     for(let ri2=0;ri2<8;ri2++){
-      const rx3=W*0.08+ri2*W*0.11;
-      const ry3=waterTop+2+Math.sin(ft*1.8+ri2*1.5)*1.5;
+      const rx3=W*0.08+ri2*W*0.11, ry3=waterTop+2+Math.sin(ft*1.8+ri2*1.5)*1.5;
       ctx.fillStyle=`rgba(180,220,255,${0.12+0.08*Math.sin(ft*3+ri2*2)})`;
       ctx.beginPath(); ctx.ellipse(rx3,ry3,10+Math.sin(ft*2+ri2)*4,1.2,0,0,Math.PI*2); ctx.fill();
     }
-    // Bubliny stoupající
+    // Bubliny
     if(fp > 0.2){
       for(let bi=0;bi<Math.floor(fp*8);bi++){
         const bx2=W*0.1+(Math.sin(bi*4.7)*0.5+0.5)*W*0.7;
         const bCycle=((ft*0.4+bi*0.29)%1);
         const by2=H-bCycle*floodH2*0.8;
-        const bSize=1.5+Math.sin(bi*3)*0.8;
         const bA2=bCycle<0.8?0.35:0.35*(1-(bCycle-0.8)/0.2);
-        ctx.strokeStyle=`rgba(180,220,255,${bA2})`;
-        ctx.lineWidth=0.6;
-        ctx.beginPath(); ctx.arc(bx2+Math.sin(ft*2+bi)*3,by2,bSize,0,Math.PI*2); ctx.stroke();
+        ctx.strokeStyle=`rgba(180,220,255,${bA2})`; ctx.lineWidth=0.6;
+        ctx.beginPath(); ctx.arc(bx2+Math.sin(ft*2+bi)*3,by2,1.5+Math.sin(bi*3)*0.8,0,Math.PI*2); ctx.stroke();
       }
     }
-    // Kapky z baterie
-    for(let di2=0;di2<6;di2++){
-      const dPh2=((ft*1.2+di2*0.17)%1);
-      const dX2=spx+spW*0.30+di2*spW*0.08;
-      const dY2=spy+H*0.04+dPh2*(waterTop-spy-H*0.04);
+    // Kapky z baterie vany
+    for(let di2=0;di2<4;di2++){
+      const dPh2=((ft*1.2+di2*0.2)%1);
+      const dX2=vx+vW*0.7+di2*5;
+      const dY2=vy+vH*0.3+dPh2*(waterTop-vy-vH*0.3);
       ctx.fillStyle=`rgba(120,180,240,${(1-dPh2)*0.5})`;
       ctx.beginPath(); ctx.arc(dX2,dY2,1.5,0,Math.PI*2); ctx.fill();
-      ctx.fillRect(dX2-0.4,dY2-4,0.8,4);
     }
   }
 
-  // ══ DVEŘE (vstup ze vily, dole uprostřed) ══════════════════════
+  // ══ DVEŘE (vstup ze vily, dole uprostřed) ══════════════════════════
   const doorW = W*0.14, doorH = H*0.18;
   const doorX = W*0.5 - doorW*0.5, doorY = H*0.82;
   if(gs.door_kick_anim){
@@ -3034,109 +3062,70 @@ function drawKoupelna(W,H,t){
     const doorFlyY = doorY - flyEase * H * 0.28;
     const doorRot = flyEase * 0.45 + (el > 0.6 ? Math.sin(el*8)*0.03*(1-Math.min((el-0.6)/0.5,1)) : 0);
     const doorAlpha = el > 1.5 ? Math.max(0, 1 - (el - 1.5) * 0.6) : 1;
-    // Rázová vlna
     if(el < 0.35){
-      const shockT = el / 0.35;
-      const shockR = shockT * W * 0.4;
-      const shockA = (1 - shockT) * 0.25;
-      ctx.strokeStyle = `rgba(255,220,160,${shockA})`;
-      ctx.lineWidth = 2 + (1-shockT)*4;
+      const shockT = el / 0.35, shockR = shockT * W * 0.4, shockA = (1 - shockT) * 0.25;
+      ctx.strokeStyle = `rgba(255,220,160,${shockA})`; ctx.lineWidth = 2 + (1-shockT)*4;
       ctx.beginPath(); ctx.arc(doorX+doorW*0.5, doorY+doorH*0.5, shockR, 0, Math.PI*2); ctx.stroke();
     }
-    // Záblesk
-    if(el < 0.10){
-      const flashA2 = (0.10 - el) / 0.10;
-      ctx.fillStyle = `rgba(255,220,120,${flashA2 * 0.6})`;
-      ctx.fillRect(0, 0, W, H);
-    }
-    // Létající dveřní panel
-    ctx.save();
-    ctx.globalAlpha = doorAlpha;
-    ctx.translate(doorX + doorW*0.5, doorFlyY + doorH*0.5);
-    ctx.rotate(doorRot);
-    // Stín pod dveřmi
+    if(el < 0.10){ ctx.fillStyle = `rgba(255,220,120,${(0.10 - el) / 0.10 * 0.6})`; ctx.fillRect(0, 0, W, H); }
+    ctx.save(); ctx.globalAlpha = doorAlpha;
+    ctx.translate(doorX + doorW*0.5, doorFlyY + doorH*0.5); ctx.rotate(doorRot);
     ctx.fillStyle = `rgba(0,0,0,${doorAlpha*0.3})`;
     ctx.beginPath(); ctx.ellipse(0, doorH*0.6, doorW*0.6, 6, 0, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = '#3a2a38'; rrect(-doorW*0.5, -doorH*0.5, doorW, doorH, 3); ctx.fill();
-    ctx.strokeStyle = 'rgba(180,130,110,0.6)'; ctx.lineWidth = 2;
-    rrect(-doorW*0.5, -doorH*0.5, doorW, doorH, 3); ctx.stroke();
+    ctx.strokeStyle = 'rgba(180,130,110,0.6)'; ctx.lineWidth = 2; rrect(-doorW*0.5, -doorH*0.5, doorW, doorH, 3); ctx.stroke();
     ctx.strokeStyle = 'rgba(100,70,90,0.5)'; ctx.lineWidth = 1;
     rrect(-doorW*0.5+4, -doorH*0.5+4, doorW-8, doorH*0.42-4, 2); ctx.stroke();
     rrect(-doorW*0.5+4, -doorH*0.5+doorH*0.44, doorW-8, doorH*0.42, 2); ctx.stroke();
-    // Trhliny na panelu
     ctx.strokeStyle = `rgba(40,20,30,${doorAlpha*0.6})`; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(-doorW*0.2, -doorH*0.3); ctx.lineTo(doorW*0.1, doorH*0.1);
-    ctx.lineTo(-doorW*0.05, doorH*0.35); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-doorW*0.2, -doorH*0.3); ctx.lineTo(doorW*0.1, doorH*0.1); ctx.lineTo(-doorW*0.05, doorH*0.35); ctx.stroke();
     ctx.restore();
-    // Úlomky s rotací a postupným pohasínáním
     if(gs.door_kick_anim.splinters){
       let allDead = true;
       gs.door_kick_anim.splinters.forEach(sp => {
-        const spEl2 = (t - sp.t0) * 0.001;
-        const spA2 = Math.max(0, 1 - spEl2 * 1.0);
-        if(spA2 <= 0) return;
-        allDead = false;
-        const spX2 = sp.x + sp.vx * spEl2;
-        const spY2 = sp.y + sp.vy * spEl2 + 200 * spEl2 * spEl2;
-        ctx.save();
-        ctx.globalAlpha = spA2;
-        ctx.translate(spX2, spY2); ctx.rotate(sp.rot + spEl2 * sp.rotV);
-        ctx.fillStyle = sp.col;
-        ctx.fillRect(-sp.w*0.5, -sp.h*0.5, sp.w, sp.h);
-        ctx.restore();
+        const spEl2 = (t - sp.t0) * 0.001, spA2 = Math.max(0, 1 - spEl2);
+        if(spA2 <= 0) return; allDead = false;
+        ctx.save(); ctx.globalAlpha = spA2;
+        ctx.translate(sp.x + sp.vx * spEl2, sp.y + sp.vy * spEl2 + 200 * spEl2 * spEl2);
+        ctx.rotate(sp.rot + spEl2 * sp.rotV); ctx.fillStyle = sp.col;
+        ctx.fillRect(-sp.w*0.5, -sp.h*0.5, sp.w, sp.h); ctx.restore();
       });
       if(allDead) gs.door_kick_anim.splinters = null;
     }
-    // Prachový mrak
     if(el < 2.0){
-      const dustT = Math.min(el / 0.8, 1);
-      const dustFade = el > 1.0 ? Math.max(0, 1 - (el-1.0)) : 1;
+      const dustT = Math.min(el / 0.8, 1), dustFade = el > 1.0 ? Math.max(0, 1 - (el-1.0)) : 1;
       for(let di3=0; di3<12; di3++){
         const dx3 = doorX + doorW*0.5 + Math.sin(di3*2.3+el*3)*W*0.08*dustT;
         const dy3 = doorY + doorH*0.5 + Math.cos(di3*1.7+el*2)*H*0.06*dustT - dustT*H*0.04;
-        const dr = 6 + dustT*12 + di3*1.5;
         const dAlpha = dustFade * (0.12 - di3*0.008);
-        if(dAlpha > 0){
-          ctx.fillStyle = `rgba(160,140,130,${dAlpha})`;
-          ctx.beginPath(); ctx.arc(dx3, dy3, dr, 0, Math.PI*2); ctx.fill();
-        }
+        if(dAlpha > 0){ ctx.fillStyle = `rgba(160,140,130,${dAlpha})`; ctx.beginPath(); ctx.arc(dx3, dy3, 6 + dustT*12 + di3*1.5, 0, Math.PI*2); ctx.fill(); }
       }
     }
-    // Otevřená díra
     ctx.fillStyle = '#050308'; rrect(doorX, doorY, doorW, doorH, 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(80,40,60,0.8)'; ctx.lineWidth = 2.5;
-    rrect(doorX, doorY, doorW, doorH, 2); ctx.stroke();
-    // Záře z vily
+    ctx.strokeStyle = 'rgba(80,40,60,0.8)'; ctx.lineWidth = 2.5; rrect(doorX, doorY, doorW, doorH, 2); ctx.stroke();
     const holeG = ctx.createLinearGradient(doorX, doorY, doorX, doorY + doorH);
     holeG.addColorStop(0, 'rgba(120,60,180,0.25)'); holeG.addColorStop(1, 'rgba(80,30,120,0.10)');
     ctx.fillStyle = holeG; rrect(doorX+2, doorY+2, doorW-4, doorH-4, 2); ctx.fill();
   } else if(gs.story.bathroom_door_broken){
-    // Trvale vyražené – prázdný rám
     ctx.fillStyle = '#050308'; rrect(doorX, doorY, doorW, doorH, 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(80,40,60,0.7)'; ctx.lineWidth = 2.5;
-    rrect(doorX, doorY, doorW, doorH, 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(80,40,60,0.7)'; ctx.lineWidth = 2.5; rrect(doorX, doorY, doorW, doorH, 2); ctx.stroke();
     const holeG2 = ctx.createLinearGradient(doorX, doorY, doorX, doorY + doorH);
     holeG2.addColorStop(0, 'rgba(120,60,180,0.20)'); holeG2.addColorStop(1, 'rgba(80,30,120,0.08)');
     ctx.fillStyle = holeG2; rrect(doorX+2, doorY+2, doorW-4, doorH-4, 2); ctx.fill();
-    // Úlomky na podlaze
     [[doorX+6,doorY+doorH+8,'#5a3a50',12,4],[doorX+doorW-14,doorY+doorH+4,'#4a2a40',8,3],[doorX+doorW*0.4,doorY+doorH+12,'#6a4060',16,3]].forEach(([x,y,c,w,h])=>{
       ctx.fillStyle=c; ctx.save(); ctx.translate(x,y); ctx.rotate(0.3); ctx.fillRect(-w/2,-h/2,w,h); ctx.restore();
     });
     ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.font='10px monospace'; ctx.textAlign='center';
-    ctx.fillText('↓ ZPĚT DO VILY', W*0.5, doorY + doorH + 18);
-    ctx.textAlign='left';
+    ctx.fillText('↓ ZPĚT DO VILY', W*0.5, doorY + doorH + 18); ctx.textAlign='left';
   } else {
-    // Zavřené dveře
     ctx.fillStyle = '#4a3540'; rrect(doorX, doorY, doorW, doorH, 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(180,130,110,0.45)'; ctx.lineWidth = 1.5;
-    rrect(doorX, doorY, doorW, doorH, 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(180,130,110,0.45)'; ctx.lineWidth = 1.5; rrect(doorX, doorY, doorW, doorH, 2); ctx.stroke();
     ctx.strokeStyle = 'rgba(100,70,90,0.4)'; ctx.lineWidth = 1;
     rrect(doorX+4, doorY+4, doorW-8, doorH*0.42, 2); ctx.stroke();
     rrect(doorX+4, doorY+doorH*0.44, doorW-8, doorH*0.42, 2); ctx.stroke();
     ctx.fillStyle='rgba(200,160,60,0.5)'; ctx.beginPath(); ctx.arc(doorX+doorW-8,doorY+doorH*0.5,3,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.font='10px monospace'; ctx.textAlign='center';
-    ctx.fillText('↓ ZPĚT DO VILY', W*0.5, doorY + doorH + 18);
-    ctx.textAlign='left';
+    ctx.fillText('↓ ZPĚT DO VILY', W*0.5, doorY + doorH + 18); ctx.textAlign='left';
   }
 
   // ══ JOHNNY + JANA V KOUPELNĚ (gun scene – propracovaný) ══════
