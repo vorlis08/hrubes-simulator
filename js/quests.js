@@ -627,7 +627,7 @@ const QF = {
     closeDialog();
     if(gs.krb_open){
       showNPCLine('bezdak',
-        '"Milanovy šíši..." *Cibulka se zamračí* "Ten idiot zase míchá věci, kterým nerozumí. KRÉMEŽSKÁ MLHA – to je syntetický kanabinoid s příměsí čehosi z Číny."',
+        '"Milanovy šíši..." *Cibulka se zamračí* "Ten idiot zase míchá věci, kterým nerozumí. Johnnyho divná šíša – to je syntetický kanabinoid s příměsí čehosi z Číny."',
         () => showNPCLine('bezdak',
           '"Mám protilék u sebe v laboratoři. Jdi tam – v šuplíku pod monitorem je zelená ampulka. Pospěš si, Hrubeši."',
           () => {
@@ -639,7 +639,7 @@ const QF = {
       );
     } else {
       showNPCLine('bezdak',
-        '"Krémežská Mlha..." *Cibulka zbledne* "Milan se zbláznil. Ten svinčík je jedovatej." *chvíli přemýšlí* "Protilék mám, ale je v mý místnosti. A tam se teď nedostaneš – nejdřív musíš otevřít cestu přes krb u šamana."',
+        '"Johnnyho divná šíša..." *Cibulka zbledne* "Milan se zbláznil. Ten svinčík je jedovatej." *chvíli přemýšlí* "Protilék mám, ale je v mý místnosti. A tam se teď nedostaneš – nejdřív musíš otevřít cestu přes krb u šamana."',
         () => {
           gs.story.shisha_antidote_quest = true;
           addLog('Cibulka má protilék, ale musíš se nejdřív dostat do jeho laboratoře přes šamana.', 'ls');

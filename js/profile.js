@@ -85,6 +85,9 @@ function createBlankProfile(username){
       death_figurova_shootout:    false,
       death_johnny_shot:          false,
       death_jana_katana:          false,
+      death_johnny_gun:           false,
+      death_maze_escape:          false,
+      death_shisha:               false,
     },
 
     questsCompleted: {
@@ -775,6 +778,9 @@ function renderProfileHome(){
     { key:'death_figurova_shootout',    emoji:'💥', name:'Hospitace masakr' },
     { key:'death_johnny_shot',          emoji:'🔫', name:'Zastřelen Johnnym' },
     { key:'death_jana_katana',          emoji:'⚔️', name:'Rozsekán Katanou' },
+    { key:'death_johnny_gun',           emoji:'🔫', name:'Zastřelen v koupelně' },
+    { key:'death_maze_escape',          emoji:'🏃', name:'Chycen ve vile' },
+    { key:'death_shisha',               emoji:'💨', name:'Otrava šíšou' },
   ];
   const endC = document.getElementById('hs-endings');
   endC.innerHTML = '';

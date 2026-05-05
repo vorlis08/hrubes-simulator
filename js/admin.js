@@ -401,6 +401,10 @@ const MISSION_TELEPORTS = [
   ]},
   // ─── Vila + Koupelna ──────────────────
   { cat:'Johnnyho vila', steps:[
+    { name:'Šíša cutscene',            room:'kremze',  story:{johnny_took_jana:true}, desc:'Vstup do vily → šíša' },
+    { name:'Šíša otrava – bezďák',     room:'ulice',   story:{shisha_smoked:true}, desc:'Bezďák nemůže pomoct' },
+    { name:'Šíša otrava – Cibulka',    room:'ulice',   story:{shisha_smoked:true,bezdak_cibulka:true}, desc:'Cibulka nasměruje do labáku' },
+    { name:'Šíša protilék',            room:'cibulka_lab', story:{shisha_antidote_quest:true}, desc:'Vezmi zelenou ampulku' },
     { name:'Jana u Johnnyho',          room:'johnny_vila', story:{jana_at_johnny:true}, desc:'Johnny a Jana ve vile' },
     { name:'Koupelna – šuplík',        room:'koupelna', story:{}, desc:'Otevři šuplík' },
     { name:'Koupelna – briefing',      room:'johnny_vila', story:{bathroom_plan_briefed:true}, desc:'Jana má hadr, jde do koupelny' },
@@ -408,6 +412,8 @@ const MISSION_TELEPORTS = [
     { name:'Po záchraně Jany',         room:'johnny_vila', story:{jana_handcuffed_johnny:true}, desc:'Jana zachráněna' },
     { name:'Spoutat Johnnyho',         room:'johnny_vila', story:{jana_at_johnny:true}, inv:{zelizka:1}, desc:'Máš želízka' },
     { name:'Webovky (vila)',           room:'johnny_vila', story:{johnny_cuffed:false}, inv:{membership_vaza:1}, desc:'Požádej Johnnyho o webovky' },
+    { name:'Smutný Johnny (ruleta)',   room:'johnny_vila', story:{jana_escaped_success:true}, desc:'Johnny sedí na gauči' },
+    { name:'Stalking room',            room:'johnny_vila', story:{johnny_roulette_played:true}, desc:'Tajné dveře do stalkařské místnosti' },
   ]},
   // ─── Honza ─────────────────────────────
   { cat:'Honza', steps:[

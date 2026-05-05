@@ -4797,7 +4797,7 @@ function render(){
     ctx.fillText(timeStr, bX+bW/2, bY+16);
     // Nápis pod LCD
     ctx.fillStyle='rgba(80,60,30,0.7)'; ctx.font='7px sans-serif';
-    ctx.fillText('⚠ ŠÍŠA OTRAVA', bX+bW/2, bY+36);
+    ctx.fillText('⚠ JOHNNYHO ŠÍŠA', bX+bW/2, bY+36);
     ctx.textAlign='left'; ctx.textBaseline='alphabetic';
     // Červený rámeček při málo času
     if(secs <= 60){

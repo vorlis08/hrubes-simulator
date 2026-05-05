@@ -583,7 +583,7 @@ function interact(){
           gs.story.shisha_smoked = true;
           gs.cutscene_active = true;
           setTimeout(() => {
-            showNPCLine('johnny_vila', '"Hrubeši! Sedni si. Dáme si šíšu." *Johnny vytáhne pochybnou dýmku* "Příchuť KRÉMEŽSKÁ MLHA – Milan mi ji sehnal. Dva tahy a jsi v ráji."', () => {
+            showNPCLine('johnny_vila', '"Hrubeši! Sedni si. Dáme si šíšu." *Johnny vytáhne pochybnou dýmku* "Tohle je Johnnyho divná šíša. Milan mi ji sehnal. Dva tahy a jsi v ráji."', () => {
               addLog('*Natáhneš se k dýmce a potáhneš. Dým je hustý a sladce pálí v krku.*', 'lm');
               setTimeout(() => {
                 addLog('*Druhý potah. Svět se trochu roztřese...*', 'lm');
