@@ -451,26 +451,26 @@ function _dodgeUpdate(){
 // MAZE ESCAPE MINIGAME – top-down bludiště, hráč utíká z vily
 // ═══════════════════════════════════════════════════════════════════
 
-// Mapa bludiště – 1=zeď, 0=cesta, 2=start, 3=exit, 4=item(adrenalin), 5=item(hůl), 6=item(pivo)
+// Mapa bludiště – 1=zeď, 0=cesta(tečka), 2=start, 3=exit, 7=power pellet
 const MAZE_MAP = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
   [1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1],
-  [1,0,1,0,0,0,0,4,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+  [1,7,1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,7,1],
   [1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1],
   [1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
   [1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1],
   [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1],
   [1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1],
-  [1,0,1,0,0,0,1,0,0,0,1,0,1,0,0,6,0,0,0,0,0,0,0,0,1,0,1],
+  [1,0,1,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
   [1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,1,1,0,1],
   [1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
   [1,1,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1],
-  [1,5,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,4,1,0,1],
+  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,1],
   [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],
   [1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
   [1,0,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1],
-  [1,2,0,0,1,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,3],
+  [1,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 const MAZE_ROWS = MAZE_MAP.length;
@@ -499,12 +499,12 @@ function triggerJanaFleeVilla(){
     if(MAZE_MAP[r][c]===3){exitR=r;exitC=c;}
   }
 
-  // Sbíratelné itemy
+  // Pac-Man tečky na všech cestách + power pellety
   const items = [];
   for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
-    if(MAZE_MAP[r][c]===4) items.push({r,c,type:'adrenalin',taken:false});
-    if(MAZE_MAP[r][c]===5) items.push({r,c,type:'hul',taken:false});
-    if(MAZE_MAP[r][c]===6) items.push({r,c,type:'pivo',taken:false});
+    const v = MAZE_MAP[r][c];
+    if(v===0) items.push({r,c,type:'dot',taken:false});
+    if(v===7) items.push({r,c,type:'power',taken:false});
   }
 
   gs.maze = {
@@ -514,10 +514,11 @@ function triggerJanaFleeVilla(){
     jDelay: gs.ts + 3000,
     exitR, exitC,
     items,
+    dots: 0,
+    dotsTotal: items.filter(i=>i.type==='dot').length,
     bullets: [],
     lastShot: gs.ts + 4000,
-    speedBoost: 0,
-    speedBoostEnd: 0,
+    powerMode: 0,
     won: false,
     dead: false,
     jPath: [],
@@ -578,7 +579,7 @@ function _mazeUpdate(dt){
 
   // Hráč pohyb
   let baseSpd = wounded ? 0.058 : 0.075;
-  if(m.speedBoostEnd > gs.ts) baseSpd *= 1.4;
+  if(m.powerMode > gs.ts) baseSpd *= 1.2;
   const spd = baseSpd * tNorm;
   let nx = m.px, ny = m.py;
   if(keys['w']||keys['ArrowUp'])    ny -= spd;
@@ -618,21 +619,18 @@ function _mazeUpdate(dt){
     }
   }
 
-  // Item pickup
+  // Item pickup (Pac-Man style)
   for(const it of m.items){
     if(it.taken) continue;
     const dx=m.px-(it.c+0.5), dy=m.py-(it.r+0.5);
-    if(dx*dx+dy*dy < 0.5){
+    if(dx*dx+dy*dy < 0.4){
       it.taken = true;
-      if(it.type==='adrenalin'){
-        m.speedBoostEnd = gs.ts + 4000;
-        fnotif('💉 Adrenalin! +4s rychlost', 'pos');
-      } else if(it.type==='pivo'){
-        m.speedBoostEnd = gs.ts + 6000;
-        fnotif('🍺 Pivo! +6s tekutá odvaha', 'pos');
-      } else {
-        m.speedBoostEnd = gs.ts + 5000;
-        fnotif('🦯 Hůl! +5s rychlost', 'pos');
+      if(it.type==='dot'){
+        m.dots++;
+      } else if(it.type==='power'){
+        m.powerMode = gs.ts + 5000;
+        fnotif('⚡ POWER! Johnny utíká!', 'pos');
+        screenShake(150);
       }
     }
   }
@@ -649,14 +647,23 @@ function _mazeUpdate(dt){
   const jActive = !m.jDelay || gs.ts >= m.jDelay;
 
   if(jActive){
+    const isPower = m.powerMode > gs.ts;
+
     // Johnny pathfinding (every 500ms)
     if(gs.ts - m.jPathT > 500){
       m.jPathT = gs.ts;
-      m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),Math.floor(m.py),Math.floor(m.px));
+      if(isPower){
+        // Power mode: Johnny utíká – najdi bod daleko od hráče
+        const fleeR = m.jy < MAZE_ROWS/2 ? MAZE_ROWS-2 : 1;
+        const fleeC = m.jx < MAZE_COLS/2 ? MAZE_COLS-2 : 1;
+        m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),fleeR,fleeC);
+      } else {
+        m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),Math.floor(m.py),Math.floor(m.px));
+      }
     }
 
     // Johnny movement
-    const jSpd = (wounded ? 0.025 : 0.035) * tNorm;
+    const jSpd = (isPower ? 0.018 : wounded ? 0.025 : 0.035) * tNorm;
     if(m.jPath.length > 1){
       const [tr,tc] = m.jPath[1];
       const tdx = (tc+0.5)-m.jx, tdy = (tr+0.5)-m.jy;
@@ -670,9 +677,9 @@ function _mazeUpdate(dt){
     }
   }
 
-  // Johnny catch check
+  // Johnny catch check (ne v power mode)
   const cdx=m.px-m.jx, cdy=m.py-m.jy;
-  if(cdx*cdx+cdy*cdy < 0.5){
+  if(cdx*cdx+cdy*cdy < 0.5 && !(m.powerMode > gs.ts)){
     m.dead = true;
     m.shakeT = gs.ts;
     screenShake(500);
@@ -681,8 +688,8 @@ function _mazeUpdate(dt){
     return;
   }
 
-  // Johnny střílí kulky (každé 3.5s, pokud vidí hráče ve stejné řadě/sloupci)
-  if(jActive && gs.ts - m.lastShot > 3500){
+  // Johnny střílí kulky (každé 3.5s, pokud vidí hráče – ne v power mode)
+  if(jActive && !(m.powerMode > gs.ts) && gs.ts - m.lastShot > 3500){
     const jr=Math.floor(m.jy), jc=Math.floor(m.jx);
     const prr=Math.floor(m.py), prc=Math.floor(m.px);
     let shootDir = null;
@@ -852,12 +859,14 @@ function _endJohnnyMonologue(){
   }, 1500);
 }
 
-// Render bludiště
+// Render bludiště – Pac-Man styl
 function drawMazeEscape(W,H,t){
   const m = gs.maze;
   if(!m) return;
   const cellW = W / MAZE_COLS;
   const cellH = H / MAZE_ROWS;
+  const cs = Math.min(cellW, cellH);
+  const isPower = m.powerMode > gs.ts;
 
   // Shake
   let sx=0,sy=0;
@@ -869,209 +878,173 @@ function drawMazeEscape(W,H,t){
   ctx.save();
   ctx.translate(sx,sy);
 
-  // Pozadí
-  ctx.fillStyle='#1a1520'; ctx.fillRect(0,0,W,H);
+  // Černé pozadí
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
 
-  // Zdi a podlaha
+  // Zdi – neonový styl
+  const wallCol = isPower ? '#2244aa' : '#1a1aff';
   for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
+    if(MAZE_MAP[r][c]!==1) continue;
     const x=c*cellW, y=r*cellH;
-    if(MAZE_MAP[r][c]===1){
-      ctx.fillStyle='#3a2845';
-      ctx.fillRect(x,y,cellW+1,cellH+1);
-      // Okraj 3D efekt
-      ctx.fillStyle='rgba(80,50,100,0.4)';
-      ctx.fillRect(x,y,cellW+1,2);
-      ctx.fillRect(x,y,2,cellH+1);
-      ctx.fillStyle='rgba(20,10,30,0.5)';
-      ctx.fillRect(x,y+cellH-1,cellW+1,2);
-      ctx.fillRect(x+cellW-1,y,2,cellH+1);
-    } else {
-      ctx.fillStyle='#28202e';
-      ctx.fillRect(x,y,cellW+1,cellH+1);
-      // Dlaždicový vzor
-      if((r+c)%2===0){
-        ctx.fillStyle='rgba(60,45,70,0.25)';
-        ctx.fillRect(x+1,y+1,cellW-2,cellH-2);
-      }
-    }
+    ctx.fillStyle='#0a0a30'; ctx.fillRect(x,y,cellW+1,cellH+1);
+    // Hrany zdí – svítící okraje jen tam, kde sousedí s cestou
+    ctx.strokeStyle=wallCol; ctx.lineWidth=1.5;
+    if(r>0&&MAZE_MAP[r-1][c]!==1){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+cellW,y); ctx.stroke(); }
+    if(r<MAZE_ROWS-1&&MAZE_MAP[r+1][c]!==1){ ctx.beginPath(); ctx.moveTo(x,y+cellH); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
+    if(c>0&&MAZE_MAP[r][c-1]!==1){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+cellH); ctx.stroke(); }
+    if(c<MAZE_COLS-1&&MAZE_MAP[r][c+1]!==1){ ctx.beginPath(); ctx.moveTo(x+cellW,y); ctx.lineTo(x+cellW,y+cellH); ctx.stroke(); }
   }
 
-  // Exit dveře
+  // Exit dveře – výrazné
   const ex=m.exitC*cellW, ey=m.exitR*cellH;
-  const exitPulse = 0.5+0.3*Math.sin(t*0.004);
-  ctx.fillStyle=`rgba(60,200,80,${exitPulse*0.3})`;
+  const exitPulse = 0.6+0.4*Math.sin(t*0.005);
+  ctx.fillStyle=`rgba(0,255,80,${exitPulse*0.2})`;
   ctx.fillRect(ex,ey,cellW,cellH);
-  ctx.strokeStyle=`rgba(80,255,100,${exitPulse})`;
-  ctx.lineWidth=2;
+  ctx.strokeStyle=`rgba(0,255,80,${exitPulse})`; ctx.lineWidth=2;
   ctx.strokeRect(ex+2,ey+2,cellW-4,cellH-4);
-  ctx.fillStyle=`rgba(80,255,100,${exitPulse*0.8})`;
-  ctx.font=`${Math.min(cellW,cellH)*0.5}px monospace`;
+  ctx.fillStyle=`rgba(0,255,80,${exitPulse})`; ctx.font=`bold ${cs*0.4}px monospace`;
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('🚪',ex+cellW/2,ey+cellH/2);
+  ctx.fillText('EXIT',ex+cellW/2,ey+cellH/2);
 
-  // Rozražené dveře koupelny (top-right area)
-  const doorX = m.introDoorX * cellW, doorY = m.introDoorY * cellH;
-  ctx.fillStyle='#4a3540';
-  ctx.fillRect(doorX-cellW*0.1, doorY, cellW*1.2, cellH);
-  // Rozražené dveře – nakloněné panely
-  ctx.save();
-  ctx.translate(doorX+cellW*0.2, doorY+cellH*0.5);
-  ctx.rotate(-0.4);
-  ctx.fillStyle='#6a4a55'; ctx.fillRect(-cellW*0.3,-cellH*0.4,cellW*0.5,cellH*0.8);
-  ctx.strokeStyle='rgba(180,130,110,0.5)'; ctx.lineWidth=1;
-  ctx.strokeRect(-cellW*0.3,-cellH*0.4,cellW*0.5,cellH*0.8);
-  ctx.restore();
-  ctx.save();
-  ctx.translate(doorX+cellW*0.7, doorY+cellH*0.3);
-  ctx.rotate(0.3);
-  ctx.fillStyle='#5a3a48'; ctx.fillRect(-cellW*0.2,-cellH*0.3,cellW*0.4,cellH*0.6);
-  ctx.restore();
-  // Třísky
-  ctx.fillStyle='#7a5a60';
-  for(let i=0;i<5;i++){
-    const sx2=doorX+Math.sin(i*1.7)*cellW*0.5+cellW*0.5;
-    const sy2=doorY+Math.cos(i*2.3)*cellH*0.3+cellH*0.5;
-    ctx.fillRect(sx2,sy2,3+i%3,2);
-  }
-  // Voda vytékající z koupelny
-  const waterAlpha = 0.15+0.05*Math.sin(t*0.003);
-  ctx.fillStyle=`rgba(80,140,200,${waterAlpha})`;
-  ctx.beginPath();
-  ctx.ellipse(doorX+cellW*0.5, doorY+cellH*1.2, cellW*0.8, cellH*0.4, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  // Itemy
+  // Tečky a power pellety
   for(const it of m.items){
     if(it.taken) continue;
     const ix=it.c*cellW+cellW/2, iy=it.r*cellH+cellH/2;
-    const iBob = Math.sin(t*0.005+it.c)*3;
-    ctx.fillStyle='rgba(255,230,100,0.3)';
-    ctx.beginPath(); ctx.arc(ix,iy+iBob,cellW*0.3,0,Math.PI*2); ctx.fill();
-    ctx.font=`${Math.min(cellW,cellH)*0.45}px monospace`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(it.type==='adrenalin'?'💉':it.type==='pivo'?'🍺':'🦯',ix,iy+iBob);
+    if(it.type==='dot'){
+      ctx.fillStyle='#ffb8ff';
+      ctx.beginPath(); ctx.arc(ix,iy,cs*0.08,0,Math.PI*2); ctx.fill();
+    } else {
+      const pPulse = 0.5+0.5*Math.sin(t*0.006+it.c);
+      ctx.fillStyle=`rgba(255,184,255,${pPulse})`;
+      ctx.beginPath(); ctx.arc(ix,iy,cs*0.22,0,Math.PI*2); ctx.fill();
+    }
   }
 
   // Kulky
-  ctx.fillStyle='#ff4444';
   for(const b of m.bullets){
     const bx=b.x*cellW, by=b.y*cellH;
+    ctx.fillStyle='#ff4444';
     ctx.beginPath(); ctx.arc(bx,by,4,0,Math.PI*2); ctx.fill();
-    // Ohnivá stopa
     ctx.fillStyle='rgba(255,120,40,0.4)';
     ctx.beginPath(); ctx.arc(bx-b.dx*cellW*0.5,by-b.dy*cellH*0.5,3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#ff4444';
   }
 
-  // Johnny
+  // Johnny – duch (Pac-Man ghost styl)
   const jx=m.jx*cellW, jy=m.jy*cellH;
-  // Červená aura
-  const jAura = ctx.createRadialGradient(jx,jy,0,jx,jy,cellW*0.8);
-  jAura.addColorStop(0,'rgba(200,30,0,0.3)');
-  jAura.addColorStop(1,'transparent');
-  ctx.fillStyle=jAura; ctx.beginPath(); ctx.arc(jx,jy,cellW*0.8,0,Math.PI*2); ctx.fill();
-  // Tělo
-  ctx.fillStyle='#c0a030'; ctx.beginPath(); ctx.arc(jx,jy,cellW*0.28,0,Math.PI*2); ctx.fill();
-  // Hlava
-  ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(jx,jy-cellH*0.22,cellW*0.18,0,Math.PI*2); ctx.fill();
-  // Naštvaný obličej
-  ctx.fillStyle='#1a1a2e';
-  ctx.fillRect(jx-4,jy-cellH*0.25,3,2);
-  ctx.fillRect(jx+2,jy-cellH*0.25,3,2);
-  // Jméno
-  ctx.fillStyle='rgba(255,60,60,0.9)'; ctx.font='bold 10px Outfit,sans-serif';
-  ctx.textAlign='center'; ctx.fillText('JOHNNY',jx,jy-cellH*0.38);
+  const ghostR = cs*0.38;
+  const ghostCol = isPower ? '#2244aa' : '#ff0000';
+  const ghostEyeCol = isPower ? '#fff' : '#fff';
+  ctx.fillStyle=ghostCol;
+  ctx.beginPath();
+  ctx.arc(jx,jy-ghostR*0.2,ghostR,Math.PI,0);
+  ctx.lineTo(jx+ghostR,jy+ghostR*0.6);
+  for(let w=0;w<4;w++){
+    const wx=jx+ghostR-w*ghostR*0.5;
+    ctx.lineTo(wx-ghostR*0.13,jy+ghostR*0.3);
+    ctx.lineTo(wx-ghostR*0.25,jy+ghostR*0.6);
+  }
+  ctx.closePath(); ctx.fill();
+  // Oči
+  ctx.fillStyle=ghostEyeCol;
+  ctx.beginPath(); ctx.arc(jx-ghostR*0.28,jy-ghostR*0.3,ghostR*0.22,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(jx+ghostR*0.28,jy-ghostR*0.3,ghostR*0.22,0,Math.PI*2); ctx.fill();
+  if(!isPower){
+    const edx=m.px-m.jx, edy=m.py-m.jy;
+    const ea=Math.atan2(edy,edx);
+    ctx.fillStyle='#00f';
+    ctx.beginPath(); ctx.arc(jx-ghostR*0.28+Math.cos(ea)*ghostR*0.08,jy-ghostR*0.3+Math.sin(ea)*ghostR*0.08,ghostR*0.12,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(jx+ghostR*0.28+Math.cos(ea)*ghostR*0.08,jy-ghostR*0.3+Math.sin(ea)*ghostR*0.08,ghostR*0.12,0,Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle=isPower?'rgba(34,68,170,0.7)':'rgba(255,60,60,0.7)'; ctx.font=`bold ${cs*0.28}px Outfit,sans-serif`;
+  ctx.textAlign='center'; ctx.fillText('JOHNNY',jx,jy-ghostR-4);
 
-  // Hráč
+  // Hráč – Pac-Man (žlutý s pusou)
   const px=m.px*cellW, py=m.py*cellH;
+  const pacR = cs*0.35;
+  const mouthAngle = 0.25 + 0.15*Math.abs(Math.sin(t*0.012));
   const legW = gs.story.leg_shot;
-  // Boost aura
-  if(m.speedBoostEnd > gs.ts){
-    const boostA = ctx.createRadialGradient(px,py,0,px,py,cellW*0.6);
-    boostA.addColorStop(0,'rgba(100,200,255,0.25)');
-    boostA.addColorStop(1,'transparent');
-    ctx.fillStyle=boostA; ctx.beginPath(); ctx.arc(px,py,cellW*0.6,0,Math.PI*2); ctx.fill();
-  }
-  // Tělo
-  ctx.fillStyle='#6a9fd8'; ctx.beginPath(); ctx.arc(px,py,cellW*0.26,0,Math.PI*2); ctx.fill();
-  // Hlava
-  ctx.fillStyle='#fde0c0'; ctx.beginPath(); ctx.arc(px,py-cellH*0.20,cellW*0.16,0,Math.PI*2); ctx.fill();
-  // Zranění
+  // Směr otevření pusy
+  let pacDir = 0;
+  if(keys['a']||keys['ArrowLeft']) pacDir = Math.PI;
+  else if(keys['w']||keys['ArrowUp']) pacDir = -Math.PI/2;
+  else if(keys['s']||keys['ArrowDown']) pacDir = Math.PI/2;
+  ctx.fillStyle = isPower ? '#5cf' : '#ffff00';
+  ctx.beginPath();
+  ctx.arc(px,py,pacR,pacDir+mouthAngle,pacDir+Math.PI*2-mouthAngle);
+  ctx.lineTo(px,py);
+  ctx.closePath(); ctx.fill();
+  // Oko
+  const eyeOff = pacDir === Math.PI ? -1 : 1;
+  ctx.fillStyle='#000'; ctx.beginPath();
+  ctx.arc(px+eyeOff*pacR*0.15, py-pacR*0.3, pacR*0.1, 0, Math.PI*2); ctx.fill();
   if(legW){
-    ctx.fillStyle='rgba(200,40,40,0.6)';
-    ctx.beginPath(); ctx.arc(px+cellW*0.1,py+cellH*0.12,3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(200,40,40,0.7)';
+    ctx.beginPath(); ctx.arc(px+pacR*0.2,py+pacR*0.3,3,0,Math.PI*2); ctx.fill();
   }
-  // Jméno
-  ctx.fillStyle='rgba(100,180,255,0.9)'; ctx.font='bold 10px Outfit,sans-serif';
-  ctx.textAlign='center'; ctx.fillText('FRANTA',px,py-cellH*0.35);
 
   // Minimap
-  const mmS = 4;
-  const mmX = W - MAZE_COLS*mmS - 10, mmY = 34;
-  ctx.fillStyle='rgba(0,0,0,0.7)';
+  const mmS = 3;
+  const mmX = W - MAZE_COLS*mmS - 8, mmY = 32;
+  ctx.fillStyle='rgba(0,0,0,0.8)';
   ctx.fillRect(mmX-2, mmY-2, MAZE_COLS*mmS+4, MAZE_ROWS*mmS+4);
   for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
-    ctx.fillStyle = MAZE_MAP[r][c]===1 ? '#3a2845' : '#1a1520';
+    ctx.fillStyle = MAZE_MAP[r][c]===1 ? '#1a1aff' : '#000';
     ctx.fillRect(mmX+c*mmS, mmY+r*mmS, mmS, mmS);
   }
-  ctx.fillStyle='#5cf';
+  ctx.fillStyle='#ff0';
   ctx.fillRect(mmX+Math.floor(m.px)*mmS, mmY+Math.floor(m.py)*mmS, mmS, mmS);
-  ctx.fillStyle='#f44';
+  ctx.fillStyle=isPower?'#248':'#f00';
   ctx.fillRect(mmX+Math.floor(m.jx)*mmS, mmY+Math.floor(m.jy)*mmS, mmS, mmS);
-  ctx.fillStyle='#5f5';
+  ctx.fillStyle='#0f0';
   ctx.fillRect(mmX+m.exitC*mmS, mmY+m.exitR*mmS, mmS, mmS);
 
-  // Exit direction arrow + distance
+  // Exit direction arrow
   if(!m.intro && !m.won && !m.dead){
     const aDx = (m.exitC+0.5)-m.px, aDy = (m.exitR+0.5)-m.py;
-    const aDist = Math.sqrt(aDx*aDx+aDy*aDy);
     const aAng = Math.atan2(aDy, aDx);
-    const aX = px, aY = py - cellH*0.7;
-    ctx.save(); ctx.translate(aX, aY); ctx.rotate(aAng);
-    ctx.fillStyle='rgba(80,255,100,0.85)';
-    ctx.beginPath(); ctx.moveTo(16,0); ctx.lineTo(-6,-7); ctx.lineTo(-6,7); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.translate(px, py - cs*0.6); ctx.rotate(aAng);
+    ctx.fillStyle='rgba(0,255,80,0.8)';
+    ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-5,-6); ctx.lineTo(-5,6); ctx.closePath(); ctx.fill();
     ctx.restore();
-    ctx.fillStyle='rgba(80,255,100,0.7)'; ctx.font='bold 9px Outfit,sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText(Math.round(aDist)+'m', px, py-cellH*1.0);
   }
 
-  // HUD
-  ctx.fillStyle='rgba(0,0,0,0.7)';
-  ctx.fillRect(0,0,W,28);
-  ctx.fillStyle='#fff'; ctx.font='bold 14px Outfit,sans-serif';
-  ctx.textAlign='left';
+  // HUD – arcade styl
+  ctx.fillStyle='rgba(0,0,0,0.85)';
+  ctx.fillRect(0,0,W,26);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.font='bold 13px "Courier New",monospace';
   if(m.intro){
-    ctx.fillText('💥 Johnny vyráží z koupelny!',10,18);
-    ctx.fillStyle='rgba(255,60,60,0.7)'; ctx.textAlign='right';
-    ctx.fillText('PŘIPRAV SE!',W-10,18);
-    // Velký intro overlay s instrukcemi
+    ctx.fillStyle='#ff4'; ctx.fillText('READY!',10,18);
+    ctx.fillStyle='#f44'; ctx.textAlign='right'; ctx.fillText('JOHNNY IS COMING',W-10,18);
+    // Intro overlay
     const iAlpha = Math.min(1, Math.max(0, 1 - (gs.ts - m.t0)/2000));
-    ctx.fillStyle=`rgba(0,0,0,${0.7*iAlpha})`;
-    ctx.fillRect(0,H*0.25,W,H*0.5);
-    ctx.fillStyle=`rgba(255,255,255,${iAlpha})`;
-    ctx.font='bold 28px Outfit,sans-serif'; ctx.textAlign='center';
-    ctx.fillText('🏃 ÚTĚK Z VILY',W/2,H*0.38);
-    ctx.font='18px Outfit,sans-serif';
-    ctx.fillStyle=`rgba(200,200,200,${iAlpha})`;
-    ctx.fillText('Pohyb: WASD nebo šipky',W/2,H*0.46);
-    ctx.fillText('Cíl: Doběhni ke dveřím 🚪 (zelená šipka)',W/2,H*0.53);
-    ctx.fillText('Sbírej itemy 💉🍺🦯 pro rychlost',W/2,H*0.60);
-    ctx.font='bold 16px Outfit,sans-serif';
-    ctx.fillStyle=`rgba(255,80,80,${iAlpha})`;
-    ctx.fillText('⚠ Johnny tě pronásleduje a střílí!',W/2,H*0.68);
+    ctx.fillStyle=`rgba(0,0,0,${0.75*iAlpha})`;
+    ctx.fillRect(0,H*0.28,W,H*0.44);
+    ctx.textAlign='center';
+    ctx.fillStyle=`rgba(255,255,0,${iAlpha})`; ctx.font='bold 26px "Courier New",monospace';
+    ctx.fillText('ÚTĚK Z VILY',W/2,H*0.38);
+    ctx.fillStyle=`rgba(255,255,255,${iAlpha})`; ctx.font='16px "Courier New",monospace';
+    ctx.fillText('WASD / šipky = pohyb',W/2,H*0.46);
+    ctx.fillText('Sbírej tečky · Velké = POWER',W/2,H*0.52);
+    ctx.fillText('Doběhni k EXIT',W/2,H*0.58);
+    ctx.fillStyle=`rgba(255,50,50,${iAlpha})`; ctx.font='bold 14px "Courier New",monospace';
+    ctx.fillText('Johnny tě pronásleduje!',W/2,H*0.66);
   } else {
-    ctx.fillText('🏃 UTEČ Z VILY! [WASD/šipky]'+(legW?' 🦵 Kulháš!':''),10,18);
-    ctx.fillStyle='rgba(180,180,180,0.6)'; ctx.font='11px Outfit,sans-serif';
-    ctx.fillText('Sleduj zelenou šipku → ke dveřím 🚪',10,H-8);
+    ctx.fillStyle='#ff4'; ctx.fillText('SCORE: '+m.dots+'/'+m.dotsTotal,10,18);
+    if(isPower){
+      const rem = Math.ceil((m.powerMode-gs.ts)/1000);
+      ctx.fillStyle='#5cf'; ctx.textAlign='center'; ctx.fillText('⚡ POWER '+rem+'s',W/2,18);
+    }
+    ctx.fillStyle=legW?'#f88':'#fff'; ctx.textAlign='right';
+    ctx.fillText(legW?'INJURED':'WASD/↑↓←→',W-10,18);
   }
-  // Boost timer
-  if(m.speedBoostEnd > gs.ts){
-    const rem = Math.ceil((m.speedBoostEnd-gs.ts)/1000);
-    ctx.fillStyle='#5cf'; ctx.textAlign='right';
-    ctx.fillText('⚡ BOOST '+rem+'s',W-10,18);
+  // Spodní řádek
+  if(!m.intro){
+    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,H-18,W,18);
+    ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px "Courier New",monospace';
+    ctx.textAlign='center'; ctx.fillText('● = tečka   ◉ = POWER (Johnny utíká)   EXIT = cíl',W/2,H-5);
   }
-  ctx.textAlign='left';
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 
   ctx.restore();
 }

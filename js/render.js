@@ -2321,9 +2321,9 @@ function drawJohnnyVila(W,H,t){
     ctx.fillText('🔒',ldx+ldw/2,ldy-4); ctx.textAlign='left';
   }
 
-  // ── Dveře do koupelny ──
+  // ── Dveře do koupelny – výrazné ──
   {
-    const bdr=W*0.90, bdy=H*0.26, bdw=W*0.08, bdh=H*0.22;
+    const bdr=W*0.88, bdy=H*0.24, bdw=W*0.10, bdh=H*0.26;
     if(gs.story.bathroom_door_broken){
       // Rozbitý rám
       ctx.fillStyle='#0a0810'; rrect(bdr,bdy,bdw,bdh,2); ctx.fill();
@@ -2352,13 +2352,23 @@ function drawJohnnyVila(W,H,t){
       brG.addColorStop(0,'rgba(100,60,160,0.15)'); brG.addColorStop(1,'transparent');
       ctx.fillStyle=brG; ctx.fillRect(bdr+2,bdy+2,bdw-4,bdh-4);
     } else {
-      ctx.fillStyle='#4a3540'; rrect(bdr,bdy,bdw,bdh,2); ctx.fill();
-      ctx.strokeStyle='rgba(180,130,110,0.5)'; ctx.lineWidth=1.5; rrect(bdr,bdy,bdw,bdh,2); ctx.stroke();
-      ctx.fillStyle='rgba(200,160,60,0.5)'; ctx.beginPath();
-      ctx.arc(bdr+W*0.065,bdy+bdh*0.5,3,0,Math.PI*2); ctx.fill();
+      // Rám dveří
+      ctx.fillStyle='#6a4a50'; rrect(bdr-3,bdy-3,bdw+6,bdh+6,4); ctx.fill();
+      // Dveře
+      ctx.fillStyle='#5a3a45'; rrect(bdr,bdy,bdw,bdh,3); ctx.fill();
+      ctx.strokeStyle='rgba(200,150,130,0.6)'; ctx.lineWidth=2; rrect(bdr,bdy,bdw,bdh,3); ctx.stroke();
+      // Panel na dveřích
+      ctx.strokeStyle='rgba(180,120,100,0.3)'; ctx.lineWidth=1;
+      rrect(bdr+bdw*0.15,bdy+bdh*0.1,bdw*0.7,bdh*0.35,2); ctx.stroke();
+      rrect(bdr+bdw*0.15,bdy+bdh*0.55,bdw*0.7,bdh*0.35,2); ctx.stroke();
+      // Klika
+      ctx.fillStyle='#d4a030'; ctx.beginPath();
+      ctx.arc(bdr+bdw*0.82,bdy+bdh*0.5,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,200,60,0.4)'; ctx.beginPath();
+      ctx.arc(bdr+bdw*0.82,bdy+bdh*0.5,8,0,Math.PI*2); ctx.fill();
     }
-    ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.font='8px monospace'; ctx.textAlign='center';
-    ctx.fillText('🚿',bdr+bdw*0.5,bdy-4); ctx.textAlign='left';
+    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='bold 10px Outfit,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('🚿 Koupelna',bdr+bdw*0.5,bdy-6); ctx.textAlign='left';
   }
 
   // ── Johnny chase – běží za hráčem ──
