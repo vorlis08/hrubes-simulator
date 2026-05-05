@@ -109,6 +109,10 @@ const gs = {
   player_cuts_anim:       null,  // { startTime, parts:[], bloodPool:0 } – pro katana death
   door_kick_anim:         null,  // { t0, splinters[] } – vizuální vykopnutí dveří koupelny
   johnny_kill_anim:       null,  // { t0, phase } – Johnny útok při escape timeout
+  sink_water_anim:        null,  // { t0 } – voda stříká z umyvadla v koupelně
+  roulette_anim:          null,  // { phase, t0, lineIndex, choice } – ruská ruleta s Johnnym
+  johnny_knee_shot_anim:  null,  // { t0, phase } – Johnny střílí do kolene hráče
+  johnny_monologue_anim:  null,  // { phase, t0, lineIndex } – Johnny šílený monolog
 };
 
 function resetGameState(){
@@ -201,6 +205,10 @@ function resetGameState(){
   gs.player_cuts_anim       = null;
   gs.door_kick_anim         = null;
   gs.johnny_kill_anim       = null;
+  gs.sink_water_anim        = null;
+  gs.roulette_anim          = null;
+  gs.johnny_knee_shot_anim  = null;
+  gs.johnny_monologue_anim  = null;
   // Invalidate stale setTimeout callbacks from previous game runs
   gs._gen = (gs._gen || 0) + 1;
 }

@@ -160,6 +160,7 @@ function drawRoom(rm,W,H,t){
     case 'doma':         drawDoma(W,H,t);        break;
     case 'cibulka_lab':  drawCibulkaLab(W,H,t);  break;
     case 'maze_escape':  drawMazeEscape(W,H,t);  break;
+    case 'johnny_stalking': drawJohnnyStalking(W,H,t); break;
     default: ctx.fillStyle=rm.bg; ctx.fillRect(0,0,W,H);
   }
 }
@@ -2544,6 +2545,71 @@ function drawJohnnyVila(W,H,t){
   }
   ctx.restore();
 
+  // ── Díry od zbraně + smutný Johnny na gauči (po vytopení) ──
+  if(gs.story.johnny_sad_couch && !gs.story.johnny_dead){
+    // Díry od střelby všude po místnosti
+    const bulletHoles = [
+      [W*0.20, H*0.32], [W*0.35, H*0.28], [W*0.68, H*0.25], [W*0.82, H*0.30],
+      [W*0.15, H*0.42], [W*0.55, H*0.38], [W*0.78, H*0.44], [W*0.42, H*0.34],
+      [W*0.90, H*0.36], [W*0.28, H*0.40], [W*0.60, H*0.26], [W*0.48, H*0.42],
+      [W*0.72, H*0.48], [W*0.12, H*0.35], [W*0.88, H*0.28],
+    ];
+    bulletHoles.forEach(([bx2, by2], bi2) => {
+      const bSize = 2.5 + Math.sin(bi2*3.7)*1;
+      ctx.fillStyle = 'rgba(5,3,2,0.8)'; ctx.beginPath(); ctx.arc(bx2, by2, bSize, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(40,25,15,0.5)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(bx2, by2, bSize+1.5, 0, Math.PI*2); ctx.stroke();
+      // Praskliny kolem díry
+      for(let cr2 = 0; cr2 < 3; cr2++){
+        const cAng = bi2*1.5 + cr2*Math.PI*0.7;
+        ctx.strokeStyle = 'rgba(30,20,10,0.3)'; ctx.lineWidth = 0.4;
+        ctx.beginPath();
+        ctx.moveTo(bx2+Math.cos(cAng)*bSize, by2+Math.sin(cAng)*bSize);
+        ctx.lineTo(bx2+Math.cos(cAng)*(bSize+5+Math.sin(bi2*2+cr2)*3), by2+Math.sin(cAng)*(bSize+5+Math.sin(bi2*2+cr2)*3));
+        ctx.stroke();
+      }
+    });
+    // Rozbitá sklenice na zemi
+    for(let gi2 = 0; gi2 < 6; gi2++){
+      ctx.fillStyle = `rgba(180,200,220,${0.15+Math.sin(gi2*4)*0.05})`;
+      const gx2 = W*0.34 + gi2*W*0.03, gy2 = H*0.78 + Math.sin(gi2*5)*H*0.02;
+      ctx.beginPath(); ctx.moveTo(gx2, gy2); ctx.lineTo(gx2+3, gy2-4); ctx.lineTo(gx2+6, gy2+1); ctx.closePath(); ctx.fill();
+    }
+    // Johnny – smutně sedí na gauči
+    const jx2 = W*0.28, jy2 = H*0.60;
+    // Tělo (shrbeně)
+    ctx.fillStyle = 'rgba(140,120,70,0.35)';
+    ctx.beginPath(); ctx.arc(jx2, jy2-18, 9, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(100,80,50,0.30)'; ctx.fillRect(jx2-7, jy2-10, 14, 20);
+    // Ruce svěšené
+    ctx.strokeStyle = 'rgba(160,130,80,0.25)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(jx2-7, jy2-4); ctx.lineTo(jx2-12, jy2+10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(jx2+7, jy2-4); ctx.lineTo(jx2+12, jy2+10); ctx.stroke();
+    // Skloněná hlava
+    ctx.fillStyle = 'rgba(50,40,30,0.3)'; ctx.beginPath(); ctx.arc(jx2, jy2-16, 4, 0, Math.PI*2); ctx.fill();
+  }
+  // Johnny mrtvý na zemi
+  if(gs.story.johnny_dead){
+    const jdx = W*0.30, jdy = H*0.72;
+    ctx.fillStyle = 'rgba(120,100,60,0.25)'; ctx.fillRect(jdx-12, jdy, 24, 8);
+    ctx.beginPath(); ctx.arc(jdx-14, jdy+2, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(120,15,15,0.35)';
+    ctx.beginPath(); ctx.ellipse(jdx-18, jdy+1, 12, 6, 0.3, 0, Math.PI*2); ctx.fill();
+    // Revolver na zemi
+    ctx.fillStyle = 'rgba(80,80,90,0.4)'; ctx.fillRect(jdx+15, jdy+3, 10, 3);
+    ctx.fillRect(jdx+18, jdy+3, 3, 6);
+  }
+  // Tajné dveře (po roulette, želízka path)
+  if(gs.story.johnny_roulette_played && !gs.story.johnny_dead){
+    const sdX = W*0.02, sdY = H*0.45, sdW2 = W*0.08, sdH2 = H*0.18;
+    ctx.fillStyle = 'rgba(30,20,45,0.7)'; rrect(sdX, sdY, sdW2, sdH2, 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(80,60,120,0.5)'; ctx.lineWidth = 1.5; rrect(sdX, sdY, sdW2, sdH2, 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(200,160,60,0.4)'; ctx.beginPath(); ctx.arc(sdX+sdW2*0.85, sdY+sdH2*0.5, 2, 0, Math.PI*2); ctx.fill();
+    // Světlo za dveřmi
+    const dlG = ctx.createRadialGradient(sdX+sdW2*0.5, sdY+sdH2*0.5, 0, sdX+sdW2*0.5, sdY+sdH2*0.5, sdW2);
+    dlG.addColorStop(0, `rgba(40,80,160,${0.08+0.03*Math.sin(ft*2)})`); dlG.addColorStop(1, 'transparent');
+    ctx.fillStyle = dlG; ctx.fillRect(sdX, sdY, sdW2, sdH2);
+  }
+
   // ── Bathroom flood – propracovaná povodeň ──
   if(gs.bathroom_flood_anim){
     const f = gs.bathroom_flood_anim;
@@ -3012,6 +3078,61 @@ function drawKoupelna(W,H,t){
   ctx.strokeStyle='rgba(195,200,215,0.45)'; ctx.lineWidth=2.5; ctx.lineCap='round';
   ctx.beginPath(); ctx.moveTo(u1x+mW*0.175,u1y-H*0.05); ctx.quadraticCurveTo(u1x+mW*0.22,u1y-H*0.07,u1x+mW*0.20,u1y-H*0.01); ctx.stroke();
   ctx.lineCap='butt';
+
+  // ── Voda stříká z umyvadla (po aktivaci) ──
+  if(gs.sink_water_anim){
+    const sinkT = (t - gs.sink_water_anim.t0) * 0.001;
+    const faucetX = u1x + mW*0.20, faucetY = u1y - H*0.01;
+    const pressure = Math.min(1, sinkT * 2);
+    // Hlavní proud vody (oblouk do umyvadla)
+    for(let si=0; si<12; si++){
+      const sp = (si/12 + ft*3.5) % 1;
+      const sx2 = faucetX + sp * mW*0.08 * (Math.sin(si*2.3+ft*8)*0.3);
+      const sy2 = faucetY + sp * H*0.06;
+      const sA = pressure * (1-sp) * 0.7;
+      ctx.fillStyle = `rgba(140,200,255,${sA})`;
+      ctx.beginPath(); ctx.ellipse(sx2, sy2, 1.5+sp*2, 1, 0, 0, Math.PI*2); ctx.fill();
+    }
+    // Kapky stříkající do stran (tlak)
+    for(let di=0; di<16; di++){
+      const dPhase = ((ft*2.5 + di*0.19) % 1);
+      const angle = (di/16) * Math.PI - Math.PI*0.5 + Math.sin(ft*5+di)*0.4;
+      const dist = dPhase * W*0.06 * pressure;
+      const dx = faucetX + Math.cos(angle) * dist;
+      const dy = faucetY + Math.sin(angle) * dist * 0.6 + dPhase * dPhase * H*0.08;
+      const dA = pressure * (1-dPhase) * 0.55;
+      if(dA > 0.02){
+        ctx.fillStyle = `rgba(160,215,255,${dA})`;
+        ctx.beginPath(); ctx.arc(dx, dy, 1+Math.sin(di*3)*0.5, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    // Mlha/pára od stříkající vody
+    for(let mi=0; mi<6; mi++){
+      const mPhase = ((ft*0.3 + mi*0.17) % 1);
+      const mx = faucetX + Math.sin(mi*4+ft*2)*mW*0.12;
+      const my = faucetY - mPhase*H*0.12;
+      const mR = 6+mPhase*12;
+      const mA2 = pressure * (1-mPhase) * 0.08;
+      ctx.fillStyle = `rgba(200,230,255,${mA2})`;
+      ctx.beginPath(); ctx.arc(mx, my, mR, 0, Math.PI*2); ctx.fill();
+    }
+    // Voda přetéká z umyvadla na podlahu
+    if(sinkT > 3){
+      const overflow = Math.min(1, (sinkT-3)/8);
+      const oY = u1y + H*0.10;
+      for(let oi=0; oi<4; oi++){
+        const oPhase = ((ft*0.6+oi*0.25)%1);
+        const ox2 = u1x + mW*0.10 + oi*mW*0.08;
+        const oy2 = oY + oPhase*H*0.25*overflow;
+        ctx.fillStyle = `rgba(120,180,240,${(1-oPhase)*overflow*0.4})`;
+        ctx.beginPath(); ctx.ellipse(ox2, oy2, 1.5, 4, 0, 0, Math.PI*2); ctx.fill();
+      }
+      // Kaluž pod umyvadlem
+      const puddleA = overflow * 0.25;
+      ctx.fillStyle = `rgba(80,140,210,${puddleA})`;
+      ctx.beginPath(); ctx.ellipse(u1x+mW*0.20, cntY+H*0.20, mW*0.25*overflow, H*0.02*overflow, 0, 0, Math.PI*2); ctx.fill();
+    }
+  }
 
   // Umyvadlo pravé (špinavé – Johnnyho)
   const u2x=mX+mW*0.57, u2y=cntY+H*0.01;
@@ -5770,4 +5891,386 @@ function drawHeavenGate(W,H,t){
   ctx.fillStyle=`rgba(180,145,30,${pulse})`; ctx.font='bold 11px JetBrains Mono,monospace';
   ctx.textBaseline='alphabetic';
   ctx.fillText('▼  NEBESKÉ SCHODY  ▼', W*0.5, H*0.97);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOHNNYHO STALKOVACÍ MÍSTNOST – propracovaná surveillance room
+// ═══════════════════════════════════════════════════════════════════════════
+function drawJohnnyStalking(W,H,t){
+  const ft = t * 0.001;
+  const hor = H * 0.35;
+
+  // Strop – temně kovový
+  const cG = ctx.createLinearGradient(0, 0, 0, hor);
+  cG.addColorStop(0, '#020308'); cG.addColorStop(1, '#080c15');
+  ctx.fillStyle = cG; ctx.fillRect(0, 0, W, hor);
+
+  // Podlaha – tmavý beton s jemnými skvrnami
+  const fG = ctx.createLinearGradient(0, hor, 0, H);
+  fG.addColorStop(0, '#0c0e18'); fG.addColorStop(0.5, '#0a0c14'); fG.addColorStop(1, '#080a10');
+  ctx.fillStyle = fG; ctx.fillRect(0, hor, W, H - hor);
+  for(let si = 0; si < 20; si++){
+    const sx2 = (Math.sin(si*47.3)*0.5+0.5)*W, sy2 = hor + (Math.sin(si*23.7)*0.5+0.5)*(H-hor);
+    ctx.fillStyle = `rgba(${si%2?'40,50,70':'30,35,50'},0.15)`;
+    ctx.beginPath(); ctx.ellipse(sx2, sy2, 15+Math.sin(si*3)*8, 5+Math.sin(si*5)*3, si*0.3, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Stěna – tmavě modrá/černá, zvukově izolační panely
+  const wG = ctx.createLinearGradient(0, 0, 0, hor);
+  wG.addColorStop(0, '#0a1020'); wG.addColorStop(1, '#060a15');
+  ctx.fillStyle = wG; ctx.fillRect(0, 0, W, hor);
+  // Zvuková izolace – pěnové panely na stěně
+  for(let px = 0; px < 12; px++){
+    const panX = px * (W/12), panW = W/12 - 2;
+    const panG = ctx.createLinearGradient(panX, 0, panX, hor*0.9);
+    panG.addColorStop(0, 'rgba(20,30,50,0.6)'); panG.addColorStop(0.5, 'rgba(15,22,40,0.5)'); panG.addColorStop(1, 'rgba(20,30,50,0.6)');
+    ctx.fillStyle = panG; ctx.fillRect(panX+1, 2, panW, hor*0.9);
+    ctx.strokeStyle = 'rgba(40,55,80,0.25)'; ctx.lineWidth = 0.5; ctx.strokeRect(panX+1, 2, panW, hor*0.9);
+    // Vlnkový vzor izolace
+    for(let wy = 0; wy < 6; wy++){
+      const wyPos = 4 + wy*(hor*0.15);
+      ctx.strokeStyle = 'rgba(30,45,70,0.2)'; ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      for(let wx = panX+3; wx < panX+panW-1; wx += 3){
+        ctx.lineTo(wx, wyPos + Math.sin(wx*0.15+wy)*2);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // ══ VELKÁ STĚNA MONITORŮ (5x3 grid) ═══════════════════════════════
+  const mGridX = W*0.10, mGridY = hor*0.05;
+  const mGridW = W*0.80, mGridH = hor*0.85;
+  const mCols = 5, mRows = 3;
+  const mGap = 3;
+  const mW = (mGridW - (mCols-1)*mGap) / mCols;
+  const mH2 = (mGridH - (mRows-1)*mGap) / mRows;
+
+  for(let mr = 0; mr < mRows; mr++){
+    for(let mc = 0; mc < mCols; mc++){
+      const mx = mGridX + mc*(mW+mGap), my = mGridY + mr*(mH2+mGap);
+      const mIdx = mr*mCols + mc;
+      // Rámeček monitoru
+      ctx.fillStyle = '#0a0a12';
+      ctx.fillRect(mx-1, my-1, mW+2, mH2+2);
+      // Obrazovka – různý obsah podle indexu
+      const scanline = Math.sin(ft*8 + mIdx*2) > 0.92 ? 0.15 : 0;
+      const flicker = 0.85 + 0.15*Math.sin(ft*6+mIdx*3);
+
+      if(mIdx === 0){
+        // CCTV – učebna (zelený noční vidění)
+        ctx.fillStyle = `rgba(0,30,10,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.fillStyle = `rgba(0,180,60,${0.08*flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(0,255,80,${0.7*flicker})`;
+        ctx.fillText('CAM-01 UČEBNA', mx+3, my+8);
+        ctx.fillText(new Date().toLocaleTimeString(), mx+3, my+mH2-4);
+        // Siluety
+        for(let fi = 0; fi < 3; fi++){
+          ctx.fillStyle = `rgba(0,200,60,${0.15*flicker})`;
+          ctx.fillRect(mx+mW*0.2+fi*mW*0.22, my+mH2*0.4, mW*0.08, mH2*0.35);
+          ctx.beginPath(); ctx.arc(mx+mW*0.24+fi*mW*0.22, my+mH2*0.35, mW*0.04, 0, Math.PI*2); ctx.fill();
+        }
+      } else if(mIdx === 1){
+        // CCTV – Billa
+        ctx.fillStyle = `rgba(15,10,25,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(200,200,255,${0.6*flicker})`;
+        ctx.fillText('CAM-02 BILLA', mx+3, my+8);
+        // Regály
+        for(let ri = 0; ri < 4; ri++){
+          ctx.fillStyle = `rgba(100,90,130,${0.15*flicker})`;
+          ctx.fillRect(mx+5+ri*mW*0.22, my+mH2*0.25, mW*0.18, mH2*0.55);
+        }
+      } else if(mIdx === 2){
+        // CCTV – hospoda
+        ctx.fillStyle = `rgba(20,8,0,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(255,180,100,${0.6*flicker})`;
+        ctx.fillText('CAM-03 HOSPODA', mx+3, my+8);
+        // Bar shape
+        ctx.fillStyle = `rgba(180,120,60,${0.12*flicker})`;
+        ctx.fillRect(mx+mW*0.1, my+mH2*0.6, mW*0.8, mH2*0.15);
+      } else if(mIdx === 3){
+        // CCTV – ulice
+        ctx.fillStyle = `rgba(5,5,8,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(150,170,200,${0.6*flicker})`;
+        ctx.fillText('CAM-04 ULICE', mx+3, my+8);
+        // Lampa glow
+        const lampA = 0.3+0.1*Math.sin(ft*2+4);
+        ctx.fillStyle = `rgba(255,200,100,${lampA*flicker})`;
+        ctx.beginPath(); ctx.arc(mx+mW*0.5, my+mH2*0.3, mW*0.15, 0, Math.PI*2); ctx.fill();
+      } else if(mIdx === 4){
+        // CCTV – Křemže náměstí
+        ctx.fillStyle = `rgba(6,10,20,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(100,150,220,${0.6*flicker})`;
+        ctx.fillText('CAM-05 KŘEMŽE', mx+3, my+8);
+        // Kašna
+        ctx.strokeStyle = `rgba(100,140,200,${0.15*flicker})`; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.ellipse(mx+mW*0.5, my+mH2*0.55, mW*0.2, mH2*0.12, 0, 0, Math.PI*2); ctx.stroke();
+      } else if(mIdx === 5){
+        // Audio waveform – odposlech
+        ctx.fillStyle = `rgba(0,0,0,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(0,255,200,${0.7*flicker})`;
+        ctx.fillText('AUDIO-01', mx+3, my+8);
+        // Waveform
+        ctx.strokeStyle = `rgba(0,255,180,${0.5*flicker})`; ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let wx = 0; wx < mW-6; wx++){
+          const wy = my+mH2*0.5 + Math.sin(wx*0.3+ft*12)*mH2*0.25*Math.sin(wx*0.05+ft*3);
+          wx === 0 ? ctx.moveTo(mx+3+wx, wy) : ctx.lineTo(mx+3+wx, wy);
+        }
+        ctx.stroke();
+      } else if(mIdx === 6){
+        // GPS tracker – mapa
+        ctx.fillStyle = `rgba(5,15,5,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(0,200,100,${0.7*flicker})`;
+        ctx.fillText('GPS TRACK', mx+3, my+8);
+        // Cestičky mapy
+        ctx.strokeStyle = `rgba(0,150,80,${0.2*flicker})`; ctx.lineWidth = 0.5;
+        for(let li = 0; li < 5; li++){
+          ctx.beginPath();
+          ctx.moveTo(mx+Math.sin(li*3)*mW*0.3+mW*0.5, my+mH2*0.2);
+          ctx.lineTo(mx+Math.cos(li*2)*mW*0.3+mW*0.5, my+mH2*0.8);
+          ctx.stroke();
+        }
+        // Blikající bod – "subjekt"
+        const dotA = 0.5 + 0.5*Math.sin(ft*5);
+        ctx.fillStyle = `rgba(255,50,50,${dotA*flicker})`;
+        ctx.beginPath(); ctx.arc(mx+mW*0.55+Math.sin(ft*0.5)*mW*0.15, my+mH2*0.5+Math.cos(ft*0.3)*mH2*0.2, 3, 0, Math.PI*2); ctx.fill();
+      } else if(mIdx === 7){
+        // Hráčův profil – fotka + data
+        ctx.fillStyle = `rgba(10,10,20,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(255,100,100,${0.7*flicker})`;
+        ctx.fillText('SUBJEKT: HRUBEŠ', mx+3, my+8);
+        ctx.fillStyle = `rgba(200,200,220,${0.4*flicker})`;
+        ctx.fillRect(mx+3, my+12, mW*0.35, mH2*0.55);
+        ctx.font = '6px monospace'; ctx.fillStyle = `rgba(180,180,200,${0.5*flicker})`;
+        ctx.fillText('VĚK: 18', mx+mW*0.42, my+20);
+        ctx.fillText('ŠKOLA: OA', mx+mW*0.42, my+28);
+        ctx.fillText('STATUS: AKTIV', mx+mW*0.42, my+36);
+        ctx.fillText('RISK: VYSOKÝ', mx+mW*0.42, my+44);
+      } else if(mIdx === 8){
+        // Janin profil
+        ctx.fillStyle = `rgba(10,5,15,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(255,100,180,${0.7*flicker})`;
+        ctx.fillText('SUBJEKT: KOSOVÁ', mx+3, my+8);
+        ctx.fillStyle = `rgba(200,180,210,${0.4*flicker})`;
+        ctx.fillRect(mx+3, my+12, mW*0.35, mH2*0.55);
+        ctx.font = '6px monospace'; ctx.fillStyle = `rgba(190,170,200,${0.5*flicker})`;
+        ctx.fillText('STAV: UTEKLA', mx+mW*0.42, my+20);
+        ctx.fillText('POSL.POZICE:', mx+mW*0.42, my+28);
+        ctx.fillText('  BILLA', mx+mW*0.42, my+36);
+      } else if(mIdx === 9){
+        // Log soubor – text scrolling
+        ctx.fillStyle = `rgba(0,0,5,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '6px monospace'; ctx.fillStyle = `rgba(0,200,255,${0.5*flicker})`;
+        const logs = ['[LOG] Hrubeš vstoupil Billa','[LOG] Kontakt: Kosová','[LOG] Nákup: kratom 50g','[LOG] Přesun: hospoda','[LOG] Kontakt: Johnny','[LOG] Podezřelá aktivita'];
+        const scrollOff = Math.floor(ft*0.8) % logs.length;
+        for(let li = 0; li < Math.min(6, mH2/8); li++){
+          const logIdx = (scrollOff + li) % logs.length;
+          ctx.fillText(logs[logIdx], mx+2, my+8+li*8);
+        }
+      } else if(mIdx === 10){
+        // Finanční data – Vaza Systems
+        ctx.fillStyle = `rgba(8,5,0,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        ctx.font = '7px monospace'; ctx.fillStyle = `rgba(255,180,50,${0.7*flicker})`;
+        ctx.fillText('VAZA SYSTEMS', mx+3, my+8);
+        ctx.font = '6px monospace'; ctx.fillStyle = `rgba(255,80,80,${0.6*flicker})`;
+        ctx.fillText('TRŽBY: -87%', mx+3, my+18);
+        ctx.fillText('ZISK: -142K', mx+3, my+26);
+        ctx.fillStyle = `rgba(255,50,50,${0.5*flicker})`;
+        // Graf padající dolů
+        ctx.beginPath(); ctx.moveTo(mx+3, my+mH2*0.45);
+        for(let gx = 0; gx < mW-6; gx++){
+          ctx.lineTo(mx+3+gx, my+mH2*0.45 + gx*gx*0.003 + Math.sin(gx*0.3)*2);
+        }
+        ctx.strokeStyle = `rgba(255,60,60,${0.5*flicker})`; ctx.lineWidth = 1; ctx.stroke();
+      } else {
+        // Šum / static
+        ctx.fillStyle = `rgba(10,10,15,${flicker})`; ctx.fillRect(mx, my, mW, mH2);
+        for(let ni = 0; ni < 30; ni++){
+          const nx2 = mx + Math.random()*mW, ny2 = my + Math.random()*mH2;
+          ctx.fillStyle = `rgba(${Math.floor(Math.random()*60)},${Math.floor(Math.random()*60)},${Math.floor(Math.random()*80)},${0.3*flicker})`;
+          ctx.fillRect(nx2, ny2, 2, 1);
+        }
+        ctx.font = '8px monospace'; ctx.fillStyle = `rgba(200,50,50,${0.6+0.3*Math.sin(ft*4)})`;
+        ctx.fillText('NO SIGNAL', mx+mW*0.15, my+mH2*0.55);
+      }
+
+      // Scanline overlay
+      if(scanline > 0){
+        ctx.fillStyle = `rgba(255,255,255,${scanline})`; ctx.fillRect(mx, my, mW, 1);
+      }
+      // CRT scanlines
+      for(let sl = 0; sl < mH2; sl += 2){
+        ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(mx, my+sl, mW, 1);
+      }
+    }
+  }
+
+  // ══ OVLÁDACÍ PULT (stůl pod monitory) ══════════════════════════════
+  const deskY = hor*0.92, deskH = H*0.12;
+  const deskG = ctx.createLinearGradient(0, deskY, 0, deskY+deskH);
+  deskG.addColorStop(0, '#1a1828'); deskG.addColorStop(0.5, '#141220'); deskG.addColorStop(1, '#100e18');
+  ctx.fillStyle = deskG; ctx.fillRect(W*0.05, deskY, W*0.90, deskH);
+  ctx.strokeStyle = 'rgba(60,50,90,0.4)'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(W*0.05, deskY, W*0.90, deskH);
+  // Hrana desky
+  ctx.fillStyle = 'rgba(80,65,110,0.3)'; ctx.fillRect(W*0.05, deskY, W*0.90, 3);
+
+  // Klávesnice
+  const kbX = W*0.35, kbY = deskY+deskH*0.25;
+  ctx.fillStyle = 'rgba(25,22,35,0.8)'; rrect(kbX, kbY, W*0.18, deskH*0.45, 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(60,55,80,0.4)'; ctx.lineWidth = 0.8; rrect(kbX, kbY, W*0.18, deskH*0.45, 2); ctx.stroke();
+  for(let kr = 0; kr < 3; kr++){
+    for(let kc = 0; kc < 10; kc++){
+      ctx.fillStyle = `rgba(40,35,55,${0.5+0.1*Math.sin(ft*2+kr*3+kc*5)})`;
+      ctx.fillRect(kbX+3+kc*(W*0.017), kbY+3+kr*(deskH*0.13), W*0.014, deskH*0.10);
+    }
+  }
+
+  // Myš
+  ctx.fillStyle = 'rgba(30,25,40,0.7)';
+  ctx.beginPath(); ctx.ellipse(kbX+W*0.22, kbY+deskH*0.2, W*0.015, deskH*0.18, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = 'rgba(55,50,70,0.4)'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.ellipse(kbX+W*0.22, kbY+deskH*0.2, W*0.015, deskH*0.18, 0, 0, Math.PI*2); ctx.stroke();
+
+  // Dokumenty/složky na stole (rozházené papíry)
+  const papers = [
+    {x:W*0.08, y:deskY+deskH*0.15, w:W*0.06, h:deskH*0.55, rot:-0.12, col:'rgba(200,195,180,0.25)'},
+    {x:W*0.16, y:deskY+deskH*0.20, w:W*0.05, h:deskH*0.50, rot:0.08, col:'rgba(210,200,170,0.20)'},
+    {x:W*0.73, y:deskY+deskH*0.10, w:W*0.07, h:deskH*0.55, rot:0.15, col:'rgba(190,185,170,0.22)'},
+    {x:W*0.82, y:deskY+deskH*0.25, w:W*0.05, h:deskH*0.45, rot:-0.20, col:'rgba(255,220,180,0.18)'},
+  ];
+  papers.forEach(pp => {
+    ctx.save(); ctx.translate(pp.x+pp.w/2, pp.y+pp.h/2); ctx.rotate(pp.rot);
+    ctx.fillStyle = pp.col; ctx.fillRect(-pp.w/2, -pp.h/2, pp.w, pp.h);
+    ctx.strokeStyle = 'rgba(100,90,70,0.15)'; ctx.lineWidth = 0.5; ctx.strokeRect(-pp.w/2, -pp.h/2, pp.w, pp.h);
+    // Textové řádky na papíru
+    for(let tl = 0; tl < 4; tl++){
+      ctx.fillStyle = 'rgba(40,30,20,0.12)'; ctx.fillRect(-pp.w/2+2, -pp.h/2+3+tl*(pp.h/5), pp.w*0.8, 1);
+    }
+    ctx.restore();
+  });
+
+  // Šálek kávy (poloplný, studená)
+  const cupX = W*0.62, cupY = deskY+deskH*0.15;
+  ctx.fillStyle = 'rgba(200,190,180,0.35)';
+  ctx.beginPath(); ctx.ellipse(cupX, cupY+deskH*0.2, W*0.018, deskH*0.15, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(60,40,25,0.30)';
+  ctx.beginPath(); ctx.ellipse(cupX, cupY+deskH*0.18, W*0.014, deskH*0.08, 0, 0, Math.PI*2); ctx.fill();
+  // Ucho
+  ctx.strokeStyle = 'rgba(190,180,170,0.25)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(cupX+W*0.02, cupY+deskH*0.18, deskH*0.08, -0.5, 1.5); ctx.stroke();
+
+  // ══ SERVEROVÝ RACK (vpravo) ═══════════════════════════════════════
+  const rackX = W*0.88, rackY = hor+H*0.02, rackW = W*0.10, rackH = H*0.55;
+  ctx.fillStyle = '#0a0a14'; ctx.fillRect(rackX, rackY, rackW, rackH);
+  ctx.strokeStyle = 'rgba(50,45,70,0.5)'; ctx.lineWidth = 1.5; ctx.strokeRect(rackX, rackY, rackW, rackH);
+  // Jednotky v racku
+  for(let ru = 0; ru < 8; ru++){
+    const ruY = rackY + 4 + ru*(rackH/8);
+    ctx.fillStyle = ru % 2 === 0 ? 'rgba(20,18,30,0.8)' : 'rgba(15,13,25,0.7)';
+    ctx.fillRect(rackX+3, ruY, rackW-6, rackH/8-3);
+    ctx.strokeStyle = 'rgba(45,40,65,0.35)'; ctx.lineWidth = 0.5;
+    ctx.strokeRect(rackX+3, ruY, rackW-6, rackH/8-3);
+    // LED diody
+    for(let led = 0; led < 3; led++){
+      const isOn = Math.sin(ft*3+ru*2+led*4) > -0.3;
+      const ledCol = led === 0 ? (isOn ? 'rgba(0,255,80,0.7)' : 'rgba(0,60,20,0.3)') :
+                     led === 1 ? (isOn ? 'rgba(255,180,0,0.6)' : 'rgba(60,40,0,0.2)') :
+                                 (isOn ? 'rgba(0,150,255,0.5)' : 'rgba(0,30,60,0.2)');
+      ctx.fillStyle = ledCol;
+      ctx.beginPath(); ctx.arc(rackX+8+led*6, ruY+rackH/16, 1.5, 0, Math.PI*2); ctx.fill();
+      // Glow
+      if(isOn){
+        const glowCol = led === 0 ? 'rgba(0,255,80,0.08)' : led === 1 ? 'rgba(255,180,0,0.06)' : 'rgba(0,150,255,0.06)';
+        ctx.fillStyle = glowCol;
+        ctx.beginPath(); ctx.arc(rackX+8+led*6, ruY+rackH/16, 5, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    // Větrák symbol
+    if(ru < 4){
+      const fanA = 0.3;
+      ctx.strokeStyle = `rgba(80,75,100,${fanA})`; ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.arc(rackX+rackW-12, ruY+rackH/16, 5, 0, Math.PI*2); ctx.stroke();
+      // Lopatky
+      for(let bl = 0; bl < 3; bl++){
+        const bAng = ft*15 + bl*Math.PI*2/3;
+        ctx.beginPath();
+        ctx.moveTo(rackX+rackW-12, ruY+rackH/16);
+        ctx.lineTo(rackX+rackW-12+Math.cos(bAng)*4, ruY+rackH/16+Math.sin(bAng)*4);
+        ctx.stroke();
+      }
+    }
+  }
+  // Kabely ze serveru
+  ctx.strokeStyle = 'rgba(40,35,60,0.3)'; ctx.lineWidth = 1;
+  for(let ci = 0; ci < 4; ci++){
+    ctx.beginPath();
+    ctx.moveTo(rackX, rackY+rackH*0.2+ci*rackH*0.18);
+    ctx.bezierCurveTo(rackX-W*0.04, rackY+rackH*0.2+ci*rackH*0.18+10, rackX-W*0.06, hor+H*0.3, rackX-W*0.08, hor+H*0.5);
+    ctx.stroke();
+  }
+
+  // ══ NÁSTĚNKA S FOTKAMI (levá stěna, corková tabule) ════════════════
+  const boardX = W*0.01, boardY = hor*0.10, boardW = W*0.07, boardH = hor*0.80;
+  ctx.fillStyle = 'rgba(140,110,70,0.15)'; ctx.fillRect(boardX, boardY, boardW, boardH);
+  ctx.strokeStyle = 'rgba(100,80,50,0.25)'; ctx.lineWidth = 1; ctx.strokeRect(boardX, boardY, boardW, boardH);
+  // Fotky + provázky
+  const photos = [
+    {y:0.1, label:'J.K.', col:'rgba(255,150,180,0.3)'},
+    {y:0.35, label:'F.H.', col:'rgba(150,200,255,0.3)'},
+    {y:0.60, label:'M.V.', col:'rgba(200,255,150,0.3)'},
+    {y:0.80, label:'???', col:'rgba(255,255,150,0.3)'},
+  ];
+  photos.forEach((ph2, pi) => {
+    const phX = boardX+boardW*0.15, phY = boardY+boardH*ph2.y;
+    ctx.fillStyle = ph2.col; ctx.fillRect(phX, phY, boardW*0.65, boardH*0.18);
+    ctx.strokeStyle = 'rgba(80,60,40,0.2)'; ctx.lineWidth = 0.5; ctx.strokeRect(phX, phY, boardW*0.65, boardH*0.18);
+    ctx.font = '5px monospace'; ctx.fillStyle = 'rgba(200,180,150,0.5)';
+    ctx.fillText(ph2.label, phX+2, phY+boardH*0.16);
+    // Červený provázek
+    if(pi < photos.length-1){
+      ctx.strokeStyle = 'rgba(255,50,50,0.2)'; ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(phX+boardW*0.3, phY+boardH*0.18);
+      ctx.lineTo(boardX+boardW*0.3, boardY+boardH*photos[pi+1].y);
+      ctx.stroke();
+    }
+    // Špendlík
+    ctx.fillStyle = 'rgba(255,50,50,0.5)';
+    ctx.beginPath(); ctx.arc(phX+boardW*0.3, phY-1, 2, 0, Math.PI*2); ctx.fill();
+  });
+
+  // ══ AMBIENTNÍ OSVĚTLENÍ ════════════════════════════════════════════
+  // Modré monitor glow na strop a podlahu
+  const monGlow = ctx.createRadialGradient(W*0.5, hor*0.5, 0, W*0.5, hor*0.5, W*0.6);
+  monGlow.addColorStop(0, `rgba(40,80,160,${0.06+0.02*Math.sin(ft*2)})`);
+  monGlow.addColorStop(0.5, `rgba(30,60,120,${0.03+0.01*Math.sin(ft*2)})`);
+  monGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = monGlow; ctx.fillRect(0, 0, W, H);
+
+  // Odraz monitorů na podlaze
+  ctx.fillStyle = `rgba(30,60,140,${0.04+0.02*Math.sin(ft*1.5)})`;
+  ctx.fillRect(W*0.10, hor, W*0.80, H*0.05);
+
+  // ══ JOHNNY (stojí v místnosti pokud je živý) ═══════════════════════
+  if(!gs.story.johnny_dead && gs.story.johnny_stalking_entered){
+    const jx = W*0.5, jy = hor + (H-hor)*0.4;
+    // Silueta
+    ctx.fillStyle = 'rgba(180,160,100,0.25)';
+    ctx.beginPath(); ctx.arc(jx, jy-20, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(jx-5, jy-12, 10, 25);
+    // Odlesk monitoru na obličeji
+    ctx.fillStyle = `rgba(60,100,200,${0.15+0.05*Math.sin(ft*3)})`;
+    ctx.beginPath(); ctx.arc(jx, jy-20, 7, 0, Math.PI*2); ctx.fill();
+  }
+
+  // ══ DVEŘE ZPĚT (dole uprostřed) ═══════════════════════════════════
+  const doorW2 = W*0.12, doorH2 = H*0.14;
+  const doorX2 = W*0.5-doorW2/2, doorY2 = H*0.88;
+  ctx.fillStyle = '#1a1525'; rrect(doorX2, doorY2, doorW2, doorH2, 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(80,60,120,0.4)'; ctx.lineWidth = 1.5; rrect(doorX2, doorY2, doorW2, doorH2, 2); ctx.stroke();
+  ctx.fillStyle = 'rgba(200,160,60,0.3)'; ctx.beginPath(); ctx.arc(doorX2+doorW2*0.85, doorY2+doorH2*0.5, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.font = '8px monospace'; ctx.fillStyle = 'rgba(120,100,160,0.5)'; ctx.textAlign = 'center';
+  ctx.fillText('▼ ZPĚT', W*0.5, H*0.97); ctx.textAlign = 'left';
 }

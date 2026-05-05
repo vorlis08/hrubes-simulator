@@ -708,6 +708,130 @@ const QF = {
     addLog('Odešel jsi z Johnnyho vily.', 'ls');
   },
 
+  // ─── Smutný Johnny – po vytopení, hráč se vrátí ──────────────────────
+  q_johnny_sit_down(){
+    closeDialog();
+    gs.cutscene_active = true;
+    gs.running = false;
+    setTimeout(() => {
+      showNPCLine('johnny_vila',
+        '*Johnny vytáhne revolver. Pomalu. Bez slova. Roztočí bubínek nad hlavou – klik, klik, klik. Přiloží si hlaveň ke spánku.*',
+        () => setTimeout(() => {
+          screenShake(150);
+          showNPCLine('johnny_vila',
+            '*KLIK.* Prázdná komora. Johnny se ani nepohne. Pak ti podá revolver.',
+            () => setTimeout(() => {
+              addLog('*Johnny ti beze slova podává revolver. Jeho oči jsou prázdné.*', 'lw');
+              fnotif('🔫 Ruská ruleta', 'rep');
+              _showRouletteChoice();
+            }, 800)
+          );
+        }, 1200)
+      );
+    }, 600);
+  },
+  q_johnny_sad_leave(){
+    closeDialog();
+    gs.story.johnny_sad_tried_leave = true;
+    addLog('Otočíš se ke dveřím.', 'ls');
+    fnotif('[E] Odejít z vily', 'rep');
+  },
+
+  // Ruská ruleta – hráč odmítne
+  q_roulette_refuse(){
+    closeDialog();
+    gs.story.roulette_refused = true;
+    showPlayerLine('"Tohle dělat nebudu, Johnny. Jsi nemocnej."',
+      () => setTimeout(() => {
+        showNPCLine('johnny_vila',
+          '*Johnny sklopí oči. Pomalu schová revolver.* "...OK." *pauza* "Běž. Prostě... běž."',
+          () => {
+            gs.cutscene_active = false;
+            gs.running = true;
+            gs.story.johnny_roulette_done = true;
+            gs.story.johnny_sad_tried_leave = true;
+            addLog('Johnny je zklamaný. Ale nechá tě odejít.', 'ls');
+            fnotif('[E] Odejít (u dveří)', 'rep');
+          }
+        );
+      }, 500)
+    );
+  },
+
+  // Ruská ruleta – hráč vystřelí (klik – prázdná komora)
+  q_roulette_shoot(){
+    closeDialog();
+    showPlayerLine('*Sebereš koule. Přiložíš hlaveň ke spánku. Prstem na spoušti...*',
+      () => setTimeout(() => {
+        screenShake(250);
+        addLog('*KLIK.* Prázdná komora. Ticho. Johnny na tebe zírá.', 'lm');
+        setTimeout(() => {
+          showNPCLine('johnny_vila',
+            '*Johnny se usměje. Poprvé za celou dobu.* "Máš koule, Fando." *vezme revolver zpět* "Jsi jinej než ostatní."',
+            () => setTimeout(() => {
+              gs.cutscene_active = false;
+              gs.running = true;
+              gs.story.johnny_roulette_done = true;
+              gs.story.johnny_roulette_played = true;
+              gainRep(10, 'Přežil ruskou ruletu s Johnnym');
+              addLog('Johnny ti stiskne ruku. Tohle mezi vámi zůstane.', 'lm');
+              fnotif('+10 REP','rep');
+            }, 800)
+          );
+        }, 1500);
+      }, 1200)
+    );
+  },
+
+  // Hráč zkusí odejít → E u dveří → Johnny střílí do kolene
+  q_johnny_knee_shot(){
+    gs.cutscene_active = true;
+    gs.running = false;
+    gs.story.johnny_knee_shot = true;
+    screenShake(500);
+    addLog('💥 *BANG!* Ostrá bolest v koleni. Padáš k zemi.', 'lw');
+    fnotif('💥 Prostřelené koleno!', 'rep');
+    setTimeout(() => _startJohnnyMonologue(), 1500);
+  },
+
+  // Stalking room – po želízka path
+  q_johnny_stalking_enter(){
+    closeDialog();
+    gs.story.johnny_stalking_entered = true;
+    gs.room = 'johnny_stalking';
+    initRoom(canvas.width * 0.5, canvas.height * 0.7);
+    setTimeout(() => {
+      showNPCLine('johnny_vila',
+        '"Vítej v mým operačním centru, Fando." *ukáže na stěnu monitorů* "Patnáct kamer. Celá Křemže. Každý ulice, každý obchod, každý barák."',
+        () => setTimeout(() => {
+          showNPCLine('johnny_vila',
+            '"Víš proč to dělám?" *sedne si k pultu* "Vaza Systems. Doplňky výživy. Dropshipping." *hořký smích* "Tržby? Minus osmdesát sedm procent za poslední kvartál. Víš co to znamená?"',
+            () => setTimeout(() => {
+              showNPCLine('johnny_vila',
+                '"Znamená to, že musíš najít jiný zdroj příjmů." *přejede prstem po klávesnici* "Tahle místnost mi vydělá víc za měsíc než Vaza za rok. Data, Fando. Data jsou nová měna."',
+                () => setTimeout(() => {
+                  showNPCLine('johnny_vila',
+                    '"Sleduju lidi. Kdo kam chodí. S kým mluví. Co kupuje." *přepne kameru na Billu* "Jana. Mates. Milan. Figurová. Šaman. Všichni." *otočí se k tobě* "I tebe, Fando. Celou dobu."',
+                    () => setTimeout(() => {
+                      showNPCLine('johnny_vila',
+                        '"Ale neboj se." *vstane* "Teď jsi na mý straně. Po tom co jsme spolu prožili..." *dotkne se spánku, kde si přiložil revolver* "...jsi jedinej člověk v Křemži, kterýmu věřím."',
+                        () => {
+                          addLog('Johnny ti odhalil své tajemství. Sledovací centrum pod vilou.', 'lm');
+                          fnotif('📡 Tajemství odhaleno', 'rep');
+                          gainRep(8, 'Odhalení Johnnyho stalkovacího centra');
+                        }
+                      );
+                    }, 600)
+                  );
+                }, 600)
+              );
+            }, 600)
+          );
+        }, 600)
+      );
+    }, 1000);
+  },
+
   // ─── Webovky – hospoda ────────────────────────────────────────────────────
   q_johnny_hospoda_webovka(){
     gs.story.hospoda_webovka_asked = true;
@@ -770,8 +894,10 @@ const QF = {
   q_koupelna_sink(){
     if(gs.story.sink_used) return;
     gs.story.sink_used = true;
-    addLog('Pustil jsi vodu v umyvadle. Teče. Zase jsi ji zavřel.', 'ls');
-    fnotif('🚰 Achievement!','pos');
+    gs.sink_water_anim = { t0: gs.ts };
+    addLog('*Otočíš kohoutkem. Voda prudce vystříkne z umyvadla – tlak je šílený!* 💦', 'lw');
+    fnotif('💦 Voda stříká!','pos');
+    screenShake(200);
   },
   // Villa – šuplík s práškem (obývák)
 

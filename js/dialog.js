@@ -410,6 +410,9 @@ function getStage(id){
       if(s.mraz_explain_line === 0) return 1;
       return 0;
     case 'johnny_vila':
+      if(s.johnny_stalking_revealed) return 7;
+      if(s.johnny_roulette_done) return 6;
+      if(s.johnny_sad_couch) return 5;
       if(s.johnny_webovka_ready && !s.johnny_webovka_done) return 4;
       if(s.johnny_return_visit) return 3;
       if(s.jana_drugged_villa && !s.johnny_villa_rewards) return 2;

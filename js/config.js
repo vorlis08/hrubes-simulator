@@ -584,6 +584,27 @@ const NPCS = {
           {label:'(Odejít)', fn:'q_johnny_return_leave'},
         ]
       },
+      {
+        // stage 5 – smutný Johnny na gauči (po vytopení)
+        text:'*Johnny sedí na gauči v rozbité místnosti. Všude díry od zbraně. Mlčí. Hledí do země.* "..." *dlouhé ticho* "Sedni si, Fando."',
+        choices:[
+          {label:'🪑 Sednout si vedle něj', cls:'special', fn:'q_johnny_sit_down'},
+          {label:'(Odejít)', cls:'danger', fn:'q_johnny_sad_leave'},
+        ]
+      },
+      {
+        // stage 6 – po ruletě (hotovo)
+        text:'*Johnny sedí na gauči. Oči červené, ruce se mu třesou.* "..." *nedívá se na tebe*',
+        choices:[{label:'(Odejít)', fn:'close'}]
+      },
+      {
+        // stage 7 – stalking room revealed
+        text:'"Fando." *stojí ve své tajné místnosti, obklopen obrazovkami* "Pojď dál. Chci ti něco ukázat."',
+        choices:[
+          {label:'👀 Vejít dovnitř', cls:'special', fn:'q_johnny_stalking_enter'},
+          {label:'(Odejít)', fn:'close'},
+        ]
+      },
     ]
   },
 
@@ -720,6 +741,7 @@ const ROOMS = {
   heaven:      { name:'Nebeské schody', icon:'✨',  sub:'Věčnost',               bg:'#fffef8', npcs:[],              spawns:{} },
   heaven_gate: { name:'Boží brána',     icon:'🌟',  sub:'Vstup do věčnosti',    bg:'#fffef0', npcs:['kratom_buh'],  spawns:{} },
   cibulka_lab: { name:'Cibulkova laboratoř', icon:'🔬', sub:'Tajná místnost za krbem', bg:'#040810', npcs:[], spawns:{} },
+  johnny_stalking: { name:'Tajná místnost', icon:'📡', sub:'Sledovací centrum', bg:'#030308', npcs:[], spawns:{} },
 };
 
 const RORDER = ['ucebna','billa','hospoda','ulice','kremze'];

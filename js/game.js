@@ -130,6 +130,9 @@ function initRoom(spawnX, spawnY){
   // Johnny vila – schovat v ložnici
   if(gs.room === 'johnny_vila' && gs.story.johnny_bedroom)
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
+  // Sad Johnny / Dead Johnny – skrýt normální NPC (renderuje se custom)
+  if(gs.room === 'johnny_vila' && (gs.story.johnny_sad_couch || gs.story.johnny_dead))
+    currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
   // Gun scene / dodge – Johnny a Jana jsou v koupelně, ne ve vile
   if(gs.room === 'koupelna' && gs.story.gun_scene_done && !gs.story.jana_fleeing)
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
@@ -294,6 +297,23 @@ function checkProx(){
     const jx = canvas.width * 0.65, jy = canvas.height * 0.55;
     if(dist2(p, {x:jx, y:jy}) < PROX_R * 1.5){ best = {isJohnnyKeys:true}; }
   }
+  // Sad Johnny on couch – interakce
+  if(gs.room === 'johnny_vila' && gs.story.johnny_sad_couch && !gs.story.johnny_roulette_done && !gs.story.johnny_dead){
+    const jx = canvas.width * 0.28, jy = canvas.height * 0.60;
+    if(dist2(p, {x:jx, y:jy}) < PROX_R * 1.5){
+      best = {isNPC:true, ...NPCS.johnny_vila, id:'johnny_vila', x:jx, y:jy};
+    }
+  }
+  // Sad Johnny – dveře z vily (trap)
+  if(gs.room === 'johnny_vila' && gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
+    const exitX = canvas.width * 0.5, exitY = canvas.height * 0.92;
+    if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){ best = {isVillaExitTrap:true}; }
+  }
+  // Stalking room door (po želízka path, po roulette)
+  if(gs.room === 'johnny_vila' && gs.story.johnny_roulette_played && !gs.story.johnny_stalking_revealed){
+    const sdx = canvas.width * 0.08, sdy = canvas.height * 0.55;
+    if(dist2(p, {x:sdx, y:sdy}) < PROX_R * 1.2){ best = {isStalkingDoor:true}; }
+  }
 
   // Regál mléka v Bille – tajný vchod
   if(gs.room === 'billa' && gs.story.sklep_unlocked && !gs.shelf_sliding){
@@ -422,6 +442,10 @@ function checkProx(){
       document.getElementById('ptxt').textContent = 'Pustit vodu';
     } else if(best.isJohnnyKeys){
       document.getElementById('ptxt').textContent = 'Vzít klíče od Johnnyho';
+    } else if(best.isVillaExitTrap){
+      document.getElementById('ptxt').textContent = '[E] Odejít z vily';
+    } else if(best.isStalkingDoor){
+      document.getElementById('ptxt').textContent = '🚪 Otevřít tajné dveře';
     } else if(best.isFireplace){
       document.getElementById('ptxt').textContent = 'Hodit Číhalovou do krbu';
     } else if(best.isFigurovaDoor){
@@ -524,6 +548,11 @@ function interact(){
           gs.story.johnny_bedroom = true;
           addLog('Johnnyho vila je tichá. Johnny s Janou nejsou v obýváku.', 'ls');
         }
+        // Návrat po vytopení – smutný Johnny
+        if(gs.story.jana_escaped_success && !gs.story.johnny_sad_couch && !gs.story.johnny_dead){
+          gs.story.johnny_sad_couch = true;
+          addLog('*Vila je tichá. Všude díry od zbraně. Johnny sedí sám na gauči.*', 'lw');
+        }
         gs.room = 'johnny_vila'; initRoom(canvas.width * 0.5, canvas.height * 0.7);
         // Při návratu start 20s timer
         if(gs.story.johnny_return_visit && !gs.story.johnny_bedroom && gs.johnny_stay_deadline === 0){
@@ -586,6 +615,27 @@ function interact(){
       gs.inv.klice_vila = 1; updateInv();
       addLog('Vzal jsi Johnnymu klíče od baráku. Nemůže se bránit.', 'lw');
       fnotif('🔑 Klíče od vily','itm'); return;
+    }
+  }
+
+  // Villa exit trap – Johnny střílí do kolene
+  if(gs.room === 'johnny_vila' && gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
+    const exitX = canvas.width * 0.5, exitY = canvas.height * 0.92;
+    if(dist2(gs.player, {x:exitX, y:exitY}) < PROX_R * 1.5){
+      runQF('q_johnny_knee_shot'); return;
+    }
+  }
+  // Stalking door
+  if(gs.room === 'johnny_vila' && gs.story.johnny_roulette_played && !gs.story.johnny_stalking_revealed){
+    const sdx = canvas.width * 0.08, sdy = canvas.height * 0.55;
+    if(dist2(gs.player, {x:sdx, y:sdy}) < PROX_R * 1.2){
+      gs.story.johnny_stalking_revealed = true;
+      addLog('*Otevřeš dveře, které tu předtím nebyly...*', 'lw');
+      fnotif('🚪 Tajné dveře!', 'rep');
+      // Johnny NPC se přesune do stalking roomu
+      const johnny = currentNPCs.find(n => n.id === 'johnny_vila');
+      if(johnny) showDialog(johnny);
+      return;
     }
   }
 
@@ -1075,7 +1125,20 @@ function update(dt){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
+    // Sad Johnny – hráč chce odejít, musí stisknout E u dveří → Johnny střílí
+    if(gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
+      const exitX = W2 * 0.5, exitY = H2 * 0.92;
+      if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){
+        // Blokuj odchod - počkej na E
+        p.y = Math.min(p.y, H2 * 0.92);
+      }
+    }
     if(p.y > H2){
+      // Sad Johnny knee shot trap
+      if(gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
+        p.y = H2 - 5;
+        return;
+      }
       // Odchod z vily – zastavit stay timer a nastavit flag
       if(gs.story.johnny_villa_rewards && !gs.story.johnny_return_left){
         gs.story.johnny_return_left = true;
@@ -1124,6 +1187,11 @@ function update(dt){
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
     if(p.y > H2) { changeRoom('down'); return; }
+  } else if(gs.room === 'johnny_stalking'){
+    const W2 = canvas.width, H2 = canvas.height;
+    p.x = Math.max(30, Math.min(W2 - 30, p.x));
+    p.y = Math.max(H2 * 0.35, Math.min(H2 - 30, p.y));
+    if(p.y >= H2 - 35){ gs.room = 'johnny_vila'; initRoom(canvas.width * 0.10, canvas.height * 0.55); return; }
   } else if(gs.room === 'cibulka_lab'){
     // Cibulkova laboratoř – pohyb omezen, exit pouze krbem (interakce)
     const W2 = canvas.width, H2 = canvas.height;

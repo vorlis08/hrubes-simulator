@@ -756,6 +756,88 @@ function _mazeFinish(success){
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// RUSKÁ RULETA + JOHNNY MONOLOG
+// ═══════════════════════════════════════════════════════════════════
+
+function _showRouletteChoice(){
+  const npc = NPCS.johnny_vila;
+  document.getElementById('dav').textContent = npc.emoji;
+  document.getElementById('dname').textContent = npc.name.toUpperCase();
+  document.getElementById('drole').textContent = 'Ruská ruleta';
+  document.getElementById('dtxt').textContent = '*Johnny ti podal revolver. Jedna kulka v bubínku. Co uděláš?*';
+  document.getElementById('dchoices').innerHTML =
+    `<button class="db danger" onclick="QF.q_roulette_refuse()">🚫 "Tohle dělat nebudu."</button>` +
+    `<button class="db special" onclick="QF.q_roulette_shoot()">🔫 Sebrat koule a vystřelit</button>`;
+  document.getElementById('dov').classList.add('on');
+}
+
+const _JOHNNY_MONOLOGUE = [
+  {who:'j', text:'"Fando..." *přijde k tobě, revolver v ruce* "Myslel jsem, že jsme kamarádi."'},
+  {who:'p', text:'"Johnny, uklidni se—"'},
+  {who:'j', text:'"UKLIDNIT?!" *kopne do stolu, sklenice se roztříští* "Já jsem se UKLIDNIL! Celej život se kurva uklidňuju!"'},
+  {who:'j', text:'"Víš co to je, mít firmu v Křemži? Vaza Systems?" *divoce gestikuluje revolverem* "Každej den vstaneš, sedneš si k počítači, a předstíráš, že tvůj e-shop s doplňky výživy je budoucnost."'},
+  {who:'p', text:'"Johnny, polož tu zbraň. Můžeme si promluvit—"'},
+  {who:'j', text:'"PROMLUVIT?!" *zasměje se, ale oči jsou mrtvé* "S kým? S tebou? S Janou, co utekla? S těma lidma v hospodě, co se mi smějou za zádama?"'},
+  {who:'j', text:'"Víš proč jsem chtěl to rande? Protože Jana... ona se na mě podívala. Jednou. V Bille. A já jsem si myslel—" *hlas se mu zlomí* "—že možná nejsem úplně sám."'},
+  {who:'p', text:'"Nejsi sám, Johnny. Já jsem tady—"'},
+  {who:'j', text:'"TY JSI TADY PROTOŽE JSI MI VYTOPIL BARÁK!" *namíří na tebe, pak zase sklop* "Protože jsi mi zničil koupelnu. Protože jsi mě ponížil před jedinou ženskou, která se na mě podívala." *kroutí hlavou*'},
+  {who:'p', text:'"To nebyla moje vina. Jana—"'},
+  {who:'j', text:'"Jana nic! To jsi byl TY, Fando! TY jsi jí dal ten hadr! TY jsi to naplánoval!" *klepe se mu ruka* "A víš co je nejhorší? Že máš pravdu. Že jsem se choval jak debil. Ale to neznamená, že to nebolí."'},
+  {who:'p', text:'"Máš pravdu, choval jsem se taky blbě. Ale zabít se? Tím nic nevyřešíš."'},
+  {who:'j', text:'"ŘEŠIT?!" *zuří* "Co je tu k řešení?! Vaza Systems generuje tržby jak mrtvolnej e-shop! Jana utekla! Koupelna je pod vodou! A teď mi říkáš, že mám ŘEŠIT?!"'},
+  {who:'j', text:'"Hele... hele..." *sedne si, dýchá zrychleně* "Já jsem měl plány, Fando. Měl jsem byznys plán. Expanze do Budějovic. Affiliate marketing. Dropshipping." *hořký smích* "A teď sedím v rozbité vile a hraju ruskou ruletu sám se sebou."'},
+  {who:'p', text:'"Byznys plány můžeš přepsat. Koupelnu opravit. Ale tohle—" *ukážeš na revolver* "—tohle se neopraví."'},
+  {who:'j', text:'*dlouhé ticho* "..." *oči mu těkají* "Víš co... víš co je taky divný?" *vstane, přechází po místnosti* "Že mě ty argumenty vůbec nezajímají."'},
+  {who:'j', text:'"Protože já vím, Fando. Já VŽDYCKY věděl, že Vaza Systems je šrot. Že ten dropshipping je podvod. Že Jana mě nemiluje. Že nikdo mě nemiluje." *otočí se k tobě* "Ale hrál jsem tu hru. Každej den. Protože co jinýho ti zbývá v Křemži?"'},
+  {who:'p', text:'"Johnny—"'},
+  {who:'j', text:'"NE!" *pozvedne revolver ke spánku* "Dost! Dost řečí! Dost argumentů! Dost kurva VŠEHO!"'},
+];
+
+function _startJohnnyMonologue(){
+  gs.johnny_monologue_anim = { phase:'talking', t0:gs.ts, lineIndex:0 };
+  _playMonologueLine(0);
+}
+
+function _playMonologueLine(idx){
+  if(idx >= _JOHNNY_MONOLOGUE.length){
+    _endJohnnyMonologue();
+    return;
+  }
+  const line = _JOHNNY_MONOLOGUE[idx];
+  gs.johnny_monologue_anim.lineIndex = idx;
+  const delay = line.text.length * 28 + 800;
+  if(line.who === 'j'){
+    showNPCLine('johnny_vila', line.text, () => {
+      setTimeout(() => _playMonologueLine(idx+1), 400);
+    });
+  } else {
+    showPlayerLine(line.text, () => {
+      setTimeout(() => _playMonologueLine(idx+1), 400);
+    });
+  }
+}
+
+function _endJohnnyMonologue(){
+  screenShake(600);
+  addLog('💥 *BANG.*', 'lw');
+  setTimeout(() => {
+    addLog('*Johnny padá. Revolver klouže po podlaze. Ticho.*', 'lw');
+    gs.story.johnny_dead = true;
+    gs.johnny_monologue_anim = { phase:'dead', t0:gs.ts };
+    setTimeout(() => {
+      addLog('*Ležíš na zemi s prostřeleným kolenem. Johnny leží vedle tebe. Navždy.*', 'lw');
+      fnotif('Johnny je mrtvý', 'rep');
+      setTimeout(() => {
+        gs.cutscene_active = false;
+        gs.running = true;
+        gs.story.johnny_monologue_over = true;
+        addLog('Zvedneš se. Koleno bolí, ale jdeš. Musíš jít.', 'ls');
+      }, 3000);
+    }, 2000);
+  }, 1500);
+}
+
 // Render bludiště
 function drawMazeEscape(W,H,t){
   const m = gs.maze;
