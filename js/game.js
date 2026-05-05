@@ -410,6 +410,11 @@ function checkProx(){
   if(gs.room === 'cibulka_lab'){
     const krbX = canvas.width * 0.50, krbY = canvas.height * 0.45;
     if(dist2(p, {x:krbX, y:krbY}) < PROX_R * 1.3){ best = {isLabExit:true}; }
+    // Šíša antidote
+    if(gs.shisha_effects && !gs.shisha_cured && gs.story.shisha_antidote_quest){
+      const ampX = canvas.width * 0.60, ampY = canvas.height * 0.72;
+      if(dist2(p, {x:ampX, y:ampY}) < PROX_R * 1.3){ best = {isShishaAntidote:true}; }
+    }
     // Šuplík
     const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
     if(!gs.story.kgb_detector_from_lab && dist2(p, {x:supX, y:supY}) < PROX_R * 1.2){
@@ -476,6 +481,8 @@ function checkProx(){
       document.getElementById('ptxt').textContent = '🔬 Vstoupit do Cibulkovy laboratoře';
     } else if(best.isLabExit){
       document.getElementById('ptxt').textContent = '🔥 Zpět do hospody';
+    } else if(best.isShishaAntidote){
+      document.getElementById('ptxt').textContent = '💚 Vzít zelenou ampulku (protilék)';
     } else if(best.isCibulkaSuplik){
       document.getElementById('ptxt').textContent = gs.inv.klic_supliku ? '🗝️ Otevřít šuplík klíčkem' : '🔒 Šuplík (potřebuješ klíček)';
     } else if(best.isItem){
@@ -492,6 +499,23 @@ function checkProx(){
 
 function interact(){
   // Cibulkova laboratoř – šuplík (klíček od Páji)
+  // Cibulkova laboratoř – šíša protilék (zelená ampulka)
+  if(gs.room === 'cibulka_lab' && gs.shisha_effects && !gs.shisha_cured && gs.story.shisha_antidote_quest){
+    const ampX = canvas.width * 0.60, ampY = canvas.height * 0.72;
+    if(dist2(gs.player, {x:ampX, y:ampY}) < PROX_R * 1.3){
+      gs.shisha_cured = true;
+      gs.shisha_effects = false;
+      gs.shisha_deadline = 0;
+      addLog('*Otevřeš šuplík pod monitorem. Uvnitř je zelená ampulka s nápisem "АНТИДОТ".*', 'lm');
+      setTimeout(() => {
+        addLog('*Rozlomíš ampulku a spolkneš obsah. Chuť je odporná, ale po pár sekundách se svět zaostří.*', 'lm');
+        screenShake(200);
+        fnotif('💚 Protilék zaúčinkoval!', 'pos');
+        gainRep(5, 'Přežil otravu Milanovou šíšou');
+      }, 800);
+      return;
+    }
+  }
   if(gs.room === 'cibulka_lab' && !gs.story.kgb_detector_from_lab){
     const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
     if(dist2(gs.player, {x:supX, y:supY}) < PROX_R * 1.2){
@@ -554,6 +578,26 @@ function interact(){
           addLog('*Vila je tichá. Všude díry od zbraně. Johnny sedí sám na gauči.*', 'lw');
         }
         gs.room = 'johnny_vila'; initRoom(canvas.width * 0.5, canvas.height * 0.7);
+        // Šíša – povinná při prvním vstupu
+        if(!gs.story.shisha_smoked && !gs.story.jana_escaped_success && !gs.story.johnny_dead){
+          gs.story.shisha_smoked = true;
+          gs.cutscene_active = true;
+          setTimeout(() => {
+            showNPCLine('johnny_vila', '"Hrubeši! Sedni si. Dáme si šíšu." *Johnny vytáhne pochybnou dýmku* "Příchuť KRÉMEŽSKÁ MLHA – Milan mi ji sehnal. Dva tahy a jsi v ráji."', () => {
+              addLog('*Natáhneš se k dýmce a potáhneš. Dým je hustý a sladce pálí v krku.*', 'lm');
+              setTimeout(() => {
+                addLog('*Druhý potah. Svět se trochu roztřese...*', 'lm');
+                screenShake(200);
+                setTimeout(() => {
+                  showNPCLine('johnny_vila', '"Vidíš? Ráj. Milan říkal, že to je z Thajska. Nebo z garáže. Kdo ví." *zasmání*', () => {
+                    gs.cutscene_active = false;
+                    addLog('Šíša má divnou příchuť. Asi to přejde...', 'ls');
+                  });
+                }, 800);
+              }, 1200);
+            });
+          }, 600);
+        }
         // Při návratu start 20s timer
         if(gs.story.johnny_return_visit && !gs.story.johnny_bedroom && gs.johnny_stay_deadline === 0){
           gs.johnny_stay_deadline = gs.ts + 20000;
@@ -1084,6 +1128,20 @@ function update(dt){
 
   if(gs.kratom_freeze > 0) gs.kratom_freeze = Math.max(0, gs.kratom_freeze - dt);
 
+  // Šíša timer
+  if(gs.shisha_deadline > 0 && gs.shisha_effects && !gs.shisha_cured && !gs.dead){
+    if(gs.ts >= gs.shisha_deadline){
+      gs.shisha_deadline = 0;
+      triggerDeath(
+        'Účinky pofidérní šíši od Milana tě dostihly.\nMěl jsi najít protilék včas.\nCibulka by ti pomohl... kdybys věděl, kde ho hledat.',
+        'OTRAVA ŠÍŠOU',
+        'KONEC HRY · NAJDI CIBULKU PŘÍŠTĚ',
+        'death_shisha'
+      );
+      return;
+    }
+  }
+
   // Číhalová timer
   if(gs.cihalova_deadline > 0 && !gs.cihalova_collapsed && !gs.dead){
     if(gs.ts >= gs.cihalova_deadline){
@@ -1173,6 +1231,19 @@ function update(dt){
         }, 800);
       } else if(gs.jana_escape_deadline && !gs.story.jana_escaped_success){
         gs.jana_escape_deadline = 0;
+      }
+      // Šíša efekty – aktivují se po odchodu z vily
+      if(gs.story.shisha_smoked && !gs.shisha_effects && !gs.shisha_cured && !gs.story.jana_escaped_success){
+        gs.shisha_effects = true;
+        gs.shisha_deadline = gs.ts + 300000; // 5 minut
+        setTimeout(() => {
+          addLog('*Hlavou ti projede ostrá bolest. Svět se roztřese.* Ty účinky z tý šíši...', 'lw');
+          screenShake(300);
+          setTimeout(() => {
+            addLog('*Žaludek se ti obrací. Vidíš dvojitě.* Toto není normální šíša. Milan to vzal bůhvíkde...', 'lw');
+            fnotif('⚠ OTRAVA ŠÍŠOU – najdi protilék!', 'rep');
+          }, 1500);
+        }, 800);
       }
       gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.60); return;
     }

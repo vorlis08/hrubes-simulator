@@ -627,6 +627,14 @@ function showDialog(npc){
   if(npc.id === 'bezdak' && gs.inv.kgb_prukaz > 0 && !gs.story.kgb_prukaz_shown)
     choices.push({label:'🪪 "Krejčí mi dala tohle."', cls:'prim', fn:'q_cibulka_prukaz'});
 
+  // Šíša otrava – žádost o pomoc
+  if(npc.id === 'bezdak' && gs.shisha_effects && !gs.shisha_cured){
+    if(gs.story.bezdak_cibulka)
+      choices.push({label:'🤢 "Cibulko, otrávili mě šíšou od Milana!"', cls:'danger', fn:'q_shisha_ask_cibulka'});
+    else
+      choices.push({label:'🤢 "Je mi blbě... z nějaký šíši..."', cls:'danger', fn:'q_shisha_ask_bezdak'});
+  }
+
   // Krejčí – konfrontovat po skenování
   if(npc.id === 'krejci' && gs.story.paja_krejci_red && !gs.story.paja_pytel_taken)
     choices.push({label:'🔴 "Odhalil jsem vás, Krejčí."', cls:'danger', fn:'q_paja_confront_krejci'});

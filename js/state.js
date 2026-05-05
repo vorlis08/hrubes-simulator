@@ -113,6 +113,11 @@ const gs = {
   roulette_anim:          null,  // { phase, t0, lineIndex, choice } – ruská ruleta s Johnnym
   johnny_knee_shot_anim:  null,  // { t0, phase } – Johnny střílí do kolene hráče
   johnny_monologue_anim:  null,  // { phase, t0, lineIndex } – Johnny šílený monolog
+
+  // Šíša efekty
+  shisha_deadline: 0,     // timestamp kdy hráč umře na následky šíši (0=neaktivní)
+  shisha_effects: false,  // true = vizuální efekty aktivní
+  shisha_cured: false,    // true = vyléčen Cibulkou
 };
 
 function resetGameState(){
@@ -209,6 +214,9 @@ function resetGameState(){
   gs.roulette_anim          = null;
   gs.johnny_knee_shot_anim  = null;
   gs.johnny_monologue_anim  = null;
+  gs.shisha_deadline        = 0;
+  gs.shisha_effects         = false;
+  gs.shisha_cured           = false;
   // Invalidate stale setTimeout callbacks from previous game runs
   gs._gen = (gs._gen || 0) + 1;
 }

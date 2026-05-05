@@ -3718,7 +3718,7 @@ function drawKoupelna(W,H,t){
       rrect(cx-W*0.28, H*0.24, W*0.56, H*0.22, 10); ctx.fill();
 
       // Klávesa prompt
-      const keyLabel = d.dodgeDir === 'left' ? 'A' : 'D';
+      const keyLabel = d.dodgeDir === 'left' ? '←' : '→';
       const dirLabel = d.dodgeDir === 'left' ? 'DOLEVA' : 'DOPRAVA';
       const pulse2 = 0.8 + 0.2*Math.sin(t*0.018);
 
@@ -3727,15 +3727,23 @@ function drawKoupelna(W,H,t){
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText('UHNI ' + dirLabel + '!', cx, H*0.30);
 
-      // Klávesa box
-      const keyX = cx, keyY = H*0.37;
+      // Klávesa box – velká šipka
+      const keyX = cx, keyY = H*0.38;
       const keyPulse = 0.9+0.1*Math.sin(t*0.015);
-      ctx.fillStyle=`rgba(255,220,60,${keyPulse*0.15})`;
-      rrect(keyX-22,keyY-16,44,32,6); ctx.fill();
-      ctx.strokeStyle=`rgba(255,220,60,${keyPulse*0.8})`; ctx.lineWidth=2;
-      rrect(keyX-22,keyY-16,44,32,6); ctx.stroke();
-      ctx.fillStyle=`rgba(255,255,255,${keyPulse})`; ctx.font='bold 20px JetBrains Mono,monospace';
-      ctx.fillText(keyLabel, keyX, keyY+2);
+      // Velký kruh pozadí
+      ctx.fillStyle=`rgba(255,220,60,${keyPulse*0.12})`;
+      ctx.beginPath(); ctx.arc(keyX,keyY,36,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=`rgba(255,220,60,${keyPulse*0.9})`; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(keyX,keyY,36,0,Math.PI*2); ctx.stroke();
+      // Šipka uvnitř
+      ctx.save(); ctx.translate(keyX, keyY);
+      if(d.dodgeDir==='right') ctx.scale(-1,1);
+      ctx.fillStyle=`rgba(255,255,255,${keyPulse})`;
+      ctx.beginPath(); ctx.moveTo(-20,0); ctx.lineTo(6,-16); ctx.lineTo(6,-8); ctx.lineTo(20,-8); ctx.lineTo(20,8); ctx.lineTo(6,8); ctx.lineTo(6,16); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      // Text pod šipkou
+      ctx.fillStyle=`rgba(255,220,60,${keyPulse*0.7})`; ctx.font='bold 12px Outfit,sans-serif';
+      ctx.fillText(d.dodgeDir==='left'?'← nebo A':'→ nebo D', keyX, keyY+52);
 
       // Countdown bar
       const barW = W*0.44, barH = 8;
@@ -4750,6 +4758,53 @@ function render(){
   // Ambient occlusion v rozích pro lepší vzhled
   if(!fpsMonitor || fpsMonitor.fps > 45){
     drawAmbientOcclusion(ctx, W, H, 0.08);
+  }
+
+  // Šíša efekty – vizuální distortion + budík timer
+  if(gs.shisha_effects && !gs.shisha_cured && gs.shisha_deadline > 0){
+    const sRem = Math.max(0, gs.shisha_deadline - gs.ts);
+    const sProg = 1 - sRem / 300000;
+    // Zelenkavý nádech
+    ctx.fillStyle=`rgba(60,120,40,${0.06 + sProg*0.08})`;
+    ctx.fillRect(0,0,W,H);
+    // Vlnění
+    const wAmp = 2 + sProg*4;
+    ctx.save();
+    ctx.translate(Math.sin(t*0.002)*wAmp, Math.cos(t*0.003)*wAmp);
+    ctx.restore();
+    // Dvojité vidění (ghost overlay)
+    if(sProg > 0.3){
+      ctx.globalAlpha = 0.08 + (sProg-0.3)*0.12;
+      ctx.drawImage(canvas, 4+Math.sin(t*0.004)*3, 2+Math.cos(t*0.005)*2);
+      ctx.globalAlpha = 1;
+    }
+    // Digitální rýžový budík – malý widget v rohu
+    const secs = Math.ceil(sRem / 1000);
+    const mins = Math.floor(secs / 60);
+    const s = secs % 60;
+    const timeStr = mins + ':' + (s<10?'0':'') + s;
+    const bW = 96, bH = 44;
+    const bX = W/2 - bW/2, bY = 6;
+    // Budík pozadí – béžový plast
+    ctx.fillStyle='#d4c8a0'; rrect(bX,bY,bW,bH,5); ctx.fill();
+    ctx.strokeStyle='#8a7e5a'; ctx.lineWidth=1.5; rrect(bX,bY,bW,bH,5); ctx.stroke();
+    // LCD pozadí
+    ctx.fillStyle='#a8bf8a'; rrect(bX+6,bY+6,bW-12,bH-20,3); ctx.fill();
+    // Čas
+    const timeFlash = secs <= 30 ? (Math.sin(t*0.01)>0 ? 1 : 0.3) : 1;
+    ctx.fillStyle=`rgba(30,50,20,${timeFlash})`; ctx.font='bold 18px "Courier New",monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(timeStr, bX+bW/2, bY+16);
+    // Nápis pod LCD
+    ctx.fillStyle='rgba(80,60,30,0.7)'; ctx.font='7px sans-serif';
+    ctx.fillText('⚠ ŠÍŠA OTRAVA', bX+bW/2, bY+36);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    // Červený rámeček při málo času
+    if(secs <= 60){
+      const rPulse = 0.3+0.3*Math.sin(t*0.008);
+      ctx.strokeStyle=`rgba(255,0,0,${rPulse})`; ctx.lineWidth=2;
+      ctx.strokeRect(0,0,W,H);
+    }
   }
 
   // Maze – skip normal game rendering
