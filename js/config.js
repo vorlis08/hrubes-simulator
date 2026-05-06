@@ -586,7 +586,12 @@ const NPCS = {
       },
       {
         // stage 5 – smutný Johnny na gauči (po vytopení)
-        text:'*Johnny sedí na gauči v rozbité místnosti. Všude díry od zbraně. Mlčí. Hledí do země.* "..." *dlouhé ticho* "Sedni si, Fando."',
+        textFn: function(){
+          if(gs.story.leg_shot){
+            return '*Johnny sedí na gauči v rozbité místnosti. Všude díry od zbraně. Podívá se na tvou obvázanou nohu.* "...to jsem nechtěl." *dlouhé ticho* "Sedni si, Fando."';
+          }
+          return '*Johnny sedí na gauči v rozbité místnosti. Všude díry od zbraně. Mlčí. Hledí do země.* "..." *dlouhé ticho* "Sedni si, Fando."';
+        },
         choices:[
           {label:'🪑 Sednout si vedle něj', cls:'special', fn:'q_johnny_sit_down'},
           {label:'(Odejít)', cls:'danger', fn:'q_johnny_sad_leave'},

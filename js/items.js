@@ -863,13 +863,17 @@ function _endJohnnyMonologue(){
     gs.story.johnny_dead = true;
     gs.johnny_monologue_anim = { phase:'dead', t0:gs.ts };
     setTimeout(() => {
-      addLog('*Ležíš na zemi s prostřeleným kolenem. Johnny leží vedle tebe. Navždy.*', 'lw');
+      if(gs.story.leg_shot){
+        addLog('*Ležíš na zemi. Obě rány v noze pulzují bolestí. Johnny leží vedle tebe. Navždy.*', 'lw');
+      } else {
+        addLog('*Ležíš na zemi s prostřeleným kolenem. Johnny leží vedle tebe. Navždy.*', 'lw');
+      }
       fnotif('Johnny je mrtvý', 'rep');
       setTimeout(() => {
         gs.cutscene_active = false;
         gs.running = true;
         gs.story.johnny_monologue_over = true;
-        addLog('Zvedneš se. Koleno bolí, ale jdeš. Musíš jít.', 'ls');
+        addLog('Zvedneš se. Noha bolí, ale jdeš. Musíš jít.', 'ls');
       }, 3000);
     }, 2000);
   }, 1500);

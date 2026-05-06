@@ -747,6 +747,9 @@ const QF = {
     closeDialog();
     gs.cutscene_active = true;
     gs.running = false;
+    if(gs.story.leg_shot){
+      addLog('*Sedáš si opatrně – noha ti stále pulzuje bolestí.*', 'lm');
+    }
     setTimeout(() => {
       showNPCLine('johnny_vila',
         '*Johnny vytáhne revolver. Pomalu. Bez slova. Roztočí bubínek nad hlavou – klik, klik, klik. Přiloží si hlaveň ke spánku.*',
@@ -767,7 +770,11 @@ const QF = {
   q_johnny_sad_leave(){
     closeDialog();
     gs.story.johnny_sad_tried_leave = true;
-    addLog('Otočíš se ke dveřím.', 'ls');
+    if(gs.story.leg_shot){
+      addLog('*Kulháš ke dveřím. Johnny sleduje tvůj chromý krok.*', 'ls');
+    } else {
+      addLog('Otočíš se ke dveřím.', 'ls');
+    }
     fnotif('[E] Odejít z vily', 'rep');
   },
 
@@ -823,8 +830,13 @@ const QF = {
     gs.running = false;
     gs.story.johnny_knee_shot = true;
     screenShake(500);
-    addLog('💥 *BANG!* Ostrá bolest v koleni. Padáš k zemi.', 'lw');
-    fnotif('💥 Prostřelené koleno!', 'rep');
+    if(gs.story.leg_shot){
+      addLog('💥 *BANG!* Kulka do stejné nohy. Padáš k zemi s výkřikem.', 'lw');
+      fnotif('💥 Znovu do nohy!', 'rep');
+    } else {
+      addLog('💥 *BANG!* Ostrá bolest v koleni. Padáš k zemi.', 'lw');
+      fnotif('💥 Prostřelené koleno!', 'rep');
+    }
     setTimeout(() => _startJohnnyMonologue(), 1500);
   },
 

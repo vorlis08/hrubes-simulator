@@ -575,7 +575,11 @@ function interact(){
         // Návrat po vytopení – smutný Johnny
         if(gs.story.jana_escaped_success && !gs.story.johnny_sad_couch && !gs.story.johnny_dead){
           gs.story.johnny_sad_couch = true;
-          addLog('*Vila je tichá. Všude díry od zbraně. Johnny sedí sám na gauči.*', 'lw');
+          if(gs.story.leg_shot){
+            addLog('*Vila je tichá. Všude díry od zbraně. Johnny sedí sám na gauči.* Kulháš dovnitř – noha stále bolí.', 'lw');
+          } else {
+            addLog('*Vila je tichá. Všude díry od zbraně. Johnny sedí sám na gauči.*', 'lw');
+          }
         }
         gs.room = 'johnny_vila'; initRoom(canvas.width * 0.5, canvas.height * 0.7);
         // Šíša – povinná při prvním vstupu

@@ -461,7 +461,8 @@ function showDialog(npc){
   document.getElementById('dav').textContent   = npc.emoji;
   document.getElementById('dname').textContent = npc.name.toUpperCase();
   document.getElementById('drole').textContent = npc.role;
-  typeText(document.getElementById('dtxt'), d.text, 16);
+  const dialogText = d.textFn ? d.textFn() : d.text;
+  typeText(document.getElementById('dtxt'), dialogText, 16);
 
   let choices = [...d.choices];
 
