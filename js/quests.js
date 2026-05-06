@@ -434,6 +434,12 @@ const QF = {
   },
   // Vrátit sklenici na stůl
   q_return_glass_to_table(){
+    if(gs.inv.prasek && !gs.story.drink_drugged){
+      gs.story.drink_drugged = true;
+      gs.inv.prasek -= 1;
+      addLog('*Opatrně vysypeš prášek do sklenice. Rozpustí se okamžitě.*', 'lw');
+      fnotif('💊 Drink otrávený', 'rep');
+    }
     gs.inv.sklenice_jana = 0; updateInv();
     addLog('*Položíš sklenici zpět na stůl.*' + (gs.story.drink_drugged ? ' Prášek se rozpustil beze stopy.' : ''), 'ls');
     fnotif('🥃 Sklenice vrácena','rep');

@@ -3669,6 +3669,7 @@ function drawKoupelna(W,H,t){
     const d = gs.dodge;
     const phase = d.phase;
     const cx = W*0.5, cy = H*0.78;
+    const jx = W*0.65, jy = H*0.50;
     // ── Heartbeat vignette (aim + dodge) ──
     if(phase.startsWith('aim') || phase.startsWith('dodge')){
       const hbRate = phase.startsWith('dodge') ? 0.014 : 0.008;
