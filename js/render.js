@@ -3669,73 +3669,178 @@ function drawKoupelna(W,H,t){
     const d = gs.dodge;
     const phase = d.phase;
     const cx = W*0.5, cy = H*0.78;
+    const jx = W*0.38, jy = H*0.52;
 
-    // ── Zaměřovač Johnnyho – sleduje hráče ──
+    // ── Heartbeat vignette (aim + dodge) ──
+    if(phase.startsWith('aim') || phase.startsWith('dodge')){
+      const hbRate = phase.startsWith('dodge') ? 0.014 : 0.008;
+      const hb = Math.pow(Math.abs(Math.sin(t*hbRate)), 3);
+      const hbG = ctx.createRadialGradient(cx,H*0.5,W*0.05,cx,H*0.5,W*0.8);
+      hbG.addColorStop(0,'transparent');
+      hbG.addColorStop(0.6,'transparent');
+      hbG.addColorStop(1,`rgba(60,0,0,${hb*0.35})`);
+      ctx.fillStyle=hbG; ctx.fillRect(0,0,W,H);
+    }
+
+    // ── Johnny postava s pistolí ──
+    if(phase.startsWith('aim') || phase.startsWith('dodge') || phase.startsWith('result') || phase.startsWith('hit') || phase === 'flee'){
+      ctx.save(); ctx.translate(jx, jy);
+      const gunKick = (d.successFlash > 0 || d.hitFlash > 0) ? Math.max(0, 1-(gs.ts-(d.successFlash||d.hitFlash))*0.004)*8 : 0;
+      // Tělo
+      ctx.fillStyle='#1a1a2e'; ctx.fillRect(-12,2,24,28);
+      // Sako
+      ctx.fillStyle='#2a2040'; rrect(-14,-2,28,22,3); ctx.fill();
+      // Hlava
+      ctx.fillStyle='#e8c8a0'; ctx.beginPath(); ctx.arc(0,-16,12,0,Math.PI*2); ctx.fill();
+      // Vlasy
+      ctx.fillStyle='#3a2a10'; ctx.beginPath(); ctx.arc(0,-22,10,Math.PI,0); ctx.fill();
+      // Oči (zuřivé)
+      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-4,-16,2.5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(4,-16,2.5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#c00'; ctx.beginPath(); ctx.arc(-4,-16,1.5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(4,-16,1.5,0,Math.PI*2); ctx.fill();
+      // Obočí (naštvaný)
+      ctx.strokeStyle='#3a2a10'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(-7,-20); ctx.lineTo(-2,-19); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(7,-20); ctx.lineTo(2,-19); ctx.stroke();
+      // Paže s pistolí
+      const gunAng = Math.atan2(cy-jy, cx-jx+((d.playerPos||0)*W*0.05)) + gunKick*0.05;
+      ctx.save(); ctx.translate(14, 4); ctx.rotate(gunAng-0.2);
+      ctx.fillStyle='#e8c8a0'; ctx.fillRect(0,-3,22,6);
+      ctx.fillStyle='#222'; ctx.fillRect(20,-4,14,8);
+      ctx.fillStyle='#111'; ctx.fillRect(32,-2,4,4);
+      ctx.restore();
+      // Label
+      ctx.fillStyle='rgba(255,80,80,0.9)'; ctx.font='bold 10px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.fillText('JOHNNY',0,-34);
+      ctx.restore();
+
+      // ── Muzzle flash ──
+      const flashTS = d.successFlash || d.hitFlash;
+      if(flashTS > 0 && gs.ts - flashTS < 200){
+        const mfP = 1 - (gs.ts - flashTS)/200;
+        const mfX = jx + 46*Math.cos(Math.atan2(cy-jy,cx-jx));
+        const mfY = jy + 46*Math.sin(Math.atan2(cy-jy,cx-jx));
+        const mfG = ctx.createRadialGradient(mfX,mfY,0,mfX,mfY,40*mfP);
+        mfG.addColorStop(0,`rgba(255,255,200,${mfP})`);
+        mfG.addColorStop(0.3,`rgba(255,180,60,${mfP*0.7})`);
+        mfG.addColorStop(1,'transparent');
+        ctx.fillStyle=mfG; ctx.fillRect(mfX-50,mfY-50,100,100);
+        // Jiskry
+        for(let sp=0;sp<8;sp++){
+          const spAng = (sp/8)*Math.PI*2 + gs.ts*0.01;
+          const spDist = (1-mfP)*60;
+          ctx.fillStyle=`rgba(255,220,100,${mfP*0.6})`;
+          ctx.beginPath(); ctx.arc(mfX+Math.cos(spAng)*spDist, mfY+Math.sin(spAng)*spDist, 2*mfP, 0, Math.PI*2); ctx.fill();
+        }
+      }
+    }
+
+    // ── Laser sight od pistole k hráči ──
     if(phase.startsWith('aim') || phase.startsWith('dodge')){
       const crossT = gs.ts*0.003;
-      const crossX = cx + Math.sin(crossT*1.7)*W*0.08 + (d.playerPos||0)*W*0.05;
-      const crossY = cy + Math.sin(crossT*2.3)*H*0.03;
-      const crossA = phase.startsWith('dodge') ? 0.7 : 0.3+0.2*Math.sin(t*0.008);
+      const sway = phase.startsWith('dodge') ? 0.03 : 0.08;
+      const crossX = cx + Math.sin(crossT*1.7)*W*sway + (d.playerPos||0)*W*0.12;
+      const crossY = cy + Math.sin(crossT*2.3)*H*0.02;
+      const lsA = phase.startsWith('dodge') ? 0.5 : 0.2+0.15*Math.sin(t*0.008);
+
+      // Laser linie
       ctx.save();
-      ctx.strokeStyle=`rgba(255,40,40,${crossA})`; ctx.lineWidth=1.5;
-      // Kříž
-      ctx.beginPath(); ctx.moveTo(crossX-12,crossY); ctx.lineTo(crossX+12,crossY); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(crossX,crossY-12); ctx.lineTo(crossX,crossY+12); ctx.stroke();
-      // Kruh
-      ctx.beginPath(); ctx.arc(crossX,crossY,18,0,Math.PI*2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(crossX,crossY,6,0,Math.PI*2); ctx.stroke();
+      ctx.strokeStyle=`rgba(255,0,0,${lsA*0.3})`; ctx.lineWidth=1;
+      ctx.setLineDash([4,6]);
+      ctx.beginPath(); ctx.moveTo(jx+40,jy+4); ctx.lineTo(crossX,crossY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Laser dot
+      const ldG = ctx.createRadialGradient(crossX,crossY,0,crossX,crossY,8);
+      ldG.addColorStop(0,`rgba(255,0,0,${lsA})`);
+      ldG.addColorStop(1,'transparent');
+      ctx.fillStyle=ldG; ctx.beginPath(); ctx.arc(crossX,crossY,8,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=`rgba(255,50,50,${lsA})`; ctx.beginPath(); ctx.arc(crossX,crossY,2,0,Math.PI*2); ctx.fill();
+
+      // Zaměřovač
+      ctx.strokeStyle=`rgba(255,40,40,${lsA*0.8})`; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(crossX,crossY,16,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(crossX-22,crossY); ctx.lineTo(crossX-8,crossY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(crossX+8,crossY); ctx.lineTo(crossX+22,crossY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(crossX,crossY-22); ctx.lineTo(crossX,crossY-8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(crossX,crossY+8); ctx.lineTo(crossX,crossY+22); ctx.stroke();
       ctx.restore();
     }
 
-    // ── Hráčská figura – viditelná během dodge ──
-    if(phase.startsWith('dodge') || phase.startsWith('result')){
+    // ── Hráčská figura ──
+    if(phase.startsWith('dodge') || phase.startsWith('result') || phase.startsWith('hit')){
       const px = cx + d.playerPos * W*0.20;
       const py = cy;
+      const hitShake = (phase.startsWith('hit') && d.hitFlash > 0) ? Math.max(0,1-(gs.ts-d.hitFlash)*0.003)*6 : 0;
+      const shX = hitShake*(Math.random()-0.5)*2;
+
+      ctx.save(); ctx.translate(px+shX, py);
       // Stín
-      ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(px,py+22,18,5,0,0,Math.PI*2); ctx.fill();
-      // Tělo – Hrubeš figura
-      ctx.save(); ctx.translate(px, py);
+      ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0,24,20,5,0,0,Math.PI*2); ctx.fill();
       // Nohy
-      ctx.fillStyle='#2a2848'; ctx.fillRect(-7,8,5,14); ctx.fillRect(2,8,5,14);
+      const legBob = phase.startsWith('dodge') ? Math.sin(t*0.02)*2 : 0;
+      ctx.fillStyle='#2a2848'; ctx.fillRect(-8,8+legBob,6,16); ctx.fillRect(2,8-legBob,6,16);
       // Trup
-      ctx.fillStyle = d.playerDodged ? '#3a8a50' : '#4a3868';
-      rrect(-10,-6,20,16,3); ctx.fill();
+      const tCol = d.playerDodged ? '#2a7a40' : phase.startsWith('hit') ? '#6a2020' : '#4a3868';
+      ctx.fillStyle=tCol; rrect(-12,-8,24,18,4); ctx.fill();
       // Hlava
-      ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(0,-14,9,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fde8c8'; ctx.beginPath(); ctx.arc(0,-16,10,0,Math.PI*2); ctx.fill();
       // Vlasy
-      ctx.fillStyle='#5a3a20'; ctx.beginPath(); ctx.arc(0,-18,8,Math.PI,0); ctx.fill();
-      // Oči (vyděšené)
-      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-3,-14,2.5,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(3,-14,2.5,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#1a1a2e'; ctx.beginPath(); ctx.arc(-3,-14,1.3,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(3,-14,1.3,0,Math.PI*2); ctx.fill();
-      // "TY" label
-      ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='bold 9px Outfit,sans-serif';
-      ctx.textAlign='center'; ctx.fillText('HRUBEŠ',0,-28);
+      ctx.fillStyle='#5a3a20'; ctx.beginPath(); ctx.arc(0,-20,9,Math.PI,0); ctx.fill();
+      // Oči
+      const eyeW = phase.startsWith('dodge') ? 3.5 : 2.5;
+      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-3.5,-16,eyeW,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3.5,-16,eyeW,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#1a1a2e'; ctx.beginPath(); ctx.arc(-3.5,-16,1.5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3.5,-16,1.5,0,Math.PI*2); ctx.fill();
+      // Ústa (strach)
+      if(phase.startsWith('dodge')){
+        ctx.strokeStyle='#a06040'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.arc(0,-11,3,0,Math.PI); ctx.stroke();
+      }
+      // Blood on hit
+      if(phase.startsWith('hit') && d.hitFlash > 0){
+        const bp = Math.min(1,(gs.ts-d.hitFlash)*0.002);
+        ctx.fillStyle=`rgba(180,20,20,${0.8-bp*0.3})`;
+        ctx.beginPath(); ctx.arc(4,12,4+bp*3,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-2,16,2+bp*2,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(8,18,1.5+bp,0,Math.PI*2); ctx.fill();
+      }
+      // Label
+      ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='bold 10px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.fillText('HRUBEŠ',0,-32);
       ctx.restore();
 
-      // Pozice šipky – kam se hráč má hnout
+      // Dodge direction indicator
       if(phase.startsWith('dodge') && !d.playerDodged){
         const targetX = cx + (d.dodgeDir==='left' ? -1 : 1) * W*0.20;
-        const arrBob = Math.sin(t*0.012)*4;
-        ctx.fillStyle='rgba(255,220,60,0.7)'; ctx.font='20px sans-serif';
-        ctx.textAlign='center';
-        ctx.fillText(d.dodgeDir==='left' ? '◄' : '►', targetX+arrBob, py+5);
+        const arrBob = Math.sin(t*0.014)*6;
+        const arrP = 0.6 + 0.4*Math.sin(t*0.016);
+        // Trail
+        ctx.fillStyle=`rgba(255,220,60,${arrP*0.08})`;
+        ctx.beginPath(); ctx.arc(targetX,py,40,0,Math.PI*2); ctx.fill();
+        // Big arrow
+        ctx.save(); ctx.translate(targetX+arrBob, py);
+        if(d.dodgeDir==='right') ctx.scale(-1,1);
+        ctx.fillStyle=`rgba(255,220,60,${arrP})`;
+        ctx.beginPath(); ctx.moveTo(-24,0); ctx.lineTo(0,-18); ctx.lineTo(0,-10); ctx.lineTo(16,-10); ctx.lineTo(16,10); ctx.lineTo(0,10); ctx.lineTo(0,18); ctx.closePath(); ctx.fill();
+        ctx.restore();
       }
     }
 
     // ── Aim phase – varovný nápis ──
     if(phase === 'aim1' || phase === 'aim2'){
       const pulse = 0.6 + 0.4*Math.sin(t*0.010);
-      // Tmavý panel
-      ctx.fillStyle='rgba(0,0,0,0.5)';
-      rrect(cx-W*0.22, H*0.28, W*0.44, H*0.12, 8); ctx.fill();
-      ctx.strokeStyle=`rgba(255,60,60,${pulse*0.6})`; ctx.lineWidth=2;
-      rrect(cx-W*0.22, H*0.28, W*0.44, H*0.12, 8); ctx.stroke();
-      ctx.fillStyle=`rgba(255,80,80,${pulse})`; ctx.font='bold 24px Outfit,sans-serif';
+      ctx.fillStyle='rgba(0,0,0,0.55)';
+      rrect(cx-W*0.24, H*0.26, W*0.48, H*0.14, 10); ctx.fill();
+      ctx.strokeStyle=`rgba(255,60,60,${pulse*0.7})`; ctx.lineWidth=2;
+      rrect(cx-W*0.24, H*0.26, W*0.48, H*0.14, 10); ctx.stroke();
+      ctx.fillStyle=`rgba(255,80,80,${pulse})`; ctx.font='bold 26px Outfit,sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      const aimText = phase==='aim1' ? '⚠️  JOHNNY MÍŘÍ!' : '⚠️  MÍŘÍ ZNOVU!';
-      ctx.fillText(aimText, cx, H*0.34);
+      ctx.fillText(phase==='aim1' ? '⚠️  JOHNNY MÍŘÍ!' : '⚠️  MÍŘÍ ZNOVU!', cx, H*0.31);
+      ctx.fillStyle=`rgba(255,180,180,${pulse*0.6})`; ctx.font='13px Outfit,sans-serif';
+      ctx.fillText(phase==='aim1' ? 'Připrav se uhýbat!' : 'Tentokrát rychleji!', cx, H*0.37);
       ctx.textBaseline='alphabetic';
     }
 
@@ -3744,81 +3849,111 @@ function drawKoupelna(W,H,t){
       const elapsed = gs.ts - d.dodgeStart;
       const remaining = Math.max(0, 1 - elapsed / d.dodgeWindow);
 
-      // Panel s pokyny
-      ctx.fillStyle='rgba(0,0,0,0.6)';
-      rrect(cx-W*0.28, H*0.24, W*0.56, H*0.22, 10); ctx.fill();
+      // Panel
+      ctx.fillStyle='rgba(0,0,0,0.65)';
+      rrect(cx-W*0.30, H*0.22, W*0.60, H*0.26, 12); ctx.fill();
 
-      // Klávesa prompt
-      const keyLabel = d.dodgeDir === 'left' ? '←' : '→';
       const dirLabel = d.dodgeDir === 'left' ? 'DOLEVA' : 'DOPRAVA';
       const pulse2 = 0.8 + 0.2*Math.sin(t*0.018);
 
-      // Hlavní text
-      ctx.fillStyle=`rgba(255,220,60,${pulse2})`; ctx.font='bold 22px Outfit,sans-serif';
+      // Title
+      ctx.fillStyle=`rgba(255,220,60,${pulse2})`; ctx.font='bold 24px Outfit,sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('UHNI ' + dirLabel + '!', cx, H*0.30);
+      ctx.fillText('UHNI ' + dirLabel + '!', cx, H*0.28);
 
-      // Klávesa box – velká šipka
-      const keyX = cx, keyY = H*0.38;
-      const keyPulse = 0.9+0.1*Math.sin(t*0.015);
-      // Velký kruh pozadí
-      ctx.fillStyle=`rgba(255,220,60,${keyPulse*0.12})`;
-      ctx.beginPath(); ctx.arc(keyX,keyY,36,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle=`rgba(255,220,60,${keyPulse*0.9})`; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.arc(keyX,keyY,36,0,Math.PI*2); ctx.stroke();
-      // Šipka uvnitř
+      // Velká šipka
+      const keyX = cx, keyY = H*0.36;
+      const keyPulse = 0.85+0.15*Math.sin(t*0.015);
+      // Glow circle
+      const glowR = 42 + Math.sin(t*0.01)*4;
+      const glowG = ctx.createRadialGradient(keyX,keyY,0,keyX,keyY,glowR+20);
+      glowG.addColorStop(0,`rgba(255,220,60,${keyPulse*0.15})`);
+      glowG.addColorStop(1,'transparent');
+      ctx.fillStyle=glowG; ctx.fillRect(keyX-70,keyY-70,140,140);
+      // Circle
+      ctx.strokeStyle=`rgba(255,220,60,${keyPulse})`; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(keyX,keyY,glowR,0,Math.PI*2); ctx.stroke();
+      // Countdown arc
+      ctx.strokeStyle=`rgba(255,${Math.floor(remaining*200)},40,0.9)`; ctx.lineWidth=5;
+      ctx.beginPath(); ctx.arc(keyX,keyY,glowR,-Math.PI/2,-Math.PI/2+remaining*Math.PI*2); ctx.stroke();
+      // Arrow inside
       ctx.save(); ctx.translate(keyX, keyY);
       if(d.dodgeDir==='right') ctx.scale(-1,1);
       ctx.fillStyle=`rgba(255,255,255,${keyPulse})`;
-      ctx.beginPath(); ctx.moveTo(-20,0); ctx.lineTo(6,-16); ctx.lineTo(6,-8); ctx.lineTo(20,-8); ctx.lineTo(20,8); ctx.lineTo(6,8); ctx.lineTo(6,16); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-22,0); ctx.lineTo(6,-18); ctx.lineTo(6,-9); ctx.lineTo(22,-9); ctx.lineTo(22,9); ctx.lineTo(6,9); ctx.lineTo(6,18); ctx.closePath(); ctx.fill();
       ctx.restore();
-      // Text pod šipkou
-      ctx.fillStyle=`rgba(255,220,60,${keyPulse*0.7})`; ctx.font='bold 12px Outfit,sans-serif';
-      ctx.fillText(d.dodgeDir==='left'?'← nebo A':'→ nebo D', keyX, keyY+52);
+      // Key hint
+      ctx.fillStyle=`rgba(255,220,60,${keyPulse*0.7})`; ctx.font='bold 13px Outfit,sans-serif';
+      ctx.fillText(d.dodgeDir==='left'?'← nebo A':'→ nebo D', keyX, keyY+58);
 
-      // Countdown bar
-      const barW = W*0.44, barH = 8;
-      const barX = cx - barW/2, barY = H*0.43;
-      ctx.fillStyle='rgba(40,0,0,0.5)'; rrect(barX,barY,barW,barH,4); ctx.fill();
-      const r = Math.floor(255*(1-remaining)), g2 = Math.floor(255*remaining);
-      ctx.fillStyle=`rgb(${r},${g2},40)`; rrect(barX,barY,barW*remaining,barH,4); ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=1; rrect(barX,barY,barW,barH,4); ctx.stroke();
+      // Timer text
+      const timeLeft = Math.max(0, (d.dodgeWindow - elapsed)/1000);
+      ctx.fillStyle = remaining < 0.3 ? `rgba(255,60,60,${pulse2})` : `rgba(255,255,255,${pulse2*0.7})`;
+      ctx.font='bold 16px "Courier New",monospace';
+      ctx.fillText(timeLeft.toFixed(1)+'s', cx, H*0.455);
 
       ctx.textBaseline='alphabetic';
 
       // Danger vignette
-      const vigA = (1-remaining)*0.4;
-      const vigG = ctx.createRadialGradient(cx,H*0.5,W*0.12,cx,H*0.5,W*0.7);
+      const vigA = (1-remaining)*0.5;
+      const vigG = ctx.createRadialGradient(cx,H*0.5,W*0.08,cx,H*0.5,W*0.7);
       vigG.addColorStop(0,'transparent'); vigG.addColorStop(1,`rgba(180,0,0,${vigA})`);
       ctx.fillStyle=vigG; ctx.fillRect(0,0,W,H);
 
-      // Pulzující border při málo času
-      if(remaining < 0.35){
-        const bPulse = Math.sin(t*0.02)*0.3+0.4;
-        ctx.strokeStyle=`rgba(255,0,0,${bPulse*(1-remaining)})`; ctx.lineWidth=3;
-        ctx.strokeRect(1,1,W-2,H-2);
+      // Pulsing border at low time
+      if(remaining < 0.4){
+        const bInt = 1-remaining;
+        const bPulse = Math.sin(t*0.025)*0.35+0.5;
+        ctx.strokeStyle=`rgba(255,0,0,${bPulse*bInt})`; ctx.lineWidth=4;
+        ctx.strokeRect(2,2,W-4,H-4);
+        // Corner flashes
+        const cf = bPulse*bInt*0.6;
+        ctx.fillStyle=`rgba(255,0,0,${cf})`;
+        ctx.fillRect(0,0,30,30); ctx.fillRect(W-30,0,30,30);
+        ctx.fillRect(0,H-30,30,30); ctx.fillRect(W-30,H-30,30,30);
       }
     }
 
-    // ── Bullet tracer – po zásahu/vyhnutí ──
+    // ── Bullet tracer + impact ──
     if(d.successFlash > 0 || d.hitFlash > 0){
       const flashT = d.successFlash || d.hitFlash;
-      const bElapsed = (gs.ts - flashT)*0.004;
-      if(bElapsed < 1){
-        // Tracer line od Johnnyho k místu dopadu
-        const fromX = W*0.38, fromY = H*0.56;
-        const toX = d.playerDodged ? (cx + (d.dodgeDir==='left'?1:-1)*W*0.20) : cx;
+      const bElapsed = (gs.ts - flashT)*0.003;
+      if(bElapsed < 1.5){
+        const fromX = jx+40, fromY = jy+4;
+        const hit = d.hitFlash > 0 && d.hitFlash === flashT;
+        const toX = hit ? cx + (d.playerPos||0)*W*0.20 : (cx + (d.dodgeDir==='left'?1:-1)*W*0.25);
         const toY = cy;
-        const trA = Math.max(0, 0.7-bElapsed);
-        ctx.strokeStyle=`rgba(255,200,60,${trA})`; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.moveTo(fromX,fromY); ctx.lineTo(toX,toY); ctx.stroke();
-        // Jiskry na místě dopadu
-        for(let sp=0;sp<6;sp++){
-          const spA2 = sp*Math.PI/3 + bElapsed*4;
-          const spR = 5+bElapsed*25;
-          const spAlpha = Math.max(0, 0.6-bElapsed);
-          ctx.fillStyle=`rgba(255,200,100,${spAlpha})`;
-          ctx.beginPath(); ctx.arc(toX+Math.cos(spA2)*spR, toY+Math.sin(spA2)*spR, 2-bElapsed, 0, Math.PI*2); ctx.fill();
+        // Tracer
+        const trP = Math.min(1, bElapsed*5);
+        const trA = Math.max(0, 0.8-bElapsed*0.6);
+        const trLenP = Math.min(1, bElapsed*3);
+        const trX = fromX + (toX-fromX)*trLenP;
+        const trY = fromY + (toY-fromY)*trLenP;
+        ctx.strokeStyle=`rgba(255,220,80,${trA})`; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(fromX,fromY); ctx.lineTo(trX,trY); ctx.stroke();
+        // Glow trail
+        ctx.strokeStyle=`rgba(255,180,40,${trA*0.3})`; ctx.lineWidth=6;
+        ctx.beginPath(); ctx.moveTo(fromX,fromY); ctx.lineTo(trX,trY); ctx.stroke();
+
+        // Impact sparks
+        if(bElapsed > 0.15){
+          const impP = (bElapsed-0.15)/1.2;
+          for(let sp=0;sp<12;sp++){
+            const spAng = (sp/12)*Math.PI*2 + bElapsed*3;
+            const spR = impP*50;
+            const spA = Math.max(0, 0.7-impP);
+            const col = hit ? `rgba(200,40,40,${spA})` : `rgba(255,200,100,${spA})`;
+            ctx.fillStyle=col;
+            ctx.beginPath(); ctx.arc(toX+Math.cos(spAng)*spR, toY+Math.sin(spAng)*spR, 3-impP*2, 0, Math.PI*2); ctx.fill();
+          }
+          // Impact flash
+          if(impP < 0.3){
+            const ifG = ctx.createRadialGradient(toX,toY,0,toX,toY,30);
+            const ifCol = hit ? '200,40,40' : '255,200,100';
+            ifG.addColorStop(0,`rgba(${ifCol},${0.6-impP*2})`);
+            ifG.addColorStop(1,'transparent');
+            ctx.fillStyle=ifG; ctx.fillRect(toX-40,toY-40,80,80);
+          }
         }
       }
     }
@@ -3826,47 +3961,90 @@ function drawKoupelna(W,H,t){
     // ── Flash efekty ──
     if(d.successFlash > 0){
       const sf = Math.max(0, 1 - (gs.ts - d.successFlash)*0.003);
-      if(sf > 0){ ctx.fillStyle=`rgba(80,255,120,${sf*0.25})`; ctx.fillRect(0,0,W,H); }
+      if(sf > 0){
+        ctx.fillStyle=`rgba(255,255,255,${sf*0.4})`; ctx.fillRect(0,0,W,H);
+        ctx.fillStyle=`rgba(80,255,120,${sf*0.2})`; ctx.fillRect(0,0,W,H);
+      }
     }
-    if(d.hitFlash > 0 && phase === 'dead'){
+    if(d.hitFlash > 0 && (phase === 'dead' || phase.startsWith('hit'))){
       const hf = Math.max(0, 1 - (gs.ts - d.hitFlash)*0.0015);
-      if(hf > 0){ ctx.fillStyle=`rgba(255,0,0,${hf*0.5})`; ctx.fillRect(0,0,W,H); }
+      if(hf > 0){
+        ctx.fillStyle=`rgba(255,0,0,${hf*0.5})`; ctx.fillRect(0,0,W,H);
+        // Blood drip particles
+        const bpT = (gs.ts - d.hitFlash)*0.001;
+        for(let bp=0;bp<6;bp++){
+          const bpX = cx + (bp-3)*W*0.06 + Math.sin(bp*7)*20;
+          const bpY = cy + bpT*40*bp*0.5;
+          const bpA = Math.max(0, hf-bp*0.1);
+          ctx.fillStyle=`rgba(160,20,20,${bpA*0.6})`;
+          ctx.beginPath(); ctx.arc(bpX, bpY, 3-bp*0.3, 0, Math.PI*2); ctx.fill();
+        }
+      }
     }
 
     // ── Výsledkový text ──
     if(phase === 'result1' || phase === 'result2'){
       const resT = (gs.ts - d.successFlash)*0.002;
-      const resScale = Math.min(1, resT*3);
+      const resScale = Math.min(1.1, resT*4);
       const resA = resT < 2 ? 1 : Math.max(0, 1-(resT-2));
       ctx.save(); ctx.translate(cx, H*0.34); ctx.scale(resScale,resScale);
-      ctx.fillStyle=`rgba(80,255,120,${resA})`; ctx.font='bold 26px Outfit,sans-serif';
+      // Glow bg
+      ctx.fillStyle=`rgba(40,180,60,${resA*0.15})`;
+      ctx.beginPath(); ctx.arc(0,0,60,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=`rgba(80,255,120,${resA})`; ctx.font='bold 28px Outfit,sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText('✓ UHNUL JSI!', 0, 0);
       if(phase === 'result1'){
-        ctx.fillStyle=`rgba(255,200,200,${resA*0.7})`; ctx.font='14px Outfit,sans-serif';
-        ctx.fillText('Ještě jeden výstřel...', 0, 28);
+        ctx.fillStyle=`rgba(255,200,200,${resA*0.7})`; ctx.font='15px Outfit,sans-serif';
+        ctx.fillText('Ještě jeden výstřel...', 0, 30);
       }
       ctx.restore();
     }
 
-    // ── Flee text ──
+    // ── Hit text (wounded, not dead) ──
+    if(phase === 'hit1' || phase === 'hit2'){
+      const hitT = (gs.ts - d.hitFlash)*0.002;
+      const hitA = hitT < 2 ? 1 : Math.max(0, 1-(hitT-2));
+      ctx.save(); ctx.translate(cx, H*0.34);
+      ctx.fillStyle=`rgba(255,60,60,${hitA})`; ctx.font='bold 26px Outfit,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('🩸 ZASAŽEN!', 0, 0);
+      ctx.fillStyle=`rgba(255,180,180,${hitA*0.7})`; ctx.font='14px Outfit,sans-serif';
+      ctx.fillText('Kulka škrábla nohu...', 0, 28);
+      ctx.restore();
+    }
+
+    // ── Flee overlay ──
     if(phase === 'flee'){
       const pulse3 = 0.7 + 0.3*Math.sin(t*0.012);
-      ctx.fillStyle='rgba(0,0,0,0.4)';
-      rrect(cx-W*0.20, H*0.28, W*0.40, H*0.14, 10); ctx.fill();
-      ctx.fillStyle=`rgba(255,200,60,${pulse3})`; ctx.font='bold 32px Outfit,sans-serif';
+      ctx.fillStyle='rgba(0,0,0,0.45)';
+      rrect(cx-W*0.22, H*0.26, W*0.44, H*0.16, 12); ctx.fill();
+      ctx.fillStyle=`rgba(255,200,60,${pulse3})`; ctx.font='bold 34px Outfit,sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('🏃 UTÍKEJ!', cx, H*0.35);
+      ctx.fillText('🏃 UTÍKEJ!', cx, H*0.34);
       ctx.textBaseline='alphabetic';
     }
 
     // ── Death overlay ──
     if(phase === 'dead'){
-      const da = Math.min(1, (gs.ts - d.hitFlash)*0.0015);
-      ctx.fillStyle=`rgba(80,0,0,${da*0.6})`; ctx.fillRect(0,0,W,H);
+      const da = Math.min(1, (gs.ts - d.hitFlash)*0.0012);
+      ctx.fillStyle=`rgba(60,0,0,${da*0.7})`; ctx.fillRect(0,0,W,H);
+      // Screen crack effect
+      if(da > 0.1){
+        ctx.save();
+        ctx.strokeStyle=`rgba(255,255,255,${Math.min(0.3,da*0.4)})`; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx-80,cy-120); ctx.lineTo(cx-140,cy-200); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+60,cy-90); ctx.lineTo(cx+120,cy-180); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx-30,cy-150); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+100,cy-50); ctx.lineTo(cx+180,cy-100); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx-50,cy+60); ctx.stroke();
+        ctx.restore();
+      }
       if(da > 0.3){
-        ctx.fillStyle=`rgba(255,60,60,${Math.min(1,da)})`; ctx.font='bold 28px Outfit,sans-serif';
-        ctx.textAlign='center'; ctx.fillText('💀 ZASAŽEN', cx, H*0.40);
+        ctx.fillStyle=`rgba(255,50,50,${Math.min(1,da)})`; ctx.font='bold 30px Outfit,sans-serif';
+        ctx.textAlign='center'; ctx.fillText('💀 ZASAŽEN', cx, H*0.38);
+        ctx.fillStyle=`rgba(255,150,150,${Math.min(0.7,da*0.7)})`; ctx.font='15px Outfit,sans-serif';
+        ctx.fillText('Nebyls dost rychlý...', cx, H*0.44);
       }
     }
 

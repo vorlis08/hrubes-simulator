@@ -328,14 +328,22 @@ function triggerJohnnyGunScene(){
     hitCount: 0,           // 0=clean, 1=wounded, 2=dead
   };
 
-  addLog('*Johnny stojí uprostřed zatopené koupelny. Vytáhne pistoli zpod saka.*', 'lw');
-
   setTimeout(() => {
-    addLog('"TY KURVA JANO! Tys mi tady schválně vytopila celý barák?!"', 'lw');
-    showNPCLine('johnny_vila', '"Já tě naučím úctu, zlatíčko."', () => {
-      setTimeout(() => _startDodgeRound(1), 600);
-    });
-  }, 800);
+    showNPCLine('johnny_vila',
+      '*Johnny stojí uprostřed zatopené koupelny. Pomalu vytáhne pistoli zpod saka. Ruce se mu třesou.*',
+      () => setTimeout(() => {
+        showNPCLine('johnny_vila',
+          '"TY KURVA JANO! Tys mi tady schválně vytopila celý barák?!"',
+          () => setTimeout(() => {
+            showNPCLine('johnny_vila',
+              '*Namíří pistoli na tebe.* "Já tě naučím úctu, zlatíčko."',
+              () => setTimeout(() => _startDodgeRound(1), 400)
+            );
+          }, 300)
+        );
+      }, 300)
+    );
+  }, 600);
 }
 
 function _startDodgeRound(shotNum){
@@ -348,11 +356,6 @@ function _startDodgeRound(shotNum){
   d.playerPos = 0;
   d.phase = 'aim' + shotNum;
   d.t0 = gs.ts;
-
-  const aimMsg = shotNum === 1
-    ? '*Johnny zamíří pistoli přímo na tebe!*'
-    : '*Johnny znovu míří! Ruka se mu třese vzteky.*';
-  addLog(aimMsg, 'lw');
 
   setTimeout(() => {
     d.phase = 'dodge' + shotNum;
@@ -387,19 +390,31 @@ function _dodgeEndFlee(){
   if(!d) return;
   d.phase = 'flee';
   if(d.hitCount > 0){
-    addLog('*Noha tě pálí, ale stojíš. Johnny mrští pistolí o zeď.*', 'lw');
-    setTimeout(() => {
-      addLog('*Jana vyskočí a chytí tě za ruku.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
-      fnotif('🏃 UTÍKEJ! (postřelená noha)', 'rep');
-      setTimeout(() => triggerJanaFleeVilla(), 800);
-    }, 600);
+    showNPCLine('johnny_vila',
+      '*Noha tě pálí, ale stojíš. Johnny mrští pistolí o zeď.*',
+      () => setTimeout(() => {
+        showNPCLine('jana_vila',
+          '"UTÍKEJ, HRUBEŠI!!!" *Jana tě chytí za ruku*',
+          () => {
+            fnotif('🏃 UTÍKEJ! (postřelená noha)', 'rep');
+            setTimeout(() => triggerJanaFleeVilla(), 500);
+          }
+        );
+      }, 400)
+    );
   } else {
-    addLog('*Johnny mrští pistolí o zeď. Došly mu náboje.*', 'lw');
-    setTimeout(() => {
-      addLog('*Jana vyskočí a chytí tě za ruku.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
-      fnotif('🏃 UTÍKEJ Z VILY!', 'pos');
-      setTimeout(() => triggerJanaFleeVilla(), 800);
-    }, 600);
+    showNPCLine('johnny_vila',
+      '*Johnny mrští pistolí o zeď. Došly mu náboje.*',
+      () => setTimeout(() => {
+        showNPCLine('jana_vila',
+          '"UTÍKEJ, HRUBEŠI!!!" *Jana tě chytí za ruku*',
+          () => {
+            fnotif('🏃 UTÍKEJ Z VILY!', 'pos');
+            setTimeout(() => triggerJanaFleeVilla(), 500);
+          }
+        );
+      }, 400)
+    );
   }
 }
 
@@ -419,19 +434,19 @@ function _dodgeUpdate(){
       screenShake(400);
       if(shotNum === 1){
         gs.story.gun_shot1 = true; gs._shot1t = gs.ts;
-        addLog('💥 *BANG!* Uhnuls v poslední chvíli! Kulka zaryla do dlaždice.', 'lm');
       } else {
         gs.story.gun_shot2 = true; gs._shot2t = gs.ts;
-        addLog('💥 *BANG!* Uhnuls! Kulka prolétla kolem ucha.', 'lm');
       }
       setTimeout(() => {
         if(shotNum === 1){
-          addLog('"STŮJ, KURVA!" *Johnny přebíjí, ruce se mu třesou vzteky*', 'lw');
-          setTimeout(() => _startDodgeRound(2), 1000);
+          showNPCLine('johnny_vila',
+            '"STŮJ, KURVA!" *Johnny přebíjí, ruce se mu třesou vzteky*',
+            () => setTimeout(() => _startDodgeRound(2), 600)
+          );
         } else {
           _dodgeEndFlee();
         }
-      }, 1200);
+      }, 1400);
       return;
     }
 
@@ -448,7 +463,6 @@ function _dodgeUpdate(){
 
       if(d.hitCount >= 2){
         d.phase = 'dead';
-        addLog('💥 *BANG!* Druhá kulka tě zasáhla. Padáš k zemi.', 'lw');
         setTimeout(() => {
           gs.cutscene_active = false;
           gs.dodge = null;
@@ -463,17 +477,20 @@ function _dodgeUpdate(){
       }
 
       d.phase = 'hit' + shotNum;
-      addLog('💥 *BANG!* Nestačils uhnout. Kulka tě škrábla do nohy!', 'lw');
       gs.story.leg_shot = true;
       setTimeout(() => {
         if(shotNum === 1){
-          addLog('*Koleno ti hoří bolestí, ale stojíš.* Johnny přebíjí.', 'lw');
-          fnotif('🩸 Postřelená noha!', 'rep');
-          setTimeout(() => _startDodgeRound(2), 1000);
+          showNPCLine('johnny_vila',
+            '*Kulka tě škrábla do nohy! Koleno ti hoří bolestí, ale stojíš.* Johnny přebíjí.',
+            () => {
+              fnotif('🩸 Postřelená noha!', 'rep');
+              setTimeout(() => _startDodgeRound(2), 600);
+            }
+          );
         } else {
           _dodgeEndFlee();
         }
-      }, 1200);
+      }, 1400);
     }
   }
 }
