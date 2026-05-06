@@ -124,12 +124,12 @@ function initRoom(spawnX, spawnY){
   // Lenka zaskakuje za Janu v Bille – zobrazí se jen když Jana chybí
   if(gs.room === 'billa' && !janaAway)
     currentNPCs = currentNPCs.filter(n => n.id !== 'lenka');
-  // Jana z vily – po spoutání Johnnyho nebo v ložnici se neobjevuje ve vile
-  if(gs.room === 'johnny_vila' && (gs.story.johnny_cuffed || gs.story.johnny_bedroom))
+  // Jana z vily – po spoutání Johnnyho se neobjevuje ve vile
+  if(gs.room === 'johnny_vila' && gs.story.johnny_cuffed)
     currentNPCs = currentNPCs.filter(n => n.id !== 'jana_vila');
-  // Johnny vila – schovat v ložnici
-  if(gs.room === 'johnny_vila' && gs.story.johnny_bedroom)
-    currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila');
+  // Johnny+Jana na gauči spolu – schovat normální NPC (renderuje se custom)
+  if(gs.room === 'johnny_vila' && gs.story.johnny_bedroom && !gs.story.jana_escaped_success && !gs.story.johnny_sad_couch)
+    currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
   // Sad Johnny / Dead Johnny – skrýt normální NPC (renderuje se custom)
   if(gs.room === 'johnny_vila' && (gs.story.johnny_sad_couch || gs.story.johnny_dead))
     currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
@@ -244,7 +244,7 @@ function checkProx(){
   // Johnnyho vila v Křemži (přístupná během questu nebo po dokončení s klíči)
   if(gs.room === 'kremze'){
     const villaAccessible = (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa && !gs.story.jana_drugged_villa) || gs.inv.klice_vila;
-    if(villaAccessible && !gs.story.johnny_bedroom){
+    if(villaAccessible){
       const vx = canvas.width * 0.50, vy = canvas.height * 0.50;
       if(dist2(p, {x:vx, y:vy}) < PROX_R){ best = {isVilla:true}; }
     }
@@ -258,17 +258,6 @@ function checkProx(){
         best = {isVillaBathroomLocked:true};
       } else {
         best = {isVillaBathroom:true};
-      }
-    }
-  }
-  // Ložnice – dveře (pouze vizuální, ne skutečná místnost)
-  if(gs.room === 'johnny_vila'){
-    const lx = canvas.width * 0.08, ly = canvas.height * 0.35;
-    if(dist2(p, {x:lx, y:ly}) < PROX_R){
-      if(gs.story.johnny_bedroom){
-        best = {isLozniceListen:true};
-      } else {
-        best = {isLoznice:true};
       }
     }
   }
@@ -427,10 +416,6 @@ function checkProx(){
     ph.classList.add('show');
     if(best.isVilla){
       document.getElementById('ptxt').textContent = 'Vstoupit do Johnnyho vily';
-    } else if(best.isLozniceListen){
-      document.getElementById('ptxt').textContent = 'Naslouchat u dveří';
-    } else if(best.isLoznice){
-      document.getElementById('ptxt').textContent = 'Ložnice (zamčeno)';
     } else if(best.isVillaDrawer){
       document.getElementById('ptxt').textContent = 'Prohledat šuplík';
     } else if(best.isVillaBathroom){
@@ -536,25 +521,10 @@ function interact(){
       return;
     }
   }
-  // Ložnice dveře – naslouchání
-  if(gs.room === 'johnny_vila'){
-    const lx = canvas.width * 0.08, ly = canvas.height * 0.35;
-    if(dist2(gs.player, {x:lx, y:ly}) < PROX_R){
-      if(gs.story.johnny_bedroom){
-        addLog('*Přiložíš ucho ke dveřím...*', 'ls');
-        setTimeout(() => addLog('"Ahhh... AHHH..." *hlasité vzdychání Johnnyho za dveřmi*', 'lw'), 800);
-        setTimeout(() => addLog('*Bylo ti jasné, že tam nemáš co dělat.*', 'ls'), 2000);
-        return;
-      } else {
-        addLog('Dveře do ložnice. Zamčeno.', 'ls');
-        return;
-      }
-    }
-  }
   // Johnnyho vila – vstup v Křemži (quest nebo klíče)
   if(gs.room === 'kremze'){
     const villaAccessible = (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa && !gs.story.jana_drugged_villa) || gs.inv.klice_vila;
-    if(villaAccessible && !gs.story.johnny_bedroom){
+    if(villaAccessible){
       const vx = canvas.width * 0.50, vy = canvas.height * 0.50;
       if(dist2(gs.player, {x:vx, y:vy}) < PROX_R){
         // Návrat po získání odměn – return visit
@@ -570,7 +540,7 @@ function interact(){
         // Návrat po varování – Johnny a Jana v ložnici
         if(gs.story.johnny_return_visit && gs.story.johnny_return_left && gs.johnny_stay_deadline === 0){
           gs.story.johnny_bedroom = true;
-          addLog('Johnnyho vila je tichá. Johnny s Janou nejsou v obýváku.', 'ls');
+          addLog('Johnny a Jana sedí spolu na gauči. Vypadají... zaměstnaně.', 'ls');
         }
         // Návrat po vytopení – smutný Johnny
         if(gs.story.jana_escaped_success && !gs.story.johnny_sad_couch && !gs.story.johnny_dead){

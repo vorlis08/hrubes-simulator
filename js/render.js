@@ -2312,14 +2312,20 @@ function drawJohnnyVila(W,H,t){
     ctx.fillText('🚪 VEN',edx+edw/2,edy-4); ctx.textAlign='left';
   }
 
-  // ── Dveře do ložnice (vlevo) ──
-  {
-    const ldx=W*0.02, ldy=H*0.26, ldw=W*0.06, ldh=H*0.22;
-    ctx.fillStyle='#3a2838'; rrect(ldx,ldy,ldw,ldh,2); ctx.fill();
-    ctx.strokeStyle='rgba(160,120,100,0.4)'; ctx.lineWidth=1; rrect(ldx,ldy,ldw,ldh,2); ctx.stroke();
-    ctx.fillStyle='rgba(200,160,60,0.4)'; ctx.beginPath(); ctx.arc(ldx+ldw*0.75,ldy+ldh*0.5,2.5,0,Math.PI*2); ctx.fill();
+  // ── Johnny+Jana na gauči (po návratu z return visitu) ──
+  if(gs.story.johnny_bedroom && !gs.story.jana_escaped_success && !gs.story.johnny_sad_couch){
+    const cx=W*0.38, cy=H*0.58;
+    ctx.fillStyle='#b08060';
+    ctx.beginPath(); ctx.arc(cx-12, cy-22, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(cx-17, cy-15, 10, 18);
+    ctx.fillStyle='#e0a880';
+    ctx.beginPath(); ctx.arc(cx+12, cy-22, 6, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(cx+7, cy-15, 10, 16);
     ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.font='8px monospace'; ctx.textAlign='center';
-    ctx.fillText('🔒',ldx+ldw/2,ldy-4); ctx.textAlign='left';
+    ctx.fillText('JOHNNY & JANA',cx,cy-34); ctx.textAlign='left';
+    const hT = (gs.ts*0.003) % (Math.PI*2);
+    ctx.fillStyle=`rgba(255,80,120,${0.3+0.15*Math.sin(hT)})`; ctx.font='12px monospace';
+    ctx.fillText('❤',cx-2,cy-40);
   }
 
   // ── Dveře do koupelny – výrazné ──
