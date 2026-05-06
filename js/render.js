@@ -160,6 +160,7 @@ function drawRoom(rm,W,H,t){
     case 'doma':         drawDoma(W,H,t);        break;
     case 'cibulka_lab':  drawCibulkaLab(W,H,t);  break;
     case 'maze_escape':  drawMazeEscape(W,H,t);  break;
+    case 'bandage_cutscene': drawBandageCutscene(W,H,t); break;
     case 'johnny_stalking': drawJohnnyStalking(W,H,t); break;
     default: ctx.fillStyle=rm.bg; ctx.fillRect(0,0,W,H);
   }
@@ -4838,7 +4839,7 @@ function render(){
   }
 
   // Maze – skip normal game rendering
-  if(gs.room === 'maze_escape'){ ctx.restore && 0; return; }
+  if(gs.room === 'maze_escape' || gs.room === 'bandage_cutscene'){ ctx.restore && 0; return; }
 
   // Items
   currentItems.forEach(item=>{

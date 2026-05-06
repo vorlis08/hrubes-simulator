@@ -325,6 +325,7 @@ function triggerJohnnyGunScene(){
     hitFlash: 0,
     successFlash: 0,
     slowmo: 0,             // slowmo timestamp for dramatic effect
+    hitCount: 0,           // 0=clean, 1=wounded, 2=dead
   };
 
   addLog('*Johnny stojí uprostřed zatopené koupelny. Vytáhne pistoli zpod saka.*', 'lw');
@@ -381,6 +382,27 @@ function _startDodgeRound(shotNum){
   }, 1200);
 }
 
+function _dodgeEndFlee(){
+  const d = gs.dodge;
+  if(!d) return;
+  d.phase = 'flee';
+  if(d.hitCount > 0){
+    addLog('*Noha tě pálí, ale stojíš. Johnny mrští pistolí o zeď.*', 'lw');
+    setTimeout(() => {
+      addLog('*Jana vyskočí a chytí tě za ruku.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
+      fnotif('🏃 UTÍKEJ! (postřelená noha)', 'rep');
+      setTimeout(() => triggerJanaFleeVilla(), 800);
+    }, 600);
+  } else {
+    addLog('*Johnny mrští pistolí o zeď. Došly mu náboje.*', 'lw');
+    setTimeout(() => {
+      addLog('*Jana vyskočí a chytí tě za ruku.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
+      fnotif('🏃 UTÍKEJ Z VILY!', 'pos');
+      setTimeout(() => triggerJanaFleeVilla(), 800);
+    }, 600);
+  }
+}
+
 function _dodgeUpdate(){
   const d = gs.dodge;
   if(!d) return;
@@ -390,7 +412,6 @@ function _dodgeUpdate(){
     const elapsed = gs.ts - d.dodgeStart;
 
     if(d.playerDodged){
-      // Dodged successfully
       d.phase = 'result' + shotNum;
       d.successFlash = gs.ts;
       d.slowmo = gs.ts;
@@ -401,29 +422,21 @@ function _dodgeUpdate(){
         addLog('💥 *BANG!* Uhnuls v poslední chvíli! Kulka zaryla do dlaždice.', 'lm');
       } else {
         gs.story.gun_shot2 = true; gs._shot2t = gs.ts;
-        addLog('💥 *BANG!* Uhnuls hlavou, ale kulka škrábla nohu!', 'lm');
+        addLog('💥 *BANG!* Uhnuls! Kulka prolétla kolem ucha.', 'lm');
       }
       setTimeout(() => {
         if(shotNum === 1){
           addLog('"STŮJ, KURVA!" *Johnny přebíjí, ruce se mu třesou vzteky*', 'lw');
           setTimeout(() => _startDodgeRound(2), 1000);
         } else {
-          d.phase = 'flee';
-          gs.story.leg_shot = true;
-          addLog('*Noha tě pálí, ale stojíš. Johnny mrští pistolí o zeď.*', 'lw');
-          setTimeout(() => {
-            addLog('*Jana vyskočí a chytí tě za ruku.* "UTÍKEJ, HRUBEŠI!!!"', 'lw');
-            fnotif('🏃 UTÍKEJ! (postřelená noha)', 'rep');
-            setTimeout(() => triggerJanaFleeVilla(), 800);
-          }, 600);
+          _dodgeEndFlee();
         }
       }, 1200);
       return;
     }
 
     if(elapsed > d.dodgeWindow){
-      // Failed to dodge — death
-      d.phase = 'dead';
+      d.hitCount++;
       if(d._dodgeListener) window.removeEventListener('keydown', d._dodgeListener);
       screenShake(500);
       d.hitFlash = gs.ts;
@@ -432,17 +445,35 @@ function _dodgeUpdate(){
       } else {
         gs.story.gun_shot2 = true; gs._shot2t = gs.ts;
       }
-      addLog('💥 *BANG!* Nestačils uhnout. Kulka tě zasáhla.', 'lw');
+
+      if(d.hitCount >= 2){
+        d.phase = 'dead';
+        addLog('💥 *BANG!* Druhá kulka tě zasáhla. Padáš k zemi.', 'lw');
+        setTimeout(() => {
+          gs.cutscene_active = false;
+          gs.dodge = null;
+          triggerDeath(
+            'Johnnyho kulky tě zasáhly obě. Neměl jsi šanci.\nKřemže tě bude postrádat. Možná.',
+            'ZASTŘELEN JOHNNYM',
+            'KONEC HRY · UHÝBEJ PŘÍŠTĚ',
+            'death_johnny_gun'
+          );
+        }, 1500);
+        return;
+      }
+
+      d.phase = 'hit' + shotNum;
+      addLog('💥 *BANG!* Nestačils uhnout. Kulka tě škrábla do nohy!', 'lw');
+      gs.story.leg_shot = true;
       setTimeout(() => {
-        gs.cutscene_active = false;
-        gs.dodge = null;
-        triggerDeath(
-          'Johnnyho kulka tě zasáhla. Měl jsi být rychlejší.\nKřemže tě bude postrádat. Možná.',
-          'ZASTŘELEN JOHNNYM',
-          'KONEC HRY · UHÝBEJ PŘÍŠTĚ',
-          'death_johnny_gun'
-        );
-      }, 1500);
+        if(shotNum === 1){
+          addLog('*Koleno ti hoří bolestí, ale stojíš.* Johnny přebíjí.', 'lw');
+          fnotif('🩸 Postřelená noha!', 'rep');
+          setTimeout(() => _startDodgeRound(2), 1000);
+        } else {
+          _dodgeEndFlee();
+        }
+      }, 1200);
     }
   }
 }
@@ -499,26 +530,14 @@ function triggerJanaFleeVilla(){
     if(MAZE_MAP[r][c]===3){exitR=r;exitC=c;}
   }
 
-  // Pac-Man tečky na všech cestách + power pellety
-  const items = [];
-  for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
-    const v = MAZE_MAP[r][c];
-    if(v===0) items.push({r,c,type:'dot',taken:false});
-    if(v===7) items.push({r,c,type:'power',taken:false});
-  }
-
   gs.maze = {
     t0: gs.ts,
     px: startC + 0.5, py: startR + 0.5,
     jx: 25.5, jy: 1.5,
     jDelay: gs.ts + 3000,
     exitR, exitC,
-    items,
-    dots: 0,
-    dotsTotal: items.filter(i=>i.type==='dot').length,
     bullets: [],
     lastShot: gs.ts + 4000,
-    powerMode: 0,
     won: false,
     dead: false,
     jPath: [],
@@ -578,8 +597,7 @@ function _mazeUpdate(dt){
   }
 
   // Hráč pohyb
-  let baseSpd = wounded ? 0.058 : 0.075;
-  if(m.powerMode > gs.ts) baseSpd *= 1.2;
+  const baseSpd = wounded ? 0.055 : 0.075;
   const spd = baseSpd * tNorm;
   let nx = m.px, ny = m.py;
   if(keys['w']||keys['ArrowUp'])    ny -= spd;
@@ -619,22 +637,6 @@ function _mazeUpdate(dt){
     }
   }
 
-  // Item pickup (Pac-Man style)
-  for(const it of m.items){
-    if(it.taken) continue;
-    const dx=m.px-(it.c+0.5), dy=m.py-(it.r+0.5);
-    if(dx*dx+dy*dy < 0.4){
-      it.taken = true;
-      if(it.type==='dot'){
-        m.dots++;
-      } else if(it.type==='power'){
-        m.powerMode = gs.ts + 5000;
-        fnotif('⚡ POWER! Johnny utíká!', 'pos');
-        screenShake(150);
-      }
-    }
-  }
-
   // Exit check
   const exitDx = m.px-(m.exitC+0.5), exitDy = m.py-(m.exitR+0.5);
   if(exitDx*exitDx+exitDy*exitDy < 0.6){
@@ -647,23 +649,14 @@ function _mazeUpdate(dt){
   const jActive = !m.jDelay || gs.ts >= m.jDelay;
 
   if(jActive){
-    const isPower = m.powerMode > gs.ts;
-
     // Johnny pathfinding (every 500ms)
     if(gs.ts - m.jPathT > 500){
       m.jPathT = gs.ts;
-      if(isPower){
-        // Power mode: Johnny utíká – najdi bod daleko od hráče
-        const fleeR = m.jy < MAZE_ROWS/2 ? MAZE_ROWS-2 : 1;
-        const fleeC = m.jx < MAZE_COLS/2 ? MAZE_COLS-2 : 1;
-        m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),fleeR,fleeC);
-      } else {
-        m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),Math.floor(m.py),Math.floor(m.px));
-      }
+      m.jPath = _mazeBFS(Math.floor(m.jy),Math.floor(m.jx),Math.floor(m.py),Math.floor(m.px));
     }
 
     // Johnny movement
-    const jSpd = (isPower ? 0.018 : wounded ? 0.025 : 0.035) * tNorm;
+    const jSpd = (wounded ? 0.025 : 0.035) * tNorm;
     if(m.jPath.length > 1){
       const [tr,tc] = m.jPath[1];
       const tdx = (tc+0.5)-m.jx, tdy = (tr+0.5)-m.jy;
@@ -677,9 +670,9 @@ function _mazeUpdate(dt){
     }
   }
 
-  // Johnny catch check (ne v power mode)
+  // Johnny catch check
   const cdx=m.px-m.jx, cdy=m.py-m.jy;
-  if(cdx*cdx+cdy*cdy < 0.5 && !(m.powerMode > gs.ts)){
+  if(cdx*cdx+cdy*cdy < 0.5){
     m.dead = true;
     m.shakeT = gs.ts;
     screenShake(500);
@@ -688,8 +681,8 @@ function _mazeUpdate(dt){
     return;
   }
 
-  // Johnny střílí kulky (každé 3.5s, pokud vidí hráče – ne v power mode)
-  if(jActive && !(m.powerMode > gs.ts) && gs.ts - m.lastShot > 3500){
+  // Johnny střílí kulky (každé 3.5s, pokud vidí hráče)
+  if(jActive && gs.ts - m.lastShot > 3500){
     const jr=Math.floor(m.jy), jc=Math.floor(m.jx);
     const prr=Math.floor(m.py), prc=Math.floor(m.px);
     let shootDir = null;
@@ -744,28 +737,41 @@ function _mazeFinish(success){
     gs.story.jana_escaped_success = true;
     gs.jana_escape_deadline = 0;
     gs.johnny_chase_pos = null;
-    gs.room = 'kremze';
-    initRoom(canvas.width*0.50, canvas.height*0.60);
-    setTimeout(() => {
-      addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
-      if(gs.story.leg_shot){
-        setTimeout(() => {
-          addLog('*Jana si všimne krve na nohavici.* "Ježíši, on tě trefil! Sedni si."', 'lw');
-          setTimeout(() => {
-            addLog('*Jana ti strhne kus látky z košile a pevně ovine nohu.*', 'lm');
-            fnotif('🩹 Jana obvázala nohu', 'pos');
-            gs.story.leg_bandaged = true;
-          }, 1500);
-        }, 1200);
-      }
-      gainRep(12, 'Utekl s Janou z Johnnyho vily');
-      gs.inv.klice_vila = 1; updateInv();
-      gs.story.jana_rescued_villa = true;
-      gs.story.johnny_villa_done = true;
-      doneObj('side_johnny');
-      fnotif('+12 REP','rep'); fnotif('Jana zachráněna 💅','pos'); fnotif('🔑 Klíče od vily','itm');
-      addLog('Jana se vydá do Billy. Můžeš ji tam potkat.', 'ls');
-    }, 800);
+
+    if(gs.story.leg_shot){
+      gs.room = 'bandage_cutscene';
+      gs.bandage_anim = { t0: gs.ts, phase: 'sit', done: false };
+      addLog('*Vyběhls z vily. Koleno ti krvácí.*', 'lm');
+      setTimeout(() => {
+        addLog('*Jana si všimne krve na nohavici.* "Ježíši, on tě trefil! Sedni si."', 'lw');
+        gs.bandage_anim.phase = 'bandage';
+        gs.bandage_anim.t1 = gs.ts;
+      }, 1500);
+      setTimeout(() => {
+        addLog('*Jana ti strhne kus látky z košile a pevně ovine nohu.*', 'lm');
+        gs.bandage_anim.phase = 'wrap';
+        gs.bandage_anim.t2 = gs.ts;
+      }, 3500);
+      setTimeout(() => {
+        addLog('*"Tak. Vydrží to. Pojď, Hrubeši."*', 'lw');
+        fnotif('🩹 Jana obvázala nohu', 'pos');
+        gs.story.leg_bandaged = true;
+        gs.bandage_anim.phase = 'done';
+      }, 5500);
+      setTimeout(() => {
+        gs.bandage_anim = null;
+        gs.room = 'kremze';
+        initRoom(canvas.width*0.50, canvas.height*0.60);
+        _mazeFinishCommon();
+      }, 7000);
+    } else {
+      gs.room = 'kremze';
+      initRoom(canvas.width*0.50, canvas.height*0.60);
+      setTimeout(() => {
+        addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
+        _mazeFinishCommon();
+      }, 800);
+    }
   } else {
     gs.cutscene_active = false;
     triggerDeath(
@@ -775,6 +781,16 @@ function _mazeFinish(success){
       'death_maze_escape'
     );
   }
+}
+
+function _mazeFinishCommon(){
+  gainRep(12, 'Utekl s Janou z Johnnyho vily');
+  gs.inv.klice_vila = 1; updateInv();
+  gs.story.jana_rescued_villa = true;
+  gs.story.johnny_villa_done = true;
+  doneObj('side_johnny');
+  fnotif('+12 REP','rep'); fnotif('Jana zachráněna 💅','pos'); fnotif('🔑 Klíče od vily','itm');
+  addLog('Jana se vydá do Billy. Můžeš ji tam potkat.', 'ls');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -866,7 +882,6 @@ function drawMazeEscape(W,H,t){
   const cellW = W / MAZE_COLS;
   const cellH = H / MAZE_ROWS;
   const cs = Math.min(cellW, cellH);
-  const isPower = m.powerMode > gs.ts;
 
   // Shake
   let sx=0,sy=0;
@@ -881,8 +896,8 @@ function drawMazeEscape(W,H,t){
   // Černé pozadí
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
 
-  // Zdi – neonový styl
-  const wallCol = isPower ? '#2244aa' : '#1a1aff';
+  // Zdi
+  const wallCol = '#1a1aff';
   for(let r=0;r<MAZE_ROWS;r++) for(let c=0;c<MAZE_COLS;c++){
     if(MAZE_MAP[r][c]!==1) continue;
     const x=c*cellW, y=r*cellH;
@@ -906,20 +921,6 @@ function drawMazeEscape(W,H,t){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('EXIT',ex+cellW/2,ey+cellH/2);
 
-  // Tečky a power pellety
-  for(const it of m.items){
-    if(it.taken) continue;
-    const ix=it.c*cellW+cellW/2, iy=it.r*cellH+cellH/2;
-    if(it.type==='dot'){
-      ctx.fillStyle='#ffb8ff';
-      ctx.beginPath(); ctx.arc(ix,iy,cs*0.08,0,Math.PI*2); ctx.fill();
-    } else {
-      const pPulse = 0.5+0.5*Math.sin(t*0.006+it.c);
-      ctx.fillStyle=`rgba(255,184,255,${pPulse})`;
-      ctx.beginPath(); ctx.arc(ix,iy,cs*0.22,0,Math.PI*2); ctx.fill();
-    }
-  }
-
   // Kulky
   for(const b of m.bullets){
     const bx=b.x*cellW, by=b.y*cellH;
@@ -929,57 +930,24 @@ function drawMazeEscape(W,H,t){
     ctx.beginPath(); ctx.arc(bx-b.dx*cellW*0.5,by-b.dy*cellH*0.5,3,0,Math.PI*2); ctx.fill();
   }
 
-  // Johnny – duch (Pac-Man ghost styl)
+  // Johnny – červená postava
   const jx=m.jx*cellW, jy=m.jy*cellH;
-  const ghostR = cs*0.38;
-  const ghostCol = isPower ? '#2244aa' : '#ff0000';
-  const ghostEyeCol = isPower ? '#fff' : '#fff';
-  ctx.fillStyle=ghostCol;
-  ctx.beginPath();
-  ctx.arc(jx,jy-ghostR*0.2,ghostR,Math.PI,0);
-  ctx.lineTo(jx+ghostR,jy+ghostR*0.6);
-  for(let w=0;w<4;w++){
-    const wx=jx+ghostR-w*ghostR*0.5;
-    ctx.lineTo(wx-ghostR*0.13,jy+ghostR*0.3);
-    ctx.lineTo(wx-ghostR*0.25,jy+ghostR*0.6);
-  }
-  ctx.closePath(); ctx.fill();
-  // Oči
-  ctx.fillStyle=ghostEyeCol;
-  ctx.beginPath(); ctx.arc(jx-ghostR*0.28,jy-ghostR*0.3,ghostR*0.22,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(jx+ghostR*0.28,jy-ghostR*0.3,ghostR*0.22,0,Math.PI*2); ctx.fill();
-  if(!isPower){
-    const edx=m.px-m.jx, edy=m.py-m.jy;
-    const ea=Math.atan2(edy,edx);
-    ctx.fillStyle='#00f';
-    ctx.beginPath(); ctx.arc(jx-ghostR*0.28+Math.cos(ea)*ghostR*0.08,jy-ghostR*0.3+Math.sin(ea)*ghostR*0.08,ghostR*0.12,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(jx+ghostR*0.28+Math.cos(ea)*ghostR*0.08,jy-ghostR*0.3+Math.sin(ea)*ghostR*0.08,ghostR*0.12,0,Math.PI*2); ctx.fill();
-  }
-  ctx.fillStyle=isPower?'rgba(34,68,170,0.7)':'rgba(255,60,60,0.7)'; ctx.font=`bold ${cs*0.28}px Outfit,sans-serif`;
-  ctx.textAlign='center'; ctx.fillText('JOHNNY',jx,jy-ghostR-4);
+  const jR = cs*0.35;
+  ctx.fillStyle='#ff2020';
+  ctx.beginPath(); ctx.arc(jx,jy-jR*0.1,jR,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,60,60,0.7)'; ctx.font=`bold ${cs*0.28}px Outfit,sans-serif`;
+  ctx.textAlign='center'; ctx.fillText('JOHNNY',jx,jy-jR-4);
 
-  // Hráč – Pac-Man (žlutý s pusou)
+  // Hráč – žlutá postava
   const px=m.px*cellW, py=m.py*cellH;
-  const pacR = cs*0.35;
-  const mouthAngle = 0.25 + 0.15*Math.abs(Math.sin(t*0.012));
+  const pR = cs*0.32;
   const legW = gs.story.leg_shot;
-  // Směr otevření pusy
-  let pacDir = 0;
-  if(keys['a']||keys['ArrowLeft']) pacDir = Math.PI;
-  else if(keys['w']||keys['ArrowUp']) pacDir = -Math.PI/2;
-  else if(keys['s']||keys['ArrowDown']) pacDir = Math.PI/2;
-  ctx.fillStyle = isPower ? '#5cf' : '#ffff00';
-  ctx.beginPath();
-  ctx.arc(px,py,pacR,pacDir+mouthAngle,pacDir+Math.PI*2-mouthAngle);
-  ctx.lineTo(px,py);
-  ctx.closePath(); ctx.fill();
-  // Oko
-  const eyeOff = pacDir === Math.PI ? -1 : 1;
-  ctx.fillStyle='#000'; ctx.beginPath();
-  ctx.arc(px+eyeOff*pacR*0.15, py-pacR*0.3, pacR*0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffdd00';
+  ctx.beginPath(); ctx.arc(px,py,pR,0,Math.PI*2); ctx.fill();
   if(legW){
+    const wobble = Math.sin(t*0.005)*2;
     ctx.fillStyle='rgba(200,40,40,0.7)';
-    ctx.beginPath(); ctx.arc(px+pacR*0.2,py+pacR*0.3,3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(px+pR*0.2+wobble,py+pR*0.3,3,0,Math.PI*2); ctx.fill();
   }
 
   // Minimap
@@ -993,7 +961,7 @@ function drawMazeEscape(W,H,t){
   }
   ctx.fillStyle='#ff0';
   ctx.fillRect(mmX+Math.floor(m.px)*mmS, mmY+Math.floor(m.py)*mmS, mmS, mmS);
-  ctx.fillStyle=isPower?'#248':'#f00';
+  ctx.fillStyle='#f00';
   ctx.fillRect(mmX+Math.floor(m.jx)*mmS, mmY+Math.floor(m.jy)*mmS, mmS, mmS);
   ctx.fillStyle='#0f0';
   ctx.fillRect(mmX+m.exitC*mmS, mmY+m.exitR*mmS, mmS, mmS);
@@ -1025,28 +993,64 @@ function drawMazeEscape(W,H,t){
     ctx.fillText('ÚTĚK Z VILY',W/2,H*0.38);
     ctx.fillStyle=`rgba(255,255,255,${iAlpha})`; ctx.font='16px "Courier New",monospace';
     ctx.fillText('WASD / šipky = pohyb',W/2,H*0.46);
-    ctx.fillText('Sbírej tečky · Velké = POWER',W/2,H*0.52);
-    ctx.fillText('Doběhni k EXIT',W/2,H*0.58);
+    ctx.fillText('Doběhni k EXIT',W/2,H*0.52);
     ctx.fillStyle=`rgba(255,50,50,${iAlpha})`; ctx.font='bold 14px "Courier New",monospace';
-    ctx.fillText('Johnny tě pronásleduje!',W/2,H*0.66);
-  } else {
-    ctx.fillStyle='#ff4'; ctx.fillText('SCORE: '+m.dots+'/'+m.dotsTotal,10,18);
-    if(isPower){
-      const rem = Math.ceil((m.powerMode-gs.ts)/1000);
-      ctx.fillStyle='#5cf'; ctx.textAlign='center'; ctx.fillText('⚡ POWER '+rem+'s',W/2,18);
+    ctx.fillText('Johnny tě pronásleduje!',W/2,H*0.60);
+    if(legW){
+      ctx.fillStyle=`rgba(255,130,130,${iAlpha})`; ctx.font='bold 13px "Courier New",monospace';
+      ctx.fillText('⚠ Postřelená noha — jdeš pomaleji!',W/2,H*0.68);
     }
+  } else {
+    ctx.fillStyle='#ff4'; ctx.fillText('ÚTĚK Z VILY',10,18);
     ctx.fillStyle=legW?'#f88':'#fff'; ctx.textAlign='right';
-    ctx.fillText(legW?'INJURED':'WASD/↑↓←→',W-10,18);
-  }
-  // Spodní řádek
-  if(!m.intro){
-    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,H-18,W,18);
-    ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px "Courier New",monospace';
-    ctx.textAlign='center'; ctx.fillText('● = tečka   ◉ = POWER (Johnny utíká)   EXIT = cíl',W/2,H-5);
+    ctx.fillText(legW?'🩸 POSTŘELEN':'WASD/↑↓←→',W-10,18);
   }
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 
   ctx.restore();
+}
+
+function drawBandageCutscene(W,H,t){
+  const ba = gs.bandage_anim;
+  if(!ba) return;
+  ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,W,H);
+
+  // Vila v pozadí
+  ctx.fillStyle='#222'; ctx.fillRect(W*0.3, H*0.15, W*0.4, H*0.45);
+  ctx.fillStyle='#444'; ctx.fillRect(W*0.45, H*0.5, W*0.1, H*0.1);
+
+  const cx = W*0.5, cy = H*0.72;
+
+  // Hráč sedí
+  ctx.fillStyle='#ffdd00';
+  ctx.beginPath(); ctx.arc(cx-30, cy-20, 14, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#aa8800'; ctx.fillRect(cx-40, cy-6, 20, 30);
+  // Noha s krví
+  ctx.fillStyle='#cc3333'; ctx.fillRect(cx-38, cy+20, 16, 4);
+
+  // Jana
+  if(ba.phase === 'bandage' || ba.phase === 'wrap' || ba.phase === 'done'){
+    ctx.fillStyle='#ff69b4';
+    ctx.beginPath(); ctx.arc(cx+20, cy-22, 12, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#cc5599'; ctx.fillRect(cx+12, cy-10, 16, 26);
+    // Ruce k noze
+    if(ba.phase === 'wrap' || ba.phase === 'done'){
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(cx+14, cy+4); ctx.lineTo(cx-30, cy+20); ctx.stroke();
+      // Obvaz
+      ctx.strokeStyle='#eee'; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.arc(cx-30, cy+22, 8, 0, Math.PI*2); ctx.stroke();
+    }
+  }
+
+  // Text
+  ctx.fillStyle='#fff'; ctx.font='bold 18px Outfit,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  if(ba.phase==='sit') ctx.fillText('Před vilou...', W/2, H*0.12);
+  else if(ba.phase==='bandage') ctx.fillText('Jana ošetřuje ránu...', W/2, H*0.12);
+  else if(ba.phase==='wrap') ctx.fillText('Obvazuje nohu...', W/2, H*0.12);
+  else if(ba.phase==='done') ctx.fillText('🩹 Hotovo.', W/2, H*0.12);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }
 
 // (katana death odstraněna – nahrazena gun scene)
