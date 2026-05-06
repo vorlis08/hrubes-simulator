@@ -3669,8 +3669,6 @@ function drawKoupelna(W,H,t){
     const d = gs.dodge;
     const phase = d.phase;
     const cx = W*0.5, cy = H*0.78;
-    const jx = W*0.38, jy = H*0.52;
-
     // ── Heartbeat vignette (aim + dodge) ──
     if(phase.startsWith('aim') || phase.startsWith('dodge')){
       const hbRate = phase.startsWith('dodge') ? 0.014 : 0.008;
@@ -3682,56 +3680,22 @@ function drawKoupelna(W,H,t){
       ctx.fillStyle=hbG; ctx.fillRect(0,0,W,H);
     }
 
-    // ── Johnny postava s pistolí ──
-    if(phase.startsWith('aim') || phase.startsWith('dodge') || phase.startsWith('result') || phase.startsWith('hit') || phase === 'flee'){
-      ctx.save(); ctx.translate(jx, jy);
-      const gunKick = (d.successFlash > 0 || d.hitFlash > 0) ? Math.max(0, 1-(gs.ts-(d.successFlash||d.hitFlash))*0.004)*8 : 0;
-      // Tělo
-      ctx.fillStyle='#1a1a2e'; ctx.fillRect(-12,2,24,28);
-      // Sako
-      ctx.fillStyle='#2a2040'; rrect(-14,-2,28,22,3); ctx.fill();
-      // Hlava
-      ctx.fillStyle='#e8c8a0'; ctx.beginPath(); ctx.arc(0,-16,12,0,Math.PI*2); ctx.fill();
-      // Vlasy
-      ctx.fillStyle='#3a2a10'; ctx.beginPath(); ctx.arc(0,-22,10,Math.PI,0); ctx.fill();
-      // Oči (zuřivé)
-      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-4,-16,2.5,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(4,-16,2.5,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#c00'; ctx.beginPath(); ctx.arc(-4,-16,1.5,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(4,-16,1.5,0,Math.PI*2); ctx.fill();
-      // Obočí (naštvaný)
-      ctx.strokeStyle='#3a2a10'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(-7,-20); ctx.lineTo(-2,-19); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(7,-20); ctx.lineTo(2,-19); ctx.stroke();
-      // Paže s pistolí
-      const gunAng = Math.atan2(cy-jy, cx-jx+((d.playerPos||0)*W*0.05)) + gunKick*0.05;
-      ctx.save(); ctx.translate(14, 4); ctx.rotate(gunAng-0.2);
-      ctx.fillStyle='#e8c8a0'; ctx.fillRect(0,-3,22,6);
-      ctx.fillStyle='#222'; ctx.fillRect(20,-4,14,8);
-      ctx.fillStyle='#111'; ctx.fillRect(32,-2,4,4);
-      ctx.restore();
-      // Label
-      ctx.fillStyle='rgba(255,80,80,0.9)'; ctx.font='bold 10px Outfit,sans-serif';
-      ctx.textAlign='center'; ctx.fillText('JOHNNY',0,-34);
-      ctx.restore();
-
-      // ── Muzzle flash ──
+    // ── Muzzle flash (z pozice Johnnyho NPC) ──
+    if(d.successFlash > 0 || d.hitFlash > 0){
       const flashTS = d.successFlash || d.hitFlash;
-      if(flashTS > 0 && gs.ts - flashTS < 200){
-        const mfP = 1 - (gs.ts - flashTS)/200;
-        const mfX = jx + 46*Math.cos(Math.atan2(cy-jy,cx-jx));
-        const mfY = jy + 46*Math.sin(Math.atan2(cy-jy,cx-jx));
-        const mfG = ctx.createRadialGradient(mfX,mfY,0,mfX,mfY,40*mfP);
-        mfG.addColorStop(0,`rgba(255,255,200,${mfP})`);
-        mfG.addColorStop(0.3,`rgba(255,180,60,${mfP*0.7})`);
+      if(gs.ts - flashTS < 250){
+        const mfP = 1 - (gs.ts - flashTS)/250;
+        const mfX = W*0.65, mfY = H*0.50;
+        const mfG = ctx.createRadialGradient(mfX,mfY,0,mfX,mfY,50*mfP);
+        mfG.addColorStop(0,`rgba(255,255,200,${mfP*0.9})`);
+        mfG.addColorStop(0.3,`rgba(255,180,60,${mfP*0.6})`);
         mfG.addColorStop(1,'transparent');
-        ctx.fillStyle=mfG; ctx.fillRect(mfX-50,mfY-50,100,100);
-        // Jiskry
-        for(let sp=0;sp<8;sp++){
-          const spAng = (sp/8)*Math.PI*2 + gs.ts*0.01;
-          const spDist = (1-mfP)*60;
-          ctx.fillStyle=`rgba(255,220,100,${mfP*0.6})`;
-          ctx.beginPath(); ctx.arc(mfX+Math.cos(spAng)*spDist, mfY+Math.sin(spAng)*spDist, 2*mfP, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle=mfG; ctx.fillRect(mfX-60,mfY-60,120,120);
+        for(let sp=0;sp<10;sp++){
+          const spAng = (sp/10)*Math.PI*2 + gs.ts*0.01;
+          const spDist = (1-mfP)*70;
+          ctx.fillStyle=`rgba(255,220,100,${mfP*0.5})`;
+          ctx.beginPath(); ctx.arc(mfX+Math.cos(spAng)*spDist, mfY+Math.sin(spAng)*spDist, 2.5*mfP, 0, Math.PI*2); ctx.fill();
         }
       }
     }
