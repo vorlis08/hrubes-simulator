@@ -4924,20 +4924,18 @@ function render(){
   // Voodoo animace (overlay přes Křemži)
   if(gs.voodoo_anim) drawVoodooAnim(W,H);
 
-  // Scanlines – dynamicky snížit na slabších PC
-  if(!fpsMonitor || !fpsMonitor.shouldReduceEffects()){
-    ctx.fillStyle='rgba(0,0,0,0.04)';
-    for(let y=0;y<H;y+=3) ctx.fillRect(0,y,W,1);
+  // Scanlines – cached offscreen canvas (místo stovek fillRect volání)
+  const tier = fpsMonitor ? fpsMonitor.getQualityTier() : 3;
+  if(tier >= 2){
+    ctx.drawImage(overlayCache.getScanlines(W, H), 0, 0);
   }
 
-  // Vigneta (všechny místnosti)
-  const vigAll=ctx.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,Math.max(W,H)*0.78);
-  vigAll.addColorStop(0,'transparent'); vigAll.addColorStop(1,'rgba(0,0,0,0.38)');
-  ctx.fillStyle=vigAll; ctx.fillRect(0,0,W,H);
+  // Vigneta – cached offscreen canvas (místo createRadialGradient každý frame)
+  ctx.drawImage(overlayCache.getVignette(W, H), 0, 0);
 
-  // Ambient occlusion v rozích pro lepší vzhled
-  if(!fpsMonitor || fpsMonitor.fps > 45){
-    drawAmbientOcclusion(ctx, W, H, 0.08);
+  // Ambient occlusion – cached offscreen canvas
+  if(tier >= 2){
+    ctx.drawImage(overlayCache.getAmbientOcclusion(W, H, 0.08), 0, 0);
   }
 
   // Šíša efekty – vizuální distortion + budík timer
