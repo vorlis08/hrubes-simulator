@@ -4788,6 +4788,7 @@ function drawDoma(W,H,t){
       { key:'webovky',         emoji:'🌐', name:'Webovky' },
       { key:'kgb_detector',    emoji:'🔍', name:'KGB Detektor' },
       { key:'klic_supliku',    emoji:'🗝️', name:'Klíček' },
+      { key:'receptura',       emoji:'📜', name:'Receptura' },
     ];
     const cx = W * 0.42, cy = H * 0.38;
     const radiusX = Math.min(W * 0.22, 200);
@@ -4983,6 +4984,42 @@ function render(){
       ctx.strokeStyle=`rgba(255,0,0,${rPulse})`; ctx.lineWidth=2;
       ctx.strokeRect(0,0,W,H);
     }
+  }
+
+  // Elixír mládí – psychedelický overlay
+  if(gs.elixir_active){
+    const eRem = Math.max(0, gs.elixir_end - gs.ts);
+    const eProg = 1 - eRem / 60000;
+    // Duhový overlay
+    const hue = (t * 0.1) % 360;
+    ctx.fillStyle=`hsla(${hue},80%,50%,${0.04 + eProg*0.06})`;
+    ctx.fillRect(0,0,W,H);
+    // Spirálový efekt – rotující průhledné kruhy
+    ctx.save();
+    ctx.globalAlpha = 0.06;
+    const spiralCount = 5;
+    for(let i = 0; i < spiralCount; i++){
+      const angle = (t * 0.001) + (i / spiralCount) * Math.PI * 2;
+      const radius = 80 + Math.sin(t*0.002 + i)*40;
+      const sx = W/2 + Math.cos(angle) * radius;
+      const sy = H/2 + Math.sin(angle) * radius;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 30+i*15, 0, Math.PI*2);
+      ctx.fillStyle=`hsla(${(hue+i*72)%360},90%,60%,0.15)`;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    // Ghost overlay (dvojité vidění)
+    ctx.globalAlpha = 0.07;
+    ctx.drawImage(canvas, Math.sin(t*0.003)*5, Math.cos(t*0.004)*5);
+    ctx.globalAlpha = 1;
+    // Timer – kolik zbývá
+    const eSecs = Math.ceil(eRem/1000);
+    ctx.fillStyle='rgba(200,100,255,0.8)'; ctx.font='bold 12px monospace';
+    ctx.textAlign='right'; ctx.textBaseline='top';
+    ctx.fillText(`🧪 ${eSecs}s`, W-10, 10);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   }
 
   // Maze – skip normal game rendering

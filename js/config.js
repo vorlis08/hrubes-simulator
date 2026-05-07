@@ -304,6 +304,23 @@ const NPCS = {
           {label:'💸 50g za 150 Kč', fn:'q_saman_50g'},
           {label:'(Odejít)',          cls:'danger', fn:'close'},
         ]
+      },
+      // stage 3 – elixír quest (odemčen po 5+ nákupech)
+      {
+        text:'"*Šaman se najednou zastaví a podívá se ti do očí* "Víš co, Fando? Ty jsi věrnej zákazník. Řeknu ti něco, co jsem nikomu neřekl." *přisedne blíž* "Já jsem dřív učil na téhle škole. Matiku. Dvacet let. Pak mě vyhodili, protože jsem chtěl učit přes meditaci. Prý \'nekonvenční metody\'." *odplivne si* "Od tý doby vařím blendy. Ale mám sen – vytvořit ultimátní elixír. Křemežský elixír. Potřebuju ale tři ingredience, ke kterým se nedostanu."',
+        choices:[
+          {label:'🧪 "Co potřebuješ?"', cls:'special', fn:'q_saman_elixir_start'},
+          {label:'💸 50g za 150 Kč', fn:'q_saman_50g'},
+          {label:'(Odejít)', cls:'danger', fn:'close'},
+        ]
+      },
+      // stage 4 – po dokončení elixíru
+      {
+        text:'"*Šaman drží lahvičku s elixírem proti světlu, oči mu září* "Křemežský elixír. Dvacet let jsem o tom snil." *podá ti ji* "Tady. Tenhle je tvůj. A tady máš i recepturu – kdyby ses chtěl někdy vrátit k umění." *mrkne*',
+        choices:[
+          {label:'💸 50g za 150 Kč', fn:'q_saman_50g'},
+          {label:'(Odejít)', fn:'close'},
+        ]
       }
     ]
   },
@@ -727,12 +744,50 @@ const NPCS = {
     ]
   },
 
+  // ─── Novák (substituent za Číhalovou → maturitní quest) ──────────────────
+  novak: {
+    name:'Novák', role:'Učitel ČJ (za Číhalovou)', emoji:'🍺',
+    room:'ucebna', rx:.27, ry:.40, color:'#d97706', size:1.1,
+    dialogs:[
+      // stage 0 – představení (nahradil Číhalovou)
+      {
+        text:'"No nazdar, lidi. Jsem Novák. Číhalová se nám... vyřadila z provozu, takže budu mít čeština já. A rovnou říkám – na ten Máchův rozbor se vyseru, to po mně nechtějte." *rozhlédne se* "Jinak – blíží se maturity. A mám takový dojem, že většina z vás neví, kde leží Brno."',
+        choices:[
+          {label:'"A vy víte?"', cls:'special', fn:'q_novak_intro'},
+          {label:'(Tiše odejít)', cls:'danger', fn:'close'},
+        ]
+      },
+      // stage 1 – maturita quest nabídka
+      {
+        text:'"Hrubeš, pojď sem. Říkám to na rovinu – ředitelka je kráva a maturita je fraška. Ale formálně se to musí odehrát. Máš tři možnosti: buď se kurva nauč, buď si sežeň taháky, nebo to nějak obejdeš. Mně je to u prdele, ale nechci, aby se to posralo." *zapálí si v třídě*',
+        choices:[
+          {label:'📝 "Co kdybych sehnal taháky pro celou třídu?"', cls:'special', fn:'q_maturita_tahaky'},
+          {label:'📖 "Naučím se sám."', cls:'prim', fn:'q_maturita_legit'},
+          {label:'🕵️ "A co kdyby někdo donášel?"', cls:'danger', fn:'q_maturita_donaseni'},
+          {label:'"Asi jindy."', cls:'danger', fn:'close'},
+        ]
+      },
+      // stage 2 – čeká na výsledek
+      {
+        text:'"Tak co, Hrubeš? Jak to dopadlo s tou maturitou? Já tu zatím řeším, proč ta ředitelka posílá maily v Comic Sansu. Dobytek."',
+        choices:[
+          {label:'(Odejít)', fn:'close'},
+        ]
+      },
+      // stage 3 – po dokončení questu
+      {
+        text:'"No, zvládl jsi to. Já bych to nezvládl. A to jsem tu dvacet let." *vyfukne cigaretový dým* "Hele – jsi fajn kluk. Na to, jak vypadáš."',
+        choices:[{label:'(Odejít)', fn:'close'}]
+      },
+    ]
+  },
+
 };
 
 // ─── Místnosti ───────────────────────────────────────────────────────────────
 
 const ROOMS = {
-  ucebna:  { name:'Učebna 12',       icon:'✏️', sub:'Obchodní akademie',    bg:'#06100e', npcs:['cihalova','krejci','figurova','platenikova'], spawns:{} },
+  ucebna:  { name:'Učebna 12',       icon:'✏️', sub:'Obchodní akademie',    bg:'#06100e', npcs:['cihalova','krejci','figurova','platenikova','novak'], spawns:{} },
   billa:   { name:'Billa',           icon:'🛒', sub:'Mariánské náměstí',    bg:'#0a0e1a', npcs:['jana_kosova','lenka'],          spawns:{} },
   hospoda: { name:'Hospoda',         icon:'🍺', sub:'Big Poppa',            bg:'#1a0800', npcs:['mates','johnny','kratom_saman'],  spawns:{},
              fireplace:{rx:.50, ry:.18} },
@@ -786,6 +841,13 @@ const ITEM_DESCS = {
   kgb_detector: 'Detektor KGB/GRU agentů. Technologie Petra Cibulky. Stiskni v inventáři a sleduj barevné výsledky.',
   pytel_penez:  'Pytel peněz od Krejčí. Víc, než Pája ztratil. Dej mu ho – nebo si ho nech.',
   kgb_prukaz:   'Průkaz KGB agenta Krejčí. Série ГБ-7824. Kovová destička s fotografií a číslem operace. Petr Cibulka by to měl vidět.',
+  tahaky:       'Ručně psané taháky. Drobným písmem na proužcích papíru. Celá maturita na dlani.',
+  bylina_lab:   'Podivná bylina z Cibulkovy laboratoře. Svítí ve tmě. Voní po mentolu a paranoie.',
+  voda_koupelna:'Voda z Johnnyho koupelny. Trochu zakalená. Radši nečichat.',
+  prach_pentagram:'Prach z pentagramu. Červenočerný, jemný jako mouka. Chladný na dotek.',
+  elixir:       'Křemežský elixír. Ultimátní blend. 60s trip – svět se otočí vzhůru nohama.',
+  receptura:    'Šamanova tajná receptura. Popsaný ubrousek s podivnými symboly a dávkováním.',
+  vysvedceni:   'Maturitní vysvědčení. Známky: ČJ – 3, AJ – 1, EKO – 4, Chování – pochvalné. Podpis: Novák (nečitelné).',
 };
 
 // ─── Definice úkolů ──────────────────────────────────────────────────────────
@@ -813,4 +875,12 @@ const OBJ_DEFS = [
   {id:'quest_platenikova',       tag:'Speciální', text:'Řekni Pláteníkové o celé akci'},
   {id:'quest_paja_theft',        tag:'Vedlejší',  text:'Vyšetři krádež Pájových peněz'},
   {id:'quest_paja_scan',         tag:'Tajné',     text:'Prohledej Křemži detektorem KGB'},
+  {id:'quest_maturita',          tag:'Hlavní',    text:'Přežij maturitu'},
+  {id:'quest_maturita_tahaky',   tag:'Podvod',    text:'Sežeň taháky a prodej je třídě'},
+  {id:'quest_maturita_legit',    tag:'Legit',     text:'Slož maturitu vlastními silami'},
+  {id:'quest_maturita_donaseni', tag:'Donášení',  text:'Nahlásit podváděče Krejčí'},
+  {id:'quest_saman_minulost',    tag:'Tajné',     text:'Přines Šamanovi ingredience na elixír'},
+  {id:'quest_saman_bylina',      tag:'Sběr',      text:'Bylina z Cibulkovy laboratoře'},
+  {id:'quest_saman_voda',        tag:'Sběr',      text:'Voda z Johnnyho koupelny'},
+  {id:'quest_saman_prach',       tag:'Sběr',      text:'Prach z pentagramu v sklepě'},
 ];

@@ -81,6 +81,9 @@ function updateInv(){
     klic_supliku:'ic-klic_supliku', cibulka_papirek:'ic-cibulka_papirek',
     maturita:'ic-maturita',
     hadr:'ic-hadr', sklenice_jana:'ic-sklenice_jana',
+    tahaky:'ic-tahaky', bylina_lab:'ic-bylina_lab', voda_koupelna:'ic-voda_koupelna',
+    prach_pentagram:'ic-prach_pentagram', elixir:'ic-elixir', receptura:'ic-receptura',
+    vysvedceni:'ic-vysvedceni',
   };
   for(const [k, id] of Object.entries(map)){
     const cnt = gs.inv[k] || 0;
@@ -105,7 +108,7 @@ function updateInv(){
   // Oddělovače – schovat pokud jsou obě sousední skupiny prázdné
   const g1 = ['kratom','blend','zemle'];
   const g2 = ['piko','pytel'];
-  const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','klice_fabie','klice_fabie_fig','podprsenka','membership_vaza','propiska','masturbator','kgb_detector','pytel_penez','klic_supliku','cibulka_papirek','maturita','hadr','sklenice_jana'];
+  const g3 = ['pivo','cibule','kratom_kava','cert','voodoo','nuz','screenshot','hlasovka','c2_cert','fig_nuz','fig_gun','milan_phone','zelizka','prasek','klice_vila','klice_fabie','klice_fabie_fig','podprsenka','membership_vaza','propiska','masturbator','kgb_detector','pytel_penez','klic_supliku','cibulka_papirek','maturita','hadr','sklenice_jana','tahaky','bylina_lab','voda_koupelna','prach_pentagram','elixir','receptura','vysvedceni'];
   function grpVisible(keys){ return keys.some(k => (gs.inv[k]||0) > 0 || (k==='pytel' && gs.cihalova_in_bag)); }
   const seps = document.querySelectorAll('.isep');
   if(seps[0]) seps[0].style.display = (grpVisible(g1) && grpVisible(g2)) ? '' : 'none';

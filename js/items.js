@@ -96,6 +96,26 @@ function useMasturbator(){
   gs.semen_puddle = { x: gs.player.x + off, y: gs.player.y + 28, room: gs.room };
 }
 
+// ─── Elixír mládí ─────────────────────────────────────────────────────────
+function useElixir(){
+  if(!gs.inv.elixir){ addLog('Nemáš elixír!','lw'); return; }
+  if(gs.elixir_active){ addLog('Elixír ještě účinkuje!','lw'); return; }
+  gs.inv.elixir = 0; updateInv();
+  gs.elixir_active = true;
+  gs.elixir_end = gs.ts + 60000; // 60 sekund trip
+  canvas.classList.add('elixir-trip');
+  addLog('🧪 Vypil jsi elixír mládí! Svět se obrátil vzhůru nohama...', 'lm');
+  fnotif('🧪 ELIXÍR MLÁDÍ!', 'itm');
+  gainRep(5, 'Ochutnal šamanův elixír');
+}
+
+function endElixir(){
+  gs.elixir_active = false;
+  canvas.classList.remove('elixir-trip');
+  addLog('Účinky elixíru vyprchaly. Cítíš se... jiný.', 'ls');
+  fnotif('🧪 Elixír vyprchal', 'info');
+}
+
 function usePikoSelf(){
   if(!gs.inv.piko){ addLog('Nemáš piko!','lw'); return; }
   closeDialog();

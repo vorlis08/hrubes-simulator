@@ -545,12 +545,16 @@ const QF = {
     if(gs.money < 150){ addLog('Nemáš 150 Kč!','lw'); closeDialog(); return; }
     gs.money -= 150; gs.inv.kratom += 50; updateInv(); updateHUD();
     gainRep(1,'Koupil kratom');
+    gs.story.saman_buys = (gs.story.saman_buys || 0) + 1;
+    if(gs.story.saman_buys >= 5 && !gs.story.saman_elixir_quest && !gs.story.saman_elixir_done) gs.story.saman_stage = 2;
     addLog('Koupil jsi 50g za 150 Kč. 🌿','ls'); fnotif('+50g 🌿','itm'); closeDialog();
   },
   q_saman_200g(){
     if(gs.money < 600){ addLog('Nemáš 600 Kč!','lw'); closeDialog(); return; }
     gs.money -= 600; gs.inv.kratom += 200; updateInv(); updateHUD();
     gainRep(3,'Koupil 200g kratomu');
+    gs.story.saman_buys = (gs.story.saman_buys || 0) + 1;
+    if(gs.story.saman_buys >= 5 && !gs.story.saman_elixir_quest && !gs.story.saman_elixir_done) gs.story.saman_stage = 2;
     addLog('Koupil jsi 200g za 600 Kč. 🌿','ls'); fnotif('+200g 🌿','itm'); closeDialog();
   },
   // ─── Bezďák / Petr Cibulka ───────────────────────────────────────────────
@@ -1774,5 +1778,274 @@ const QF = {
     doneObj('quest_fabie');
     doneObj('main_rep');
     setTimeout(showWin, 800);
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  MATURITNÍ TÝDEN – Quest Novák
+  // ═══════════════════════════════════════════════════════════════════════
+
+  q_novak_intro(){
+    gs.story.novak_intro_done = true;
+    addLog('Novák: "Brno? To je... vlevo? Vpravo? Co já vím, jsem matikář, ne zeměpisec. A teď vypadni."', 'ls');
+    closeDialog();
+  },
+
+  q_maturita_tahaky(){
+    gs.story.maturita_started = true;
+    gs.story.maturita_path = 'tahaky';
+    addLog('Novák: "Taháky, jo? No, to je klasika. Milan měl vždycky nejlepší taháky – jestli ještě žije." *zamyšleně* "Sežeň je a prodej je za 200 Kč/kus spolužákům. Ale dávej si bacha – kdybych tě náhodou \'přistihl\', budu muset něco dělat. Formálně."', 'ls');
+    addObj('quest_maturita');
+    addObj('quest_maturita_tahaky');
+    closeDialog();
+    // Zkontrolovat, zda Milan žije
+    if(gs.story.milan_voodoo_dead || gs.story.milan_shot || gs.story.milan_fled){
+      setTimeout(() => {
+        addLog('*Počkat... Milan je pryč. Kde seženeš taháky?*', 'lw');
+        showPlayerLine('Milan je v prdeli. Budu si je muset napsat sám... anebo je má Mikuláš.', ()=>{});
+      }, 1500);
+    }
+  },
+
+  q_maturita_legit(){
+    gs.story.maturita_started = true;
+    gs.story.maturita_path = 'legit';
+    addLog('Novák: "Sám? To je kurva odvážný. Respekt." *zapálí si další cigaretu* "Přijď, až budeš ready. Dám ti pár otázek."', 'ls');
+    addObj('quest_maturita');
+    addObj('quest_maturita_legit');
+    closeDialog();
+  },
+
+  q_maturita_donaseni(){
+    gs.story.maturita_started = true;
+    gs.story.maturita_path = 'donaseni';
+    addLog('Novák: *zamračí se* "Donášení? To je hnusnej způsob, ale... efektivní." *podívá se po Krejčí* "Hele, jdi za Krejčí. Ta ví, jak s tím naložit."', 'ls');
+    addObj('quest_maturita');
+    addObj('quest_maturita_donaseni');
+    closeDialog();
+  },
+
+  // Taháky path – získání taháků
+  q_maturita_get_tahaky(){
+    // Od Milana nebo od Mikuláše
+    const s = gs.story;
+    if(s.milan_voodoo_dead || s.milan_shot || s.milan_fled){
+      // Milan pryč – Mikuláš je dá
+      gs.inv.tahaky = 1; updateInv();
+      addLog('Mikuláš: "Jo, mám Milanovy taháky. Držel jsem je pro případ nouze." *podá ti svazek papírků*', 'ls');
+      fnotif('📝 Taháky získány!', 'pos');
+    } else {
+      // Milan žije – koupíš za 200 Kč
+      if(gs.money < 200){ addLog('Nemáš dost peněz (potřebuješ 200 Kč).', 'lw'); closeDialog(); return; }
+      gs.money -= 200; updateHUD();
+      gs.inv.tahaky = 1; updateInv();
+      addLog('Milan: "Taháky? 200 Kč. Kvalitní práce." *podá ti svazek papírků*', 'ls');
+      fnotif('📝 Taháky získány! (-200 Kč)', 'pos');
+    }
+    closeDialog();
+  },
+
+  // Taháky path – prodej třídě
+  q_maturita_sell_tahaky(){
+    if(!gs.inv.tahaky){ addLog('Nemáš taháky!', 'lw'); closeDialog(); return; }
+    gs.inv.tahaky = 0; updateInv();
+    gs.money += 800; updateHUD(); // 4 spolužáci × 200 Kč
+    gs.story.tahaky_sold = true;
+    addLog('*Prodal jsi taháky čtyřem spolužákům. 800 Kč v kapse.*', 'lm');
+    fnotif('+800 Kč 💰', 'pos');
+    gainRep(5, 'Zásobil třídu taháky');
+    closeDialog();
+    // 50% šance, že Novák "přistihne"
+    setTimeout(() => {
+      if(Math.random() < 0.5){
+        gs.story.novak_caught = true;
+        addLog('Novák: "HRUBEŠ! Co to tam šustíš pod lavicí?!" *ale mrkne* "Příště buď diskrétnější, ty vole."', 'lw');
+        gainRep(-3, 'Novák tě přistihl');
+        fnotif('-3 REP 😬', 'neg');
+      } else {
+        addLog('*Novák se dívá z okna a kouří. Nic neviděl.*', 'ls');
+      }
+      // Maturita hotová
+      gs.story.maturita_done = true;
+      gs.inv.vysvedceni = 1; gs.inv.maturita = 1; updateInv();
+      doneObj('quest_maturita_tahaky');
+      doneObj('quest_maturita');
+      addLog('📜 Maturita složena! (s pomocí taháků)', 'lm');
+      fnotif('🎓 Maturita hotová!', 'pos');
+      gainRep(8, 'Přežil maturitu');
+    }, 4000);
+  },
+
+  // Legit path – kvízová minigame
+  q_maturita_quiz(){
+    closeDialog();
+    gs.story.maturita_quiz_active = true;
+    // Overlay s otázkami
+    const questions = [
+      { q:'Kdo napsal Máj?', a:['Karel Hynek Mácha','Mácha','mácha'], wrong:['Němcová','Neruda','Čapek'] },
+      { q:'Hlavní město Moravy?', a:['Brno','brno'], wrong:['Olomouc','Ostrava','Praha'] },
+      { q:'Kolik má ČR krajů?', a:['14','čtrnáct'], wrong:['12','13','16'] },
+      { q:'Rok vzniku Československa?', a:['1918'], wrong:['1920','1914','1945'] },
+      { q:'Kdo byl první prezident ČR?', a:['Václav Havel','Havel','havel'], wrong:['Klaus','Zeman','Masaryk'] },
+    ];
+    const dov = document.getElementById('dov');
+    const quiz = { questions, current: 0, correct: 0 };
+
+    function showQuestion(){
+      if(quiz.current >= quiz.questions.length){
+        // Vyhodnocení
+        const passed = quiz.correct >= 3;
+        dov.innerHTML = `
+          <div class="dh"><div class="dav">📝</div><div><div class="dn">MATURITA</div><div class="dr">Výsledky</div></div></div>
+          <div class="dtx">${passed
+            ? `"${quiz.correct}/5 správně. No, to stačí." *Novák podepíše vysvědčení* "Hele, nebylo to špatný. Na tebe."`
+            : `"${quiz.correct}/5? To je v piči, Hrubeš. Tohle je propadák." *Novák zakroutí hlavou* "Příště se uč, ne že budeš čumět do mobilu."`
+          }</div>
+          <div class="dch"><button class="db prim" onclick="QF._maturita_quiz_result(${passed})">${passed ? '🎓 Převzít vysvědčení' : '😞 Odejít'}</button></div>`;
+        dov.classList.add('on');
+        return;
+      }
+      const qq = quiz.questions[quiz.current];
+      const allAnswers = [qq.a[0], ...qq.wrong.slice(0,3)].sort(() => Math.random() - 0.5);
+      dov.innerHTML = `
+        <div class="dh"><div class="dav">📝</div><div><div class="dn">OTÁZKA ${quiz.current+1}/5</div><div class="dr">Maturita z češtiny</div></div></div>
+        <div class="dtx">"${qq.q}"</div>
+        <div class="dch">${allAnswers.map(a =>
+          `<button class="db" onclick="QF._maturita_answer('${a.replace(/'/g,"\\'")}', ${quiz.current})">${a}</button>`
+        ).join('')}</div>`;
+      dov.classList.add('on');
+    }
+
+    // Uložit stav kvízu globálně
+    quiz.showQuestion = showQuestion;
+    gs._maturita_quiz = quiz;
+    showQuestion();
+  },
+
+  _maturita_answer(answer, qIdx){
+    const quiz = gs._maturita_quiz;
+    const qq = quiz.questions[qIdx];
+    const isCorrect = qq.a.some(a => a.toLowerCase() === answer.toLowerCase());
+    if(isCorrect) quiz.correct++;
+    quiz.current++;
+    quiz.showQuestion();
+  },
+
+  _maturita_quiz_result(passed){
+    document.getElementById('dov').classList.remove('on');
+    gs.story.maturita_quiz_active = false;
+    if(passed){
+      gs.story.maturita_done = true;
+      gs.inv.vysvedceni = 1; gs.inv.maturita = 1; updateInv();
+      doneObj('quest_maturita_legit');
+      doneObj('quest_maturita');
+      addLog('📜 Maturita složena! (legitimně!)', 'lm');
+      fnotif('🎓 Maturita hotová!', 'pos');
+      gainRep(15, 'Složil maturitu legitimně');
+    } else {
+      addLog('*Propadl jsi u maturity. Novák ti dal šanci to zkusit znovu.*', 'lw');
+      fnotif('❌ Propadák!', 'neg');
+      gainRep(-5, 'Propadák u maturity');
+    }
+  },
+
+  // Donášení path – nahlásit Krejčí
+  q_maturita_report_krejci(){
+    const s = gs.story;
+    closeDialog();
+    if(s.krejci >= 2 && s.kgb_won){
+      // KGB path – Krejčí "eliminuje" podváděče KGB stylem
+      addLog('Krejčí: *přivře oči* "Podvádění? To mi připomíná jednu operaci v Leningradu, 1987." *vytáhne telefon a vytočí číslo* "Да, у нас проблема..."', 'lw');
+      setTimeout(() => {
+        addLog('*Během přestávky záhadně zmizeli tři spolužáci. Nikdo se neptá kam. Nikdo se neptá proč.*', 'lw');
+        fnotif('☭ KGB eliminace', 'neg');
+        gs.story.maturita_kgb_elimination = true;
+        gs.story.maturita_done = true;
+        gs.inv.vysvedceni = 1; gs.inv.maturita = 1; updateInv();
+        doneObj('quest_maturita_donaseni');
+        doneObj('quest_maturita');
+        gainRep(15, 'Spolupráce s KGB');
+        addLog('Krejčí: "Maturita proběhne bez komplikací." *podá ti vysvědčení* "Výborná spolupráce, Hrubeši."', 'lm');
+        fnotif('🎓 Maturita hotová!', 'pos');
+      }, 3000);
+    } else {
+      // Normální path – Krejčí to řeší po svém (byrokraticky)
+      addLog('Krejčí: "Podvádění? To je závažné obvinění, Hrubeši." *zapíše si do sešitu* "Zajistím, aby byla zkouška spravedlivá."', 'ls');
+      setTimeout(() => {
+        addLog('*Krejčí nechala přezkoumat všechny práce. Tři spolužáci dostali pětku.*', 'lw');
+        addLog('*Třída tě nenávidí. Slyšíš šeptání za zády.*', 'lw');
+        fnotif('Třída tě nesnáší 😒', 'neg');
+        gainRep(-8, 'Třída tě nenávidí za donášení');
+        gs.story.maturita_done = true;
+        gs.inv.vysvedceni = 1; gs.inv.maturita = 1; updateInv();
+        doneObj('quest_maturita_donaseni');
+        doneObj('quest_maturita');
+        addLog('📜 Maturita složena. (za cenu přátelství)', 'lm');
+        fnotif('🎓 Maturita hotová!', 'pos');
+        gainRep(5, 'Přežil maturitu');
+      }, 3000);
+      // Death screen pokud hráč odmítne spolupráci s Krejčí
+      // (tohle se spustí z dialogu Krejčí, pokud hráč klikne "Odmítnout")
+    }
+  },
+
+  // Donášení – odmítnutí spolupráce (death screen)
+  q_maturita_donaseni_refuse(){
+    closeDialog();
+    setTimeout(() => {
+      addLog('Krejčí: "Odmítáš spolupráci?" *chladný pohled* "To je... nešťastná volba."', 'lw');
+      setTimeout(() => {
+        addLog('*Krejčí vytáhne z tašky složku. Tvoje složku.* "Znám každou tvoji absenci, Hrubeši. Každou nedovolenou akci. Každý gram kratomu."', 'lw');
+        setTimeout(() => {
+          triggerDeath(
+            'Krejčí předala tvoji složku ředitelce. Disciplinární řízení. Vyloučení ze školy. Rodiče informováni. Kariéra v troskách.',
+            'VYLOUČEN ZE ŠKOLY', 'KREJČÍ TĚ ZLIKVIDOVALA SYSTÉMEM', 'death_krejci_system'
+          );
+        }, 2500);
+      }, 2000);
+    }, 800);
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  ŠAMANOVA MINULOST – Quest Šaman elixír
+  // ═══════════════════════════════════════════════════════════════════════
+
+  q_saman_elixir_start(){
+    gs.story.saman_elixir_quest = true;
+    addLog('Šaman: "Potřebuju tři věci:"', 'ls');
+    addLog('  1. Vzácnou bylinu z Cibulkovy tajné laboratoře', 'ls');
+    addLog('  2. Vodu z Johnnyho koupelny – tam prý teče z podivného pramene', 'ls');
+    addLog('  3. Prach z pentagramu v Mikulášově sklepě – ten má tu správnou energii', 'ls');
+    addLog('Šaman: "Přines mi to a vytvořím něco, co svět ještě neviděl."', 'ls');
+    addObj('quest_saman_minulost');
+    addObj('quest_saman_bylina');
+    addObj('quest_saman_voda');
+    addObj('quest_saman_prach');
+    closeDialog();
+  },
+
+  // Odevzdat ingredience Šamanovi
+  q_saman_deliver_ingredients(){
+    if(!gs.inv.bylina_lab || !gs.inv.voda_koupelna || !gs.inv.prach_pentagram){
+      addLog('Šaman: "Ještě nemáš všechno. Chybí mi:"', 'lw');
+      if(!gs.inv.bylina_lab) addLog('  – Bylina z laboratoře', 'lw');
+      if(!gs.inv.voda_koupelna) addLog('  – Voda z koupelny', 'lw');
+      if(!gs.inv.prach_pentagram) addLog('  – Prach z pentagramu', 'lw');
+      closeDialog(); return;
+    }
+    gs.inv.bylina_lab = 0;
+    gs.inv.voda_koupelna = 0;
+    gs.inv.prach_pentagram = 0;
+    updateInv();
+    gs.story.saman_elixir_done = true;
+    gs.inv.elixir = 1;
+    gs.inv.receptura = 1;
+    updateInv();
+    doneObj('quest_saman_minulost');
+    addLog('*Šaman smíchá ingredience v hrnku. Směs probublá, zazáří a ztichne.*', 'lm');
+    addLog('Šaman: "Je to tady. Křemežský elixír. Dvacet let..." *slza mu stéká po tváři*', 'ls');
+    fnotif('🧪 Křemežský elixír!', 'pos');
+    fnotif('📜 Šamanova receptura!', 'pos');
+    gainRep(12, 'Pomohl Šamanovi vytvořit elixír');
+    closeDialog();
   },
 };

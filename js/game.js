@@ -14,7 +14,7 @@ let currentNPCs = [], currentItems = [], keys = {}, lastTime = 0;
 
 // ─── Artefakty na trofejní stěně doma ────────────────────────────────────
 // Všechny artefakty zobrazené v kruhu doma (i ty, co se nedají vzít):
-const ART_KEYS_DISPLAY = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky','kgb_detector','klic_supliku'];
+const ART_KEYS_DISPLAY = ['c2_cert','milan_phone','podprsenka','klice_vila','klice_fabie','saman_hlava','maturita','foto_figurova','membership_vaza','webovky','kgb_detector','klic_supliku','receptura'];
 // Pouze tyto artefakty si lze vzít před hrou do inventáře:
 const PICKABLE_ART_KEYS = new Set(['saman_hlava','milan_phone','podprsenka','foto_figurova','membership_vaza','maturita','klic_supliku']);
 
@@ -97,6 +97,9 @@ function initRoom(spawnX, spawnY){
   // Číhalová mrtvá / v pytli / spálená / po skolabování – nezobrazuj ji
   if(gs.cihalova_in_bag || gs.story.cihalova_burned)
     currentNPCs = currentNPCs.filter(n => n.id !== 'cihalova');
+  // Novák – zobrazit jen když Číhalová je pryč (zkolabovala/mrtvá/spálená)
+  if(!gs.cihalova_collapsed && !gs.story.cihalova_dead && !gs.story.cihalova_burned)
+    currentNPCs = currentNPCs.filter(n => n.id !== 'novak');
   // Milan mrtvý, utekl nebo čeká v hospodě – nezobrazuj ho v Křemži
   if(gs.story.milan_voodoo_dead || gs.story.milan_fled || gs.story.milan_going_to_sklep || gs.story.milan_waiting_mates || gs.story.milan_shot)
     currentNPCs = currentNPCs.filter(n => n.id !== 'milan');
@@ -334,6 +337,22 @@ function checkProx(){
     }
   }
 
+  // Šaman elixír – sběr ingrediencí
+  if(gs.story.saman_elixir_quest && !gs.story.saman_elixir_done){
+    if(gs.room === 'cibulka_lab' && !gs.inv.bylina_lab){
+      const elBx = canvas.width * 0.30, elBy = canvas.height * 0.45;
+      if(dist2(p, {x:elBx, y:elBy}) < PROX_R){ best = {isElixirBylina:true}; }
+    }
+    if(gs.room === 'koupelna' && !gs.inv.voda_koupelna){
+      const elWx = canvas.width * 0.40, elWy = canvas.height * 0.38;
+      if(dist2(p, {x:elWx, y:elWy}) < PROX_R){ best = {isElixirVoda:true}; }
+    }
+    if(gs.room === 'sklep' && !gs.inv.prach_pentagram){
+      const elPx = canvas.width * 0.50, elPy = canvas.height * 0.72;
+      if(dist2(p, {x:elPx, y:elPy}) < PROX_R * 1.3){ best = {isElixirPrach:true}; }
+    }
+  }
+
   // Kasička doma (na stolku vlevo)
   if(gs.room === 'doma' && !gs.kasicka_taken){
     const kx = canvas.width * 0.06 + canvas.width * 0.055, ky = canvas.height * 0.58 - 22;
@@ -470,6 +489,12 @@ function checkProx(){
       document.getElementById('ptxt').textContent = '💚 Vzít zelenou ampulku (protilék)';
     } else if(best.isCibulkaSuplik){
       document.getElementById('ptxt').textContent = gs.inv.klic_supliku ? '🗝️ Otevřít šuplík klíčkem' : '🔒 Šuplík (potřebuješ klíček)';
+    } else if(best.isElixirBylina){
+      document.getElementById('ptxt').textContent = '🌿 Sebrat vzácnou bylinu';
+    } else if(best.isElixirVoda){
+      document.getElementById('ptxt').textContent = '💧 Nabrat vodu z umyvadla';
+    } else if(best.isElixirPrach){
+      document.getElementById('ptxt').textContent = '✨ Sebrat prach z pentagramu';
     } else if(best.isItem){
       document.getElementById('ptxt').textContent = best.type === 'kratom' ? 'Sebrat kratom' : 'Sebrat pizza žemli';
     } else {
@@ -521,6 +546,40 @@ function interact(){
       return;
     }
   }
+  // Šaman elixír – sběr ingrediencí
+  if(gs.story.saman_elixir_quest && !gs.story.saman_elixir_done){
+    if(gs.room === 'cibulka_lab' && !gs.inv.bylina_lab){
+      const elBx = canvas.width * 0.30, elBy = canvas.height * 0.45;
+      if(dist2(gs.player, {x:elBx, y:elBy}) < PROX_R){
+        gs.inv.bylina_lab = 1; updateInv();
+        addLog('*Našel jsi podivnou svítící bylinu v jedné z Cibulkových nádob. Voní po mentolu.*', 'lm');
+        fnotif('🌿 Bylina získána!', 'pos');
+        doneObj('quest_saman_bylina');
+        return;
+      }
+    }
+    if(gs.room === 'koupelna' && !gs.inv.voda_koupelna){
+      const elWx = canvas.width * 0.40, elWy = canvas.height * 0.38;
+      if(dist2(gs.player, {x:elWx, y:elWy}) < PROX_R){
+        gs.inv.voda_koupelna = 1; updateInv();
+        addLog('*Nabral jsi vodu z umyvadla. Trochu zakalená, ale Šaman chtěl přesně tuhle.*', 'lm');
+        fnotif('💧 Voda získána!', 'pos');
+        doneObj('quest_saman_voda');
+        return;
+      }
+    }
+    if(gs.room === 'sklep' && !gs.inv.prach_pentagram){
+      const elPx = canvas.width * 0.50, elPy = canvas.height * 0.72;
+      if(dist2(gs.player, {x:elPx, y:elPy}) < PROX_R * 1.3){
+        gs.inv.prach_pentagram = 1; updateInv();
+        addLog('*Opatrně jsi sebral hrst prachu z okraje pentagramu. Chlad ti projel prsty.*', 'lm');
+        fnotif('✨ Prach získán!', 'pos');
+        doneObj('quest_saman_prach');
+        return;
+      }
+    }
+  }
+
   // Johnnyho vila – vstup v Křemži (quest nebo klíče)
   if(gs.room === 'kremze'){
     const villaAccessible = (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa && !gs.story.jana_drugged_villa) || gs.inv.klice_vila;
@@ -1302,6 +1361,11 @@ function update(dt){
     const pct = Math.max(0, (gs.kratom_t / gs.kratom_max) * 100);
     document.getElementById('kh-fill').style.width = pct + '%';
     if(gs.kratom_t <= 0) endKratom();
+  }
+
+  // Elixír mládí timer
+  if(gs.elixir_active && gs.ts >= gs.elixir_end){
+    endElixir();
   }
 
   if(gs.room !== 'heaven' && gs.room !== 'heaven_gate' && gs.ts - gs.lastDrain > ENERGY_DRAIN_MS){

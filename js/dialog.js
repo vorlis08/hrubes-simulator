@@ -364,6 +364,9 @@ function getStage(id){
       if(s.johnny === 1) return 1;
       return 0;
     case 'kratom_saman':
+      if(s.saman_elixir_done) return 4;
+      if(s.saman_elixir_quest) return 3;
+      if((s.saman_buys || 0) >= 5 && !s.saman_elixir_quest && !s.saman_elixir_done) return 3;
       if(s.saman_stage >= 2) return 2;
       if(s.saman_stage >= 1) return 1;
       return 0;
@@ -425,6 +428,11 @@ function getStage(id){
       if(s.johnny_return_visit) return 2;
       if(s.johnny_cuffed) return 1;
       return 0;
+    case 'novak':
+      if(s.maturita_done) return 3;
+      if(s.maturita_started) return 2;
+      if(s.novak_intro_done) return 1;
+      return 0;
     default: return 0;
   }
 }
@@ -461,7 +469,9 @@ function showDialog(npc){
   document.getElementById('dav').textContent   = npc.emoji;
   document.getElementById('dname').textContent = npc.name.toUpperCase();
   document.getElementById('drole').textContent = npc.role;
-  const dialogText = d.textFn ? d.textFn() : d.text;
+  let dialogText = d.textFn ? d.textFn() : d.text;
+  // Elixír efekt – NPC mluví pozpátku
+  if(gs.elixir_active) dialogText = dialogText.split('').reverse().join('');
   typeText(document.getElementById('dtxt'), dialogText, 16);
 
   let choices = [...d.choices];
@@ -639,6 +649,30 @@ function showDialog(npc){
   // Krejčí – konfrontovat po skenování
   if(npc.id === 'krejci' && gs.story.paja_krejci_red && !gs.story.paja_pytel_taken)
     choices.push({label:'🔴 "Odhalil jsem vás, Krejčí."', cls:'danger', fn:'q_paja_confront_krejci'});
+
+  // ─ MATURITNÍ TÝDEN ──────────────────────────────────────────────────
+  // Milan – koupit taháky
+  if(npc.id === 'milan' && gs.story.maturita_path === 'tahaky' && !gs.inv.tahaky && !gs.story.tahaky_sold
+     && !gs.story.milan_voodoo_dead && !gs.story.milan_shot && !gs.story.milan_fled)
+    choices.push({label:'📝 "Potřebuju taháky na maturitu." (200 Kč)', cls:'special', fn:'q_maturita_get_tahaky'});
+  // Mikuláš – taháky (pokud Milan pryč)
+  if(npc.id === 'mikulas' && gs.story.maturita_path === 'tahaky' && !gs.inv.tahaky && !gs.story.tahaky_sold
+     && (gs.story.milan_voodoo_dead || gs.story.milan_shot || gs.story.milan_fled))
+    choices.push({label:'📝 "Nemáš Milanovy taháky?"', cls:'special', fn:'q_maturita_get_tahaky'});
+  // Novák – prodat taháky (máš je v inventáři)
+  if(npc.id === 'novak' && gs.inv.tahaky && gs.story.maturita_path === 'tahaky' && !gs.story.tahaky_sold)
+    choices.push({label:'📝 Prodat taháky třídě', cls:'prim', fn:'q_maturita_sell_tahaky'});
+  // Novák – legit maturita kvíz
+  if(npc.id === 'novak' && gs.story.maturita_path === 'legit' && !gs.story.maturita_done)
+    choices.push({label:'📖 "Jsem ready na maturitu."', cls:'prim', fn:'q_maturita_quiz'});
+  // Krejčí – donášení (nahlásit podváděče)
+  if(npc.id === 'krejci' && gs.story.maturita_path === 'donaseni' && !gs.story.maturita_done)
+    choices.push({label:'🕵️ "Spolužáci podvádí u maturity."', cls:'danger', fn:'q_maturita_report_krejci'});
+
+  // ─ ŠAMANOVA MINULOST ────────────────────────────────────────────────
+  // Šaman – odevzdat ingredience
+  if(npc.id === 'kratom_saman' && gs.story.saman_elixir_quest && !gs.story.saman_elixir_done)
+    choices.push({label:'🧪 Odevzdat ingredience', cls:'prim', fn:'q_saman_deliver_ingredients'});
 
   // Filtrovat volby s condFlag (zobrazí se jen pokud podmínka splněná)
   const condCheck = (flag) => {

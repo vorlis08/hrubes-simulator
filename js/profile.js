@@ -17,6 +17,7 @@ const ART_DEFS_DISPLAY = [
   { key:'webovky',         emoji:'🌐', name:'Webovky od Johnnyho', desc:'Fanta Hrubeš – osobní web. Navržen Johnnym za nula korun. Otevřít?', url:'https://fanta-hrubes.webnode.cz/' },
   { key:'kgb_detector',   emoji:'🔍', name:'KGB Detektor',         desc:'Cibulkův detektor KGB/GRU agentů. Dvacet let práce v garáži. Odhalil Krejčí.' },
   { key:'klic_supliku',   emoji:'🗝️', name:'Klíček od šuplíku',    desc:'Malý klíček od šuplíku v Cibulkově tajné laboratoři. Pája ho dostal s nějakým motivem.' },
+  { key:'receptura',      emoji:'📜', name:'Šamanova receptura',   desc:'Starodávná receptura na elixír mládí. Psáno rukou na pergamenu. Šaman ji střežil celý život.' },
 ];
 
 const PROFILE_STORAGE_KEY = 'kremze_profiles';
