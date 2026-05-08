@@ -41,7 +41,7 @@ function _flashPhoneHint(){
 }
 
 function toggleNotebook(){
-  const ov = document.getElementById('phone-ov');
+  const ov = document.getElementById('notebook-ov');
   if(!ov) return;
   if(ov.classList.contains('on')){
     ov.classList.remove('on');
@@ -52,12 +52,12 @@ function toggleNotebook(){
 }
 
 function closeNotebook(){
-  const ov = document.getElementById('phone-ov');
+  const ov = document.getElementById('notebook-ov');
   if(ov) ov.classList.remove('on');
 }
 
 function renderNotebook(){
-  const body = document.getElementById('phone-body');
+  const body = document.getElementById('notebook-body');
   if(!body) return;
   if(!gs.notebook || !gs.notebook.length){
     body.innerHTML = '<div class="nb-empty">Zatím nic zajímavého...</div>';

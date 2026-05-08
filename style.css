@@ -181,24 +181,24 @@ canvas.elixir-trip{animation:elixirTrip 3s infinite}
 #cD{display:none}
 
 /* ── Phone / Zápisník overlay ────────────────────────────────────────── */
-#phone-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+#notebook-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
   align-items:center;justify-content:center;z-index:650;cursor:pointer}
-#phone-ov.on{display:flex;animation:fdin .25s ease}
-#phone-frame{
+#notebook-ov.on{display:flex;animation:fdin .25s ease}
+#notebook-frame{
   width:380px;max-width:92vw;max-height:82vh;
   background:linear-gradient(145deg,#1a1a2e,#16213e);
   border:2px solid rgba(124,111,247,.35);border-radius:18px;
   box-shadow:0 12px 60px rgba(0,0,0,.9),0 0 40px rgba(124,111,247,.12);
   display:flex;flex-direction:column;overflow:hidden;cursor:default}
-#phone-header{
+#notebook-header{
   padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,.06);
   background:rgba(124,111,247,.06)}
-#phone-title{font-family:var(--fm);font-size:13px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
-#phone-sub{font-size:9px;color:rgba(255,255,255,.25);margin-top:3px;font-family:var(--fm);letter-spacing:1px}
-#phone-body{
+#notebook-title{font-family:var(--fm);font-size:13px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+#notebook-sub{font-size:9px;color:rgba(255,255,255,.25);margin-top:3px;font-family:var(--fm);letter-spacing:1px}
+#notebook-body{
   padding:10px 14px 18px;overflow-y:auto;flex:1;max-height:65vh}
-#phone-body::-webkit-scrollbar{width:3px}
-#phone-body::-webkit-scrollbar-thumb{background:var(--indigo);border-radius:2px}
+#notebook-body::-webkit-scrollbar{width:3px}
+#notebook-body::-webkit-scrollbar-thumb{background:var(--indigo);border-radius:2px}
 .nb-empty{color:rgba(255,255,255,.25);font-size:11px;font-family:var(--fm);padding:20px 0;text-align:center}
 .nb-chapter{margin-bottom:14px}
 .nb-ch-title{
