@@ -177,6 +177,9 @@ function burnCihalova(){
   addLog('🔥 Hodil jsi Číhalovou do krbu. Oheň začal jásat.', 'lm');
   addLog('Honza v Křemži čeká na zprávu... 🗡️', 'lp');
   addObj('quest_honza_cibule');
+  Phone.addSms('Honza', '🧑‍🦱', 'Tak co? Hotovo? Přijď za mnou 🔥', 'sms_honza_burn');
+  Phone.addDiary('Číhalová spálena', 'Hodil jsem Číhalovou v pytli do krbu v hospodě. Důkazy zničeny. Honza čeká na zprávu v Křemži.', 'diary_cihalova_burn');
+  Phone.addPost('kremze_info', '🏠', '🔥🏫', 'Křemže Info: V místní hospodě cítit podivný zápach. Hasiči zatím nepovoláni. #kremze #wtf', 37, 'kg_cihalova_burn');
   screenShake(600);
 }
 

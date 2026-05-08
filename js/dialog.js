@@ -131,6 +131,8 @@ function submitPassword(){
     addObj('quest_fabie');
     gs.story.fabie_promised = true;
     addLog('Máš klíčky od Fábie! Najdi ji v Křemži a jeď domů!', 'lm');
+    Phone.addSms('Máma', '👩', 'Fando, táta říkal že Fábie je někde v Křemži. Šťastnou cestu! 🚗', 'sms_mama_fabie');
+    Phone.addDiary('Klíčky od Fábie', 'Dostal jsem klíčky od Fábie od šamana. Teď najít auto v Křemži a jet domů!', 'diary_fabie_keys', 'Fábie by měla být někde v Křemži. Projet ulice.');
   }
   updateHUD();
   if(!gs.story.saman_stage) gs.story.saman_stage = 1;
@@ -293,6 +295,7 @@ function triggerCibulkaSequence(){
         gs.krb_open = true;
         screenShake(400);
         fnotif('🔥 Krb se otevřel!', 'pos');
+        Phone.addDiary('Krb se otevřel', 'Šaman otevřel průchod přes krb v hospodě. Za ním je Cibulkova laboratoř.', 'diary_krb_open', 'Za krbem je Cibulkova laboratoř. Opatrně.');
       }
       if(ln.action === 'done'){
         gs.saman_to_krb.phase = 'done';
@@ -477,7 +480,10 @@ function showDialog(npc){
   let choices = [...d.choices];
 
   // ─ Nastavit milan_met při prvním setkání ──────────────────────────────
-  if(npc.id === 'milan' && !gs.story.milan_met) gs.story.milan_met = true;
+  if(npc.id === 'milan' && !gs.story.milan_met){
+    gs.story.milan_met = true;
+    Phone.addDiary('Potkal jsem Milana', 'Milan je místní dealer. Prodává kratom za Billou. Vypadá, že by mohl mít i jiný byznys.', 'diary_milan_met');
+  }
 
   // ─ Pája v hospodě – spustit 120s timer na krádež ──────────────────────
   if(npc.id === 'paja' && stage === 2 && !gs.story.paja_jackpot_timer_started){
@@ -487,7 +493,11 @@ function showDialog(npc){
       if(gs._gen !== _g) return;
       if(!gs.story.paja_stolen){
         gs.story.paja_stolen = true;
-        addLog('📱 SMS od Páji: "Fando, dojdi za mnou prosím, stalo se něco."', 'lw');
+        Phone.addSms('Pája', '🧢', 'Fando, dojdi za mnou prosím, stalo se něco šílenýho 😰', 'sms_paja_stolen', [
+          {label:'Romeo a Julie 😢', text:'Pájo, ty a peníze — to je jak romeo a julie, tragicky krátký příběh 😢', cls:'sms-r-good'},
+          {label:'Neměl jsi je tahat 🤦', text:'A co jsem ti říkal? Neměl jsi je tahat v hospodě 🤦', cls:'sms-r-bad'},
+        ]);
+        addLog('📱 SMS od Páji – něco se stalo.', 'lw');
         fnotif('Pája volá! 📱', 'lw');
       }
     }, 120000);

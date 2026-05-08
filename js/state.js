@@ -226,6 +226,7 @@ function resetGameState(){
   gs.elixir_end             = 0;
   // Invalidate stale setTimeout callbacks from previous game runs
   gs._gen = (gs._gen || 0) + 1;
+  if(typeof Phone !== 'undefined') Phone.reset();
 }
 
 function gainRep(amount, reason){
