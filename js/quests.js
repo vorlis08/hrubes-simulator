@@ -12,6 +12,7 @@ const QF = {
     gs.cihalova_deadline = gs.ts + CIHALOVA_TIMER * 1000;
     addLog('Přijal jsi úkol od Číhalové – hlavně pohni! Číhalová už se klepe', 'lw');
     addObj('main_cihalova');
+    addStoryEntry('prolog', 'Číhalová mě poslala pro zásilku. Timer tikne.', '📦');
     closeDialog();
   },
   q_piko_self(){
@@ -57,6 +58,7 @@ const QF = {
     fnotif('+800 Kč','pos');
     doneObj('main_cihalova');
     addObj('quest_cihalova_burn');
+    addStoryEntry('prolog', 'Doručil jsem zásilku Číhalové. Zkolabovala.', '💊');
     updateHUD(); closeDialog();
   },
 
@@ -64,7 +66,9 @@ const QF = {
   q_krejci_start(){
     gs.story.krejci = 1;
     addLog('Krejčí ti dala výhružný vzkaz – zjisti kdo za tím stojí.', 'ls');
-    addObj('side_krejci'); closeDialog();
+    addObj('side_krejci');
+    addStoryEntry('krejci', 'Krejčí dostala výhružný vzkaz. Někdo ji vydírá.', '📨');
+    closeDialog();
     setTimeout(showNote, 400);
   },
   q_krejci_reward(){
@@ -73,14 +77,18 @@ const QF = {
     gs.story.krejci = 2;
     gainRep(4, 'Ochránil Krejčí před vydíráním');
     addLog('Krejčí: +300 Kč 💰', 'lm');
-    fnotif('+300 Kč','pos'); doneObj('side_krejci'); updateHUD(); closeDialog();
+    fnotif('+300 Kč','pos'); doneObj('side_krejci');
+    addStoryEntry('krejci', 'Vyřešil jsem vydírání Krejčí. Odměna 300 Kč.', '✅');
+    updateHUD(); closeDialog();
   },
 
   // ─── Figurová ─────────────────────────────────────────────────────────────
   q_figurova_start(){
     gs.story.figurova = 1;
     addLog('Figurová chce důkaz o Milanovi.', 'ls');
-    addObj('side_figurova'); closeDialog();
+    addObj('side_figurova');
+    addStoryEntry('figurova', 'Figurová mě najala, abych špehoval Milana.', '🕵️');
+    closeDialog();
   },
   q_figurova_reward(){
     if(gs.story.figurova >= 2){ closeDialog(); return; }
@@ -104,9 +112,11 @@ const QF = {
     gs.inv.screenshot = 0; gs.inv.hlasovka = 0; updateInv();
     gs.story.figurova_dark_started = true;
     gs.story.milan_fig_evidence = true;
-    gs.story.hlasovka_known = true; // Pláteníková zjistí i bez fyzického itemu
+    gs.story.hlasovka_known = true;
     addLog('Figurová vzala telefon. Četla. Pak si pustila hlasovku.', 'ls');
     addLog('Výraz v její tváři se změnil. Nebyla to zlost. Bylo to... chladné rozhodnutí.', 'lw');
+    addStoryEntry('figurova', 'Předal jsem Figurové screenshot Milana s Kubátovou. Její výraz zledovatěl.', '📱');
+    addStoryEntry('temne', 'Figurová naznačila temné plány. Tohle je bod, odkud není cesty zpět.', '⚠️');
     closeDialog();
     setTimeout(() => {
       const f = currentNPCs.find(n => n.id === 'figurova');
@@ -119,6 +129,7 @@ const QF = {
     addLog('Figurová ti podala nůž. Vykuchej tu svini.', 'lw');
     addLog('Mates je v hospodě. Milan na náměstí. Figurová čeká.', 'lw');
     fnotif('🗡️ Nůž†  +1','itm');
+    addStoryEntry('temne', 'Přijal jsem nůž od Figurové. Mám zlikvidovat Matese a Milana.', '🗡️');
     addObj('quest_figurova_mates');
     addObj('quest_figurova_milan');
     closeDialog();
@@ -178,6 +189,7 @@ const QF = {
     gs.inv.kratom_kava = 0; updateInv();
     gs.story.figurova_kratomed = true;
     addLog('Přimíchal jsi kratom do Figurové kávy. Tiše. Nikdo nic neviděl.', 'lw');
+    addStoryEntry('figurova', 'Přimíchal jsem kratom do Figurové kávy. Padla.', '☕');
     doneObj('side_figurova');
     doneObj('quest_milan_protiutok');
     closeDialog();
@@ -200,7 +212,9 @@ const QF = {
   q_jana_start(){
     gs.story.jana = 1;
     addLog('Jana potřebuje 20g kratomu.', 'ls');
-    addObj('side_jana'); closeDialog();
+    addObj('side_jana');
+    addStoryEntry('johnny', 'Jana Kosová potřebuje 20g kratomu. Vypadá vyčerpaně.', '💤');
+    closeDialog();
   },
   q_jana_deliver(){
     if(gs.inv.kratom < 20){ addLog('Nemáš dost kratomu! (20g)','lw'); closeDialog(); return; }
@@ -209,7 +223,9 @@ const QF = {
     gainRep(10, 'Zachránil jsi Janu z únavy');
     addLog('Jana dostala kratom. +200 Kč 💰', 'lm');
     fnotif('+200 Kč','pos'); fnotif('+10 REP','rep');
-    doneObj('side_jana'); closeDialog();
+    doneObj('side_jana');
+    addStoryEntry('johnny', 'Donesl jsem Janě kratom. Odměna 200 Kč.', '✅');
+    closeDialog();
   },
   q_jana_buy_zemle(){
     if(gs.money < 35){ addLog('Nemáš 35 Kč!','lw'); closeDialog(); return; }
@@ -312,7 +328,9 @@ const QF = {
   q_johnny_start(){
     gs.story.johnny = 1;
     addLog('Johnny: "Zařiď rande s Janou Kosovou." Jdi do Billy a přesvědč ji.', 'ls');
-    addObj('side_johnny'); closeDialog();
+    addObj('side_johnny');
+    addStoryEntry('johnny', 'Johnny Zahradník chce rande s Janou. Mám ji přesvědčit.', '🎸');
+    closeDialog();
   },
   q_johnny_confirm(){
     if(!gs.story.jana_rande_ok){ addLog('Jana ještě nesouhlasila!','lw'); closeDialog(); return; }
@@ -965,6 +983,7 @@ const QF = {
     gainRep(3,'Půjčil kamarádovi peníze');
     addLog('Půjčil jsi Pájovi 300 Kč. Za 35s vrátí 500 Kč.','ls');
     addObj('side_paja');
+    addStoryEntry('byznys', 'Půjčil jsem Pájovi 300 Kč. Prý vrátí 500.', '🤝');
     const _g = gs._gen;
     setTimeout(() => {
       if(gs._gen !== _g) return; // game was restarted, ignore stale timer
@@ -1597,6 +1616,8 @@ const QF = {
     addObj('quest_mraz');
     addLog('Kubátová ti dala voodoo panenku a rezavý nůž. 🪆🔪', 'lw');
     fnotif('🪆 +1   🔪 +1', 'itm');
+    addStoryEntry('saman', 'Kubátová mi dala voodoo panenku a nůž. Mám vyřídit Mráze.', '🪆');
+    addStoryEntry('milan', 'Kubátová má temnou minulost s Mrázem. Chce pomstu.', '🩸');
     closeDialog();
   },
   q_milan_give_phone(){
@@ -1796,6 +1817,7 @@ const QF = {
     addLog('Novák: "Taháky, jo? No, to je klasika. Milan měl vždycky nejlepší taháky – jestli ještě žije." *zamyšleně* "Sežeň je a prodej je za 200 Kč/kus spolužákům. Ale dávej si bacha – kdybych tě náhodou \'přistihl\', budu muset něco dělat. Formálně."', 'ls');
     addObj('quest_maturita');
     addObj('quest_maturita_tahaky');
+    addStoryEntry('maturita', 'Maturita začíná. Zvolil jsem cestu taháků.', '📝');
     closeDialog();
     // Zkontrolovat, zda Milan žije
     if(gs.story.milan_voodoo_dead || gs.story.milan_shot || gs.story.milan_fled){
@@ -1812,6 +1834,7 @@ const QF = {
     addLog('Novák: "Sám? To je kurva odvážný. Respekt." *zapálí si další cigaretu* "Přijď, až budeš ready. Dám ti pár otázek."', 'ls');
     addObj('quest_maturita');
     addObj('quest_maturita_legit');
+    addStoryEntry('maturita', 'Maturita začíná. Zkusím to vlastními silami.', '💪');
     closeDialog();
   },
 
@@ -2020,6 +2043,7 @@ const QF = {
     addObj('quest_saman_bylina');
     addObj('quest_saman_voda');
     addObj('quest_saman_prach');
+    addStoryEntry('saman', 'Šaman chce vyrobit elixír mládí. Potřebuje 3 ingredience.', '🧪');
     closeDialog();
   },
 

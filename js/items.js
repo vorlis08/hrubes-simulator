@@ -177,6 +177,7 @@ function burnCihalova(){
   addLog('🔥 Hodil jsi Číhalovou do krbu. Oheň začal jásat.', 'lm');
   addLog('Honza v Křemži čeká na zprávu... 🗡️', 'lp');
   addObj('quest_honza_cibule');
+  addStoryEntry('temne', 'Spálil jsem Číhalovou v krbu. Oheň nepoložil žádné otázky.', '🔥');
   screenShake(600);
 }
 

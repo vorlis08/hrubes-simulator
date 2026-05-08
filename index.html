@@ -675,6 +675,7 @@
       <div id="piko-badge" onclick="usePikoSelf()">💊 PIKO – použít? (SMRT)</div>
     </div>
   </div>
+  <div id="phone-hint-r">📱 [R] ZÁPISNÍK</div>
 
   <!-- Mapa lokací – pravý dolní roh -->
   <div id="map-card">
@@ -847,6 +848,17 @@
   </div>
 
 
+</div>
+
+<!-- Phone / Zápisník overlay -->
+<div id="phone-ov" onclick="closeNotebook()">
+  <div id="phone-frame" onclick="event.stopPropagation()">
+    <div id="phone-header">
+      <div id="phone-title">📱 Fandův zápisník</div>
+      <div id="phone-sub">Klávesa R · klikni ven pro zavření</div>
+    </div>
+    <div id="phone-body"></div>
+  </div>
 </div>
 
 <!-- Note overlay -->
@@ -1178,6 +1190,7 @@
 <script src="js/config.js"></script>
 <script src="js/state.js"></script>
 <script src="js/objectives.js"></script>
+<script src="js/notebook.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/items.js"></script>
 <script src="js/quests.js?v=3"></script>

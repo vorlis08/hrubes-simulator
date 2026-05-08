@@ -185,6 +185,7 @@ function resetGameState(){
   gs.quests  = {};
   gs.visited = new Set(['ucebna']);
   gs.objectives = [];
+  gs.notebook = [];
 
   gs.ts                   = 0;
   gs.lastDrain            = 0;

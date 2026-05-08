@@ -73,7 +73,8 @@ function startGame(){
 
   // Hráč začíná doma
   gs.room = 'doma';
-  initObj(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
+  initObj(); initNotebook(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
+  addStoryEntry('prolog', 'Nový den v Křemži. Musím vydělat prachy a nastartovat Fábii.', '🏠');
   requestAnimationFrame(gameLoop);
 
 }
@@ -132,6 +133,7 @@ window.addEventListener('keydown', e => {
 
   if(!gs.running || gs.dead) return;
 
+  if(nk === 'r'){ toggleNotebook(); }
   if(nk === 'e'){ e.preventDefault(); interact(); }
   if(nk === '1') useKratom();
   if(nk === '2') useZemle();
@@ -158,6 +160,7 @@ function closeAllOverlays(){
   document.getElementById('screenshot-ov').classList.remove('on');
   document.getElementById('foto-kubatova-ov').classList.remove('on');
   document.getElementById('c2-cert-ov').classList.remove('on');
+  closeNotebook();
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
 }
