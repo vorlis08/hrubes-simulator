@@ -125,6 +125,7 @@ const gs = {
 };
 
 function resetGameState(){
+  if(typeof Phone !== 'undefined') Phone.reset();
   gs.running = false;
   gs.dead    = false;
   gs.money   = 150;
