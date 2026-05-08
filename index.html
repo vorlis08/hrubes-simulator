@@ -635,6 +635,9 @@
   <!-- Hudba -->
   <button id="music-btn" onclick="toggleMusic()">🔇</button>
 
+  <!-- Telefon -->
+  <button id="phone-btn" onclick="togglePhone()" title="Telefon [T]">📱<span id="phone-badge" style="display:none">0</span></button>
+
   <div id="cL" class="carr">◀<span class="cn" id="cLn">—</span></div>
   <div id="cR" class="carr">▶<span class="cn" id="cRn">—</span></div>
   <div id="cU" class="carr">▲<span class="cn" id="cUn">—</span></div>
@@ -673,7 +676,6 @@
       </div>
       <div id="kh"><div id="kh-lbl">🌿 KRATOM TRIP</div><div id="kh-bar"><div id="kh-fill" style="width:100%"></div></div></div>
       <div id="piko-badge" onclick="usePikoSelf()">💊 PIKO – použít? (SMRT)</div>
-      <div id="kg-btn" onclick="openKremzogram()" title="📸 Křemžogram">📸 Křemžogram</div>
     </div>
   </div>
 
@@ -899,6 +901,24 @@
     <audio id="art-detail-audio" controls style="display:none;width:100%;margin-bottom:14px"></audio>
     <button id="art-detail-open-btn">🌐 Otevřít web</button>
     <div class="art-detail-hint">klikni pro zavření</div>
+  </div>
+</div>
+
+<!-- Telefon overlay -->
+<div id="phone-ov" onclick="closePhone()">
+  <div id="phone-frame" onclick="event.stopPropagation()">
+    <div id="phone-topbar">
+      <span>📱 Fandův telefon</span>
+      <button id="phone-close" onclick="closePhone()">✕</button>
+    </div>
+    <div id="phone-tabs">
+      <div class="phone-tab active" data-tab="sms" onclick="Phone.switchTab('sms')">💬 Zprávy</div>
+      <div class="phone-tab" data-tab="kg" onclick="Phone.switchTab('kg')">📸 Křemžogram</div>
+      <div class="phone-tab" data-tab="diary" onclick="Phone.switchTab('diary')">📓 Deník</div>
+    </div>
+    <div id="phone-sms" class="phone-content active"></div>
+    <div id="phone-kg" class="phone-content"></div>
+    <div id="phone-diary" class="phone-content"></div>
   </div>
 </div>
 
@@ -1191,6 +1211,7 @@
 <script src="js/state.js"></script>
 <script src="js/objectives.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/phone.js"></script>
 <script src="js/items.js"></script>
 <script src="js/quests.js?v=3"></script>
 <script src="js/dialog.js?v=3"></script>
