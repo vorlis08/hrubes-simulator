@@ -177,12 +177,9 @@ function closeAllOverlays(){
   document.getElementById('screenshot-ov').classList.remove('on');
   document.getElementById('foto-kubatova-ov').classList.remove('on');
   document.getElementById('c2-cert-ov').classList.remove('on');
-<<<<<<< HEAD
   closeNotebook();
-=======
   document.getElementById('phone-ov').classList.remove('on');
   document.getElementById('kremzogram-ov').classList.remove('on');
->>>>>>> 907fdd9 (feat: obnovení telefonu (SMS, Křemžogram, Deník) + canvas obrázky)
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
 }
