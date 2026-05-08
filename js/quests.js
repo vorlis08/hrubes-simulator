@@ -44,9 +44,14 @@ const QF = {
     setTimeout(() => {
       addLog('*Sípot přestává. Ticho. Číhalová je po smrti.*','lw');
       gs.story.cihalova_dead = true;
-      Phone.addSms('Honza', '🧑‍🦱', 'Ty vole!! Číhalová je MRTVÁ! Co jsi jí dal?!', 'sms_cihalova_dead');
+      Phone.addSms('Honza', '🧑‍🦱', 'Ty vole!! Číhalová je MRTVÁ! Co jsi jí dal?!', 'sms_cihalova_dead', [
+        {label:'To zní jako problém pro někoho, kdo to zavinil 👀', text:'To zní jako problém pro někoho, kdo to zavinil 👀', cls:'sms-r-good'},
+        {label:'RIP boomer 💀', text:'RIP boomer 💀 aspoň nebude zkoušet z chemie', cls:'sms-r-bad'},
+      ]);
       Phone.addDiary('Číhalová je mrtvá', 'Dal jsem Číhalové celé balení. Předávkovala se. Je po smrti.', 'diary_cihalova_od');
       Phone.addPost('kremze_info', '🏠', '🚑💀', 'Křemže Info: BREAKING – Incident na místní škole. Záchranáři zasahují. #kremze #skola', 45, 'kg_cihalova_dead');
+      Phone.addComment('kg_cihalova_dead', 'mates_chill', 'WTF?! Co se děje?? 😨');
+      Phone.addComment('kg_cihalova_dead', 'jana_kosova', 'Doufám že je ok 🙏');
     }, 5500);
   },
   q_cihalova_deliver(){
@@ -72,9 +77,7 @@ const QF = {
     gs.story.krejci = 1;
     addLog('Krejčí ti dala výhružný vzkaz – zjisti kdo za tím stojí.', 'ls');
     addObj('side_krejci');
-    Phone.addSms('Krejčí', '📊', 'Hrubeši, diskrétně. Žádná policie. Zjistěte kdo to je.', 'sms_krejci_start');
     Phone.addDiary('Krejčí – výhružky', 'Krejčí dostává anonymní výhružné vzkazy. Musím zjistit kdo za tím stojí. Diskrétně – žádná policie.', 'diary_krejci');
-    Phone.addPost('krejci_eko', '📊', '📉📊', 'Krejčí: Ekonomika je věda o volbách. Ne každá volba je správná. #ekonomie #skola', 5, 'kg_krejci_intro');
     closeDialog();
     setTimeout(showNote, 400);
   },
@@ -85,7 +88,6 @@ const QF = {
     gainRep(4, 'Ochránil Krejčí před vydíráním');
     addLog('Krejčí: +300 Kč 💰', 'lm');
     fnotif('+300 Kč','pos'); doneObj('side_krejci'); updateHUD();
-    Phone.addSms('Krejčí', '📊', 'Děkuji, Hrubeši. Udělal jste správnou volbu.', 'sms_krejci_done');
     Phone.addDiary('Krejčí – vyřešeno', 'Zjistil jsem, kdo Krejčí vydíral. Dostala 300 Kč odměnu.', 'diary_krejci_done');
     closeDialog();
   },
@@ -95,9 +97,7 @@ const QF = {
     gs.story.figurova = 1;
     addLog('Figurová chce důkaz o Milanovi.', 'ls');
     addObj('side_figurova');
-    Phone.addSms('Figurová', '🦊', 'Nechte si to pro sebe. Přineste mi něco na toho dealera. – F.', 'sms_figurova_start');
     Phone.addDiary('Figurová – důkazy na Milana', 'Figurová chce důkazy o Milanových kšeftech. Mám na něj něco najít a přinést jí to.', 'diary_figurova');
-    Phone.addPost('figurova_official', '🦊', '📚🏫', 'Figurová: Pořádek a disciplína. To je základ vzdělání. #skola #pravidla #english', 8, 'kg_figurova_intro');
     closeDialog();
   },
   q_figurova_reward(){
@@ -141,9 +141,7 @@ const QF = {
     fnotif('🗡️ Nůž†  +1','itm');
     addObj('quest_figurova_mates');
     addObj('quest_figurova_milan');
-    Phone.addSms('Figurová', '🦊', 'Neselhej, Hrubeši. Mates. Milan. Oba. – F.', 'sms_fig_dark');
     Phone.addDiary('Figurová – temná dohoda', 'Figurová mi dala nůž. Chce, abych zabil Matese v hospodě a Milana na náměstí. Za to dostanu Fábii a 3000 Kč.', 'diary_fig_dark');
-    Phone.addPost('figurova_official', '🦊', '🗡️🌑', 'Figurová: Sometimes justice requires... unconventional methods. #determination', 3, 'kg_fig_dark');
     closeDialog();
   },
   q_figurova_dark_cert_leave(){
@@ -169,9 +167,7 @@ const QF = {
     gs.inv.klice_fabie_fig = 1; updateInv();
     fnotif('+3 000 Kč 💰','pos');
     fnotif('🔑 Klíčky od Figurové','itm');
-    Phone.addSms('Figurová', '🦊', 'We were never here, Hrubeši. Never. – F.', 'sms_fig_dark_done');
     Phone.addDiary('Figurová – temná odměna', 'Figurová zaplatila 3000 Kč a dala klíčky od Fábie. Mates i Milan jsou mrtví. "We were never here."', 'diary_fig_dark_done');
-    Phone.addPost('figurova_official', '🦊', '🎓✅', 'Figurová: Justice has been served. Back to normal. #order #school', 7, 'kg_fig_dark_done');
     closeDialog();
     setTimeout(() => {
       // Voodoo path – Figurová si všimne čistého nože
@@ -229,7 +225,10 @@ const QF = {
     gs.story.jana = 1;
     addLog('Jana potřebuje 20g kratomu.', 'ls');
     addObj('side_jana');
-    Phone.addSms('Jana', '💃', 'Fando, prosím tě, potřebuju 20g kratomu. Padám na hubu únavou 😩', 'sms_jana_start');
+    Phone.addSms('Jana', '💃', 'Fando, prosím tě, potřebuju 20g kratomu. Padám na hubu únavou 😩', 'sms_jana_start', [
+        {label:'Pro tebe cokoliv 😏', text:'Pro tebe cokoliv, Jano 😏 i kdyby to byl kratom za školou', cls:'sms-r-good'},
+        {label:'Nemáš číslo na Milana? 📞', text:'Hele a nemáš náhodou číslo na Milana? Ten to má levnější 📞', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Jana – kratom', 'Jana v Bille potřebuje 20g kratomu. Vypadá vyčerpaně.', 'diary_jana_kratom');
     closeDialog();
   },
@@ -241,9 +240,7 @@ const QF = {
     addLog('Jana dostala kratom. +200 Kč 💰', 'lm');
     fnotif('+200 Kč','pos'); fnotif('+10 REP','rep');
     doneObj('side_jana');
-    Phone.addSms('Jana', '💃', 'Díky moc Fando! Jsi záchrana 💕', 'sms_jana_done');
     Phone.addDiary('Jana – splněno', 'Dodal jsem Janě kratom. 200 Kč + 10 REP.', 'diary_jana_done');
-    Phone.addPost('jana_kosova', '💃', '🌿☕', 'Jana: Konečně energie na celý den! Díky jednomu kamarádovi 😘 #energy #blessed', 31, 'kg_jana_kratom');
     closeDialog();
   },
   q_jana_buy_zemle(){
@@ -289,7 +286,6 @@ const QF = {
     closeDialog();
     setTimeout(() => {
       gs.inv.fig_gun = 1; updateInv();
-      Phone.addSms('Figurová', '🦊', 'V kapse máš revolver. Teď Milan. – F.', 'sms_fig_gun');
       addLog('📱 SMS od Figurové: "Do kapsy jsem ti schovala revolver na Milana. Postarej se o tu svini."', 'lw');
       fnotif('🔫 Revolver +1','itm');
     }, 3000);
@@ -315,7 +311,10 @@ const QF = {
     addLog('Dal jsi Matesovi žemli. Byl vděčný!', 'lm');
     addLog('"Díky brácho! Hele, jestli chceš, na baru dneska můžeš dostat cokoliv zdarma. Stačí říct johnny_dneska_platí a nebudou ti účtovat ani korunu za démona."', 'ld');
     gs.story.mates_told_password = true;
-    Phone.addSms('Mates', '😌', 'Heslo pro šamana: johnny_dneska_platí. Nikomu neříkej 🤫🍺', 'sms_mates_password');
+    Phone.addSms('Mates', '😌', 'Heslo pro šamana: johnny_dneska_platí. Nikomu neříkej 🤫🍺', 'sms_mates_password', [
+        {label:'Ty génie 😂', text:'Mates ty génie, tohle heslo by uhádl i Bezďák 😂', cls:'sms-r-good'},
+        {label:'Napíšu to na zeď v Bille 📝', text:'Díky, hned to napíšu na zeď v Bille 📝', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Matesovo heslo', 'Mates mi prozradil heslo pro šamana: "johnny_dneska_platí". Za to, že jsem mu dal žemli.', 'diary_mates_password');
     closeDialog();
   },
@@ -333,7 +332,6 @@ const QF = {
     gs.story.honza_ukol = true;
     addLog('Honza: "Byl bych ti nesmírně vděčnej." *mrkne*', 'lp');
     addObj('side_honza_ukol');
-    Phone.addSms('Honza', '🧑‍🦱', 'Fando, fakt mi s tím pomůžeš? Jsi borec 🙏', 'sms_honza_ukol');
     Phone.addDiary('Honza – domácí úkol', 'Honza potřebuje pomoc s domácím úkolem.', 'diary_honza_ukol');
     closeDialog();
   },
@@ -345,7 +343,6 @@ const QF = {
     fnotif('+400 Kč', 'pos');
     doneObj('side_honza_ukol');
     gs.story.honza_ukol_rewarded = true;
-    Phone.addSms('Honza', '🧑‍🦱', 'Díky za úkol, Fando! Jsi záchrana 💪', 'sms_honza_ukol_done');
     Phone.addDiary('Honza – úkol splněn', 'Pomohl jsem Honzovi s domácím úkolem. 200 Kč odměna.', 'diary_honza_ukol_done');
     closeDialog();
   },
@@ -355,9 +352,14 @@ const QF = {
     gs.story.johnny = 1;
     addLog('Johnny: "Zařiď rande s Janou Kosovou." Jdi do Billy a přesvědč ji.', 'ls');
     addObj('side_johnny');
-    Phone.addSms('Johnny', '🤵', 'Zařiď mi to s Janou, Fando. Nezklam mě. 🥃', 'sms_johnny_start');
+    Phone.addSms('Johnny', '🤵', 'Zařiď mi to s Janou, Fando. Nezklam mě. 🥃', 'sms_johnny_start', [
+        {label:'Uber eats Janu 🚗', text:'Jasně Johnny, donesu ti Janu jako uber eats 🚗', cls:'sms-r-good'},
+        {label:'A co kdybych si ji nechal? 🤔', text:'A co kdybych si ji nechal? 🤔', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Johnny – rande s Janou', 'Johnny v hospodě chce rande s Janou Kosovou. Mám ji přemluvit – je v Bille. Prý chce speciální blend od Mikuláše.', 'diary_johnny');
     Phone.addPost('johnny_rich', '🤵', '🥃🏠', 'Johnny: Vila, whisky, chill. Life is good. #luxury #kremze #business', 89, 'kg_johnny_intro');
+    Phone.addComment('kg_johnny_intro', 'mates_chill', 'Pozvánka? 🍺');
+    Phone.addComment('kg_johnny_intro', 'milan_dealer', 'Big boss moves 💪');
     closeDialog();
   },
   q_johnny_confirm(){
@@ -401,9 +403,7 @@ const QF = {
     addLog('Johnny na tebe zíral s rudou tváří. Odměna nebude.', 'lw');
     fnotif('Jana zachráněna 💅', 'rep');
     doneObj('side_johnny');
-    Phone.addSms('Jana', '💃', 'Fando... díky. Vážně díky. 💕', 'sms_jana_rescue');
     Phone.addDiary('Jana zachráněna', 'Odvedl jsem Janu od Johnnyho v hospodě. Johnny zuří, ale Jana je v bezpečí.', 'diary_jana_rescue');
-    Phone.addPost('jana_kosova', '💃', '💪✨', 'Jana: Někdy potká člověk anděla strážného, když to nejmíň čeká 🥹 #grateful', 56, 'kg_jana_rescue');
     closeDialog();
     // Zobraz Janin vděčný dialog po krátké pauze
     setTimeout(() => {
@@ -438,7 +438,6 @@ const QF = {
     setTimeout(() => {
       addLog('Jana se na tebe naposledy podívá s lehkým rozčarováním a odejde k Johnnymu ke krbu.', 'lw');
       fnotif('Jana → Johnny 🍷', 'rep');
-      Phone.addPost('jana_kosova', '💃', '🍷🔥', 'Jana: Někdy prostě řeknete ano a doufáte, že to dopadne dobře... 🤷‍♀️ #nightout', 28, 'kg_jana_johnny');
       triggerJanaToFireplace();
     }, 300);
     // Po nějakém čase je odvede do villy
@@ -572,9 +571,7 @@ const QF = {
     gs.story.jana_rande_ok = true;
     gainRep(3, 'Přesvědčil Janu na rande');
     fnotif('Jana souhlasí! 💅','pos');
-    Phone.addSms('Jana', '💃', 'Ok, přijdu do hospody. Ale dlužíš mi za to, Fando 😘', 'sms_jana_rande_ok');
     Phone.addDiary('Jana souhlasila', 'Jana jde na rande s Johnnym. Teď to říct Johnnymu v hospodě.', 'diary_jana_rande');
-    Phone.addPost('jana_kosova', '💃', '💅✨', 'Jana: Dneska bude zajímavý večer... 👀 #plans #kremze', 42, 'kg_jana_rande');
     showNPCLine('jana_kosova', '"Jo, přijdu. Ale jen protože jsi ty, Fando." 💅');
   },
   q_jana_thank(){
@@ -1032,7 +1029,10 @@ const QF = {
     gainRep(3,'Půjčil kamarádovi peníze');
     addLog('Půjčil jsi Pájovi 300 Kč. Za 35s vrátí 500 Kč.','ls');
     addObj('side_paja');
-    Phone.addSms('Pája', '🧢', 'Díky brácho, za chvíli to vrátím i s úrokama 🤝', 'sms_paja_loan');
+    Phone.addSms('Pája', '🧢', 'Díky brácho, za chvíli to vrátím i s úrokama 🤝', 'sms_paja_loan', [
+        {label:'Ty a "vrátím" 😂', text:'Pájo, ty a "vrátím" — to je jak Fábie a "nastartuje" 😂', cls:'sms-r-good'},
+        {label:'VIDÍM TĚ u automatů 👁️', text:'Vidím tě u automatů Pájo. VIDÍM TĚ. 👁️', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Pája – půjčka', 'Půjčil jsem Pájovi 300 Kč. Prý vrátí 500 Kč za chvíli.', 'diary_paja');
     const _g = gs._gen;
     setTimeout(() => {
@@ -1047,6 +1047,9 @@ const QF = {
         gs.story.paja_in_hospoda = true;
         Phone.addSms('Pája', '🧢', 'FANDAAA! JACKPOT 5000 Kč!! Jsem v hospodě, slavím!! 🎰🎉', 'sms_paja_jackpot');
         Phone.addPost('paja_gamer', '🧢', '🎰💰', 'Pája: JACKPOT BABY!! 5000 Kč!! Dneska platím všem!! #winner #kremze #hospoda', 73, 'kg_paja_jackpot');
+        Phone.addComment('kg_paja_jackpot', 'mates_chill', 'PÁJO TY BOREC!! 🍺🍺');
+        Phone.addComment('kg_paja_jackpot', 'johnny_rich', 'Amateur numbers. 😏');
+        Phone.addComment('kg_paja_jackpot', 'milan_dealer', 'Dej mi stovku a půjčím ti štěstí 😂');
         addLog('📱 SMS od Páji: Vyhrál JACKPOT! Je v hospodě.', 'lm');
         fnotif('Pája vyhrál JACKPOT! 🎰', 'pos');
         // Hráč je právě v hospodě – přidat Páju bez re-initRoom
@@ -1063,7 +1066,6 @@ const QF = {
     gs.money += 500; gs.story.paja = 3; updateHUD();
     addLog('Pája vrátil 500 Kč! Zisk +200 Kč 🎉','lm');
     fnotif('+500 Kč','pos'); doneObj('side_paja');
-    Phone.addSms('Pája', '🧢', 'Díky za půjčku brácho! Slíbil jsem a tady to je 💰', 'sms_paja_collect');
     // Pája dá hráči klíček od šuplíku jako bonus (artefakt do dalších her)
     if(!gs.inv.klic_supliku){
       gs.inv.klic_supliku = 1; updateInv();
@@ -1085,7 +1087,10 @@ const QF = {
     gs.story.paja_fabie_told = true;
     addLog('Pája: "Heslo pro šamana je FÁBIE. Dávej bacha na něj!"', 'ls');
     fnotif('Heslo: FÁBIE 🔑', 'itm');
-    Phone.addSms('Pája', '🧢', 'Heslo pro šamana: FÁBIE. Dávej bacha! 🔑', 'sms_paja_fabie');
+    Phone.addSms('Pája', '🧢', 'Heslo pro šamana: FÁBIE. Dávej bacha! 🔑', 'sms_paja_fabie', [
+        {label:'FÁBIE jako to auto? 😭', text:'FÁBIE jako to auto co si nemůžu dovolit? Symbolický 😭', cls:'sms-r-good'},
+        {label:'Rozbitá a nepojízdná 🚗', text:'To heslo zní jako moje budoucnost — rozbitá a nepojízdná 🚗', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Heslo: FÁBIE', 'Pája mi řekl heslo pro šamana – FÁBIE. Prý za něj dostanu klíčky od auta.', 'diary_paja_fabie');
     closeDialog();
   },
@@ -1095,7 +1100,10 @@ const QF = {
     gs.story.paja_investigating = true;
     addLog('Prošetříš krádež v hospodě. Zkus mluvit s Matesem nebo Johnnym.', 'ls');
     addObj('quest_paja_theft');
-    Phone.addSms('Pája', '🧢', 'Fando, někdo mi sebral prachy!! Pomoz mi to vyřešit prosím 😤', 'sms_paja_theft');
+    Phone.addSms('Pája', '🧢', 'Fando, někdo mi sebral prachy!! Pomoz mi to vyřešit prosím 😤', 'sms_paja_theft', [
+        {label:'Detektiv Hrubeš 🔍', text:'Detektiv Hrubeš na případu 🔍 účtuju 50% z nálezu', cls:'sms-r-good'},
+        {label:'Nejsi si jistej že sis to nepropil? 🍺', text:'A nejsi si jistej že sis to nepropil? 🍺', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Pája – krádež', 'Pájovi někdo ukradl peníze v hospodě. Mám to vyšetřit – mluvit s Matesem nebo Johnnym.', 'diary_paja_theft');
     closeDialog();
   },
@@ -1247,9 +1255,7 @@ const QF = {
               addLog('Zmínila operaci КРЕСТ. Cibulka by to měl vědět...', 'ls');
               fnotif('🪪 KGB průkazka +1', 'itm');
               fnotif('+500 Kč 💰', 'pos');
-              Phone.addSms('Krejčí', '📊', 'Nikdy jsme se neviděli, Hrubeši. Rozumíte.', 'sms_krejci_agent');
               Phone.addDiary('Krejčí – KGB agent', 'Krejčí je agent KGB! Průkazka ГБ-7824. Operace КРЕСТ v Křemži. Dala mi 500 Kč za mlčení. Cibulka by to měl vědět.', 'diary_krejci_kgb');
-              Phone.addPost('kremze_info', '🏠', '🕵️‍♀️📊', 'Křemže Info: Šokující odhalení na místní škole? Zatím nepotvrzeno. #kremze #rumors', 52, 'kg_krejci_agent');
             }
           )
         )
@@ -1275,7 +1281,6 @@ const QF = {
           addLog('Pája ti dal 1000 Kč odměnu! +10 REP 💰', 'lm');
           fnotif('+1 000 Kč 💰', 'pos');
           fnotif('+10 REP', 'rep');
-          Phone.addSms('Pája', '🧢', 'Jsi frajer Fando! Díky moc!! 🤝💰', 'sms_paja_theft_done');
           Phone.addDiary('Pája – krádež vyřešena', 'Vrátil jsem Pájovi ukradené peníze. 1000 Kč odměna + 10 REP.', 'diary_paja_theft_done');
         }
       )
@@ -1320,7 +1325,10 @@ const QF = {
     addObj('side_bezdak_cibule');
     doneObj('quest_honza_cibule');
     updateHUD();
-    Phone.addSms('Honza', '🧑‍🦱', 'Cibuli dones bezďákovi za Billou. Věř mi 🧅', 'sms_honza_cibule');
+    Phone.addSms('Honza', '🧑‍🦱', 'Cibuli dones bezďákovi za Billou. Věř mi 🧅', 'sms_honza_cibule', [
+        {label:'Doručovací služba pro zeleninu 🧅', text:'Honzo, vysvětli mi jednou proč dělám doručovací službu pro zeleninu 🧅', cls:'sms-r-good'},
+        {label:'Hodit mu ji do ksichtu?', text:'Mám mu ji hodit do ksichtu nebo předat slušně?', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Honza – cibule', 'Honza mi dal cibuli. Mám ji donést bezďákovi za Billou.', 'diary_honza_cibule');
     showNPCLine('honza', '"Věděl jsem, že se na tebe dá spolehnout." *podá cibuli* "Dones ji tomu bezďákovi za Billou. Věř mi, bude se ti hodit."');
   },
@@ -1572,7 +1580,6 @@ const QF = {
     gs.story.mikulas_apologized = true;
     addLog('Mikuláš šel za Krejčí – celý červený. Omluva proběhla před třídou.', 'ls');
     fnotif('Vyřešeno','pos');
-    Phone.addPost('mikulas_herbs', '🌿', '😳🙏', 'Mikuláš: Někdy člověk udělá blbost. Důležité je se omluvit. Sorry, paní Krejčí. #growth', 18, 'kg_mik_apology');
     closeDialog();
   },
   q_mik_beat(){
@@ -1598,7 +1605,6 @@ const QF = {
     addLog('Mikuláš: "Sklep je volný. Ale pentagram nerozbíjej." 🕯️', 'ls');
     fnotif('Sklep odemčen 🕯️','pos');
     Phone.addDiary('Sklep odemčen', 'Mikuláš mi odemkl sklep pod Billou. Prý tam je pentagram – nerozbíjet. Co tam čeká?', 'diary_sklep_unlock');
-    Phone.addPost('mikulas_herbs', '🌿', '🕯️🔮', 'Mikuláš: Některé dveře se otevírají jen pro ty, kdo znají cestu. 🕯️ #mystika #kremze', 12, 'kg_sklep_unlock');
     closeDialog();
   },
 
@@ -1613,7 +1619,10 @@ const QF = {
         '"Takže ona tě na mě poslala?!" *zaskřípe zubama, pak se zastaví a vydechne* "Dobrej. Díky, že mi to říkáš." *chvíli přemýšlí* "Poslouchej – já ti říct, co máš dělat, nemůžu. To musíš vyřešit sám. Ale Figurová se musí přestat motat do mých věcí." *mávne rukou* "Nějak to zařiď. Věřím, že na něco přijdeš."',
         () => {
           addObj('quest_figurova_vyres');
-          Phone.addSms('Milan', '😎', 'Díky že mi to říkáš, Fando. Zařiď to s Figurovou nějak. Věřím ti.', 'sms_milan_protiutok');
+          Phone.addSms('Milan', '😎', 'Díky že mi to říkáš, Fando. Zařiď to s Figurovou nějak. Věřím ti.', 'sms_milan_protiutok', [
+        {label:'Pošlu ti pohlednici z basy 📮', text:'Milane, jestli skončím v base kvůli tobě, tak ti pošlu pohlednici 📮', cls:'sms-r-good'},
+        {label:'Balím Fábii na útěk 🚗', text:'Sorry, nemůžu, zrovna si balím Fábii na útěk z města 🚗', cls:'sms-r-bad'},
+      ]);
           Phone.addDiary('Milan – protiútok', 'Milan ví, že ho Figurová špehuje. Chce, abych to nějak vyřešil. Kratom do kávy? Nebo jinak?', 'diary_milan_protiutok');
         }
       );
@@ -1626,7 +1635,6 @@ const QF = {
     gainRep(6, 'Zneškodnil Figurovou pro Milana');
     addLog('Milan: "Sanitka přijela rychle. Bylo to... efektivní." *strkuje ti peníze* "Nikdy jsme se neviděli. +300 Kč" 💰', 'lm');
     fnotif('+300 Kč','pos');
-    Phone.addSms('Milan', '😎', 'Čistá práce. Nikdy jsme se neviděli 🤫', 'sms_milan_protiutok_done');
     Phone.addDiary('Milan – Figurová zneškodněna', 'Přimíchal jsem Figurové kratom do kávy. Sanitka ji odvezla. Milan zaplatil 300 Kč.', 'diary_figurova_kratom_done');
     closeDialog();
   },
@@ -1727,6 +1735,8 @@ const QF = {
     fnotif('Milan... 🩸','rep');
     Phone.addDiary('Milan zastřelen', 'Zastřelil jsem Milana na náměstí. Revolverem od Figurové.', 'diary_milan_shot');
     Phone.addPost('kremze_info', '🏠', '🔫💀', 'Křemže Info: STŘELBA na náměstí! Jeden mrtvý! Policie na místě! #kremze #breaking #strelba', 156, 'kg_milan_shot');
+    Phone.addComment('kg_milan_shot', 'jana_kosova', 'OMG co se děje?! 😱');
+    Phone.addComment('kg_milan_shot', 'mates_chill', 'Kurva... tohle je real?');
     doneObj('quest_figurova_milan');
     closeDialog();
   },
@@ -1755,7 +1765,10 @@ const QF = {
     addLog('Milan zmizel z náměstí směrem k hospodě.', 'ls');
     fnotif('Milan v hospodě 🍺', 'pos');
     gs.story.milan_in_hospoda = true;
-    Phone.addSms('Milan', '😎', 'Dík za varování, Fando. Čekám v hospodě na Matese, pak mizím 🚗', 'sms_milan_leave');
+    Phone.addSms('Milan', '😎', 'Dík za varování, Fando. Čekám v hospodě na Matese, pak mizím 🚗', 'sms_milan_leave', [
+        {label:'Smaž historii prohlížeče 😂', text:'Milane, nezapomeň smazat historii prohlížeče 😂', cls:'sms-r-good'},
+        {label:'Nech mi ten krámek 🌿', text:'Hele a nemohl bys mi nechat ten krámek? Asking for a friend 🌿', cls:'sms-r-bad'},
+      ]);
     Phone.addDiary('Milan varován', 'Varoval jsem Milana. Odešel do hospody, čeká na Matese a odjíždí z Křemže.', 'diary_milan_warn');
     gs.milan_leave_deadline = gs.ts + 60000;
     showNPCLine('milan', '"Dobrej. Zavolám Matesovi – on má auto. Počkám v hospodě, až přijde."');
@@ -1795,9 +1808,15 @@ const QF = {
           addLog('🏆 Získal jsi NEJVYŠŠÍ POCHVALU ŘEDITELKY!', 'lr');
           fnotif('🏆 MATURITA!', 'rep');
           fnotif('🏆 POCHVALA!', 'rep');
-          Phone.addSms('Máma', '👩', 'Fando!! Ředitelka mi volala! MATURITA S VYZNAMENÁNÍM!! Jsem na tebe tak pyšná!! 😭❤️', 'sms_mama_maturita');
+          Phone.addSms('Máma', '👩', 'Fando!! Ředitelka mi volala! MATURITA S VYZNAMENÁNÍM!! Jsem na tebe tak pyšná!! 😭❤️', 'sms_mama_maturita', [
+        {label:'Prodat do novin? 💰', text:'Mami, hele, nezní to jako bychom měli prodat tu informaci do novin? 💰', cls:'sms-r-good'},
+        {label:'Kup mi tu Fábii ✌️', text:'Jasně mami, teď mi kup tu Fábii co jsi slibovala ✌️', cls:'sms-r-bad'},
+      ]);
           Phone.addDiary('MATURITA!', 'Získal jsem maturitu s nejlepším vyznamenáním a nejvyšší pochvalu ředitelky! +30 REP, +1000 Kč.', 'diary_maturita');
           Phone.addPost('kremze_info', '🏠', '🏆🎓', 'Křemže Info: Student František Hrubeš získal NEJVYŠŠÍ POCHVALU ředitelky! Gratulujeme! 🎉 #kremze #skola #maturita', 203, 'kg_maturita');
+          Phone.addComment('kg_maturita', 'mates_chill', 'FANDAAAA!! Jsi legenda!! 🍺🎉');
+          Phone.addComment('kg_maturita', 'jana_kosova', 'Gratuluju Fando!! ❤️');
+          Phone.addComment('kg_maturita', 'johnny_rich', 'Well deserved. 🥃');
           showMaturita();
           // Artefakt + achievement
           if(activeProfile){

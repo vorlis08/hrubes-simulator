@@ -483,7 +483,10 @@ function showDialog(npc){
       if(gs._gen !== _g) return;
       if(!gs.story.paja_stolen){
         gs.story.paja_stolen = true;
-        Phone.addSms('Pája', '🧢', 'Fando, dojdi za mnou prosím, stalo se něco šílenýho 😰', 'sms_paja_stolen');
+        Phone.addSms('Pája', '🧢', 'Fando, dojdi za mnou prosím, stalo se něco šílenýho 😰', 'sms_paja_stolen', [
+          {label:'Romeo a Julie 😢', text:'Pájo, ty a peníze — to je jak romeo a julie, tragicky krátký příběh 😢', cls:'sms-r-good'},
+          {label:'Neměl jsi je tahat 🤦', text:'A co jsem ti říkal? Neměl jsi je tahat v hospodě 🤦', cls:'sms-r-bad'},
+        ]);
         addLog('📱 SMS od Páji – něco se stalo.', 'lw');
         fnotif('Pája volá! 📱', 'lw');
       }

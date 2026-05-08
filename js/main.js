@@ -75,6 +75,7 @@ function startGame(){
   gs.room = 'doma';
   initObj(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
   phoneInitStartMessages();
+  phoneStartTimedMessages();
   requestAnimationFrame(gameLoop);
 
 }
@@ -124,6 +125,13 @@ window.addEventListener('keydown', e => {
   }
 
   const nk = normKey(e.key);
+
+  // Pokud je telefon otevřený, předej klávesy Phone handleru
+  if(Phone.isOpen()){
+    const shiftKey = e.shiftKey && nk === 'Tab' ? 'shift+Tab' : nk;
+    if(Phone.handleKey(shiftKey)){ e.preventDefault(); return; }
+  }
+
   keys[nk] = true;
   if(MOVE_KEYS.has(nk)) e.preventDefault();
 
@@ -137,8 +145,8 @@ window.addEventListener('keydown', e => {
   if(!gs.running || gs.dead) return;
 
   if(nk === 'e'){ e.preventDefault(); interact(); }
-  if(nk === '1') useKratom();
-  if(nk === '2') useZemle();
+  if(nk === '1' && !Phone.isOpen()) useKratom();
+  if(nk === '2' && !Phone.isOpen()) useZemle();
   if(nk === 'Escape'){ closeAllOverlays(); }
   if(nk === 'Enter' && document.getElementById('riddle-ov').classList.contains('on'))
     submitPassword();

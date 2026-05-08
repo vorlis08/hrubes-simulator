@@ -1294,7 +1294,10 @@ function update(dt){
     addLog('Johnny a Jana zmizeli z hospody. Johnny vypadal nadšeně. Jana... ne.', 'lw');
     addLog('Jsou teď u Johnnyho doma. Johnnyho vila je na náměstí v Křemži.', 'ls');
     fnotif('Jana odešla s Johnnym 😬','rep');
-    Phone.addSms('Jana', '💃', 'Fando... Johnny mě bere k sobě domů. Nevím jestli to je dobrý nápad 😟', 'sms_jana_villa_go');
+    Phone.addSms('Jana', '💃', 'Fando... Johnny mě bere k sobě domů. Nevím jestli to je dobrý nápad 😟', 'sms_jana_villa_go', [
+      {label:'Vytáhne-li whisky, UTÍKEJ 🏃‍♀️', text:'Jano, jestli ten chlap vytáhne whisky a svíčky, UTÍKEJ 🏃‍♀️', cls:'sms-r-good'},
+      {label:'Tvůj problém 🤷', text:'Tvůj problém, ty sis ho vybrala 🤷', cls:'sms-r-bad'},
+    ]);
     Phone.addDiary('Jana odešla s Johnnym', 'Jana a Johnny zmizeli z hospody. Jsou u Johnnyho ve vile na náměstí. Měl bych tam jít.', 'diary_jana_villa_go');
     doneObj('side_johnny');
   }
@@ -1501,6 +1504,8 @@ function gameLoop(ts){
     }
     if(gs.maze){ gs.ts += dt; _mazeUpdate(dt); }
     else if(gs.running) update(dt);
+    // Aktualizace časovaných zpráv telefonu
+    if(typeof Phone !== 'undefined') Phone.updateTimers();
     // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
     if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
   } catch(e) {
