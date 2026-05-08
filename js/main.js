@@ -74,6 +74,7 @@ function startGame(){
   // Hráč začíná doma
   gs.room = 'doma';
   initObj(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
+  phoneInitStartMessages();
   requestAnimationFrame(gameLoop);
 
 }
@@ -129,6 +130,9 @@ window.addEventListener('keydown', e => {
   if(nk === 'q'){
     document.getElementById('quest-ov').classList.toggle('on');
   }
+  if(nk === 't'){
+    togglePhone();
+  }
 
   if(!gs.running || gs.dead) return;
 
@@ -158,6 +162,7 @@ function closeAllOverlays(){
   document.getElementById('screenshot-ov').classList.remove('on');
   document.getElementById('foto-kubatova-ov').classList.remove('on');
   document.getElementById('c2-cert-ov').classList.remove('on');
+  document.getElementById('phone-ov').classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
 }

@@ -635,6 +635,9 @@
   <!-- Hudba -->
   <button id="music-btn" onclick="toggleMusic()">🔇</button>
 
+  <!-- Telefon -->
+  <button id="phone-btn" onclick="togglePhone()" title="Telefon [T]">📱<span id="phone-badge" style="display:none">0</span></button>
+
   <div id="cL" class="carr">◀<span class="cn" id="cLn">—</span></div>
   <div id="cR" class="carr">▶<span class="cn" id="cRn">—</span></div>
   <div id="cU" class="carr">▲<span class="cn" id="cUn">—</span></div>
@@ -862,6 +865,24 @@
   <div id="note-hint">klikni pro zavření</div>
 </div>
 
+<!-- Telefon overlay -->
+<div id="phone-ov" onclick="closePhone()">
+  <div id="phone-frame" onclick="event.stopPropagation()">
+    <div id="phone-topbar">
+      <span>📱 Fandův telefon</span>
+      <button id="phone-close" onclick="closePhone()">✕</button>
+    </div>
+    <div id="phone-tabs">
+      <div class="phone-tab active" data-tab="sms" onclick="Phone.switchTab('sms')">💬 Zprávy</div>
+      <div class="phone-tab" data-tab="kg" onclick="Phone.switchTab('kg')">📸 Křemžogram</div>
+      <div class="phone-tab" data-tab="diary" onclick="Phone.switchTab('diary')">📓 Deník</div>
+    </div>
+    <div id="phone-sms" class="phone-content active"></div>
+    <div id="phone-kg" class="phone-content"></div>
+    <div id="phone-diary" class="phone-content"></div>
+  </div>
+</div>
+
 <!-- Cibulkův papírek overlay -->
 <div id="cibulka-papirek-ov" onclick="this.classList.remove('on')">
   <div id="cibulka-papirek-inner" class="cibulka-papirek-paper" onclick="event.stopPropagation()"></div>
@@ -932,6 +953,7 @@
         <div class="crow"><span class="ck">Q</span> Úkoly</div>
         <div class="crow"><span class="ck">1</span> Kratom</div>
         <div class="crow"><span class="ck">2</span> Žemle</div>
+        <div class="crow"><span class="ck">T</span> Telefon</div>
       </div>
     </div>
 
@@ -1158,6 +1180,7 @@
 <script src="js/state.js"></script>
 <script src="js/objectives.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/phone.js"></script>
 <script src="js/items.js"></script>
 <script src="js/quests.js?v=3"></script>
 <script src="js/dialog.js?v=3"></script>
