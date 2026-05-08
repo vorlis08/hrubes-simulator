@@ -132,7 +132,7 @@ function submitPassword(){
     gs.story.fabie_promised = true;
     addLog('Máš klíčky od Fábie! Najdi ji v Křemži a jeď domů!', 'lm');
     Phone.addSms('Máma', '👩', 'Fando, táta říkal že Fábie je někde v Křemži. Šťastnou cestu! 🚗', 'sms_mama_fabie');
-    Phone.addDiary('Klíčky od Fábie', 'Dostal jsem klíčky od Fábie od šamana. Teď najít auto v Křemži a jet domů!', 'diary_fabie_keys');
+    Phone.addDiary('Klíčky od Fábie', 'Dostal jsem klíčky od Fábie od šamana. Teď najít auto v Křemži a jet domů!', 'diary_fabie_keys', 'Fábie by měla být někde v Křemži. Projet ulice.');
   }
   updateHUD();
   if(!gs.story.saman_stage) gs.story.saman_stage = 1;
@@ -295,7 +295,7 @@ function triggerCibulkaSequence(){
         gs.krb_open = true;
         screenShake(400);
         fnotif('🔥 Krb se otevřel!', 'pos');
-        Phone.addDiary('Krb se otevřel', 'Šaman otevřel průchod přes krb v hospodě. Za ním je Cibulkova laboratoř.', 'diary_krb_open');
+        Phone.addDiary('Krb se otevřel', 'Šaman otevřel průchod přes krb v hospodě. Za ním je Cibulkova laboratoř.', 'diary_krb_open', 'Za krbem je Cibulkova laboratoř. Opatrně.');
       }
       if(ln.action === 'done'){
         gs.saman_to_krb.phase = 'done';

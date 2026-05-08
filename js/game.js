@@ -1298,7 +1298,7 @@ function update(dt){
       {label:'Vytáhne-li whisky, UTÍKEJ 🏃‍♀️', text:'Jano, jestli ten chlap vytáhne whisky a svíčky, UTÍKEJ 🏃‍♀️', cls:'sms-r-good'},
       {label:'Tvůj problém 🤷', text:'Tvůj problém, ty sis ho vybrala 🤷', cls:'sms-r-bad'},
     ]);
-    Phone.addDiary('Jana odešla s Johnnym', 'Jana a Johnny zmizeli z hospody. Jsou u Johnnyho ve vile na náměstí. Měl bych tam jít.', 'diary_jana_villa_go');
+    Phone.addDiary('Jana odešla s Johnnym', 'Jana a Johnny zmizeli z hospody. Jsou u Johnnyho ve vile na náměstí. Měl bych tam jít.', 'diary_jana_villa_go', 'Johnnyho vila je na náměstí.');
     doneObj('side_johnny');
   }
 
@@ -1330,7 +1330,7 @@ function update(dt){
     gs.platenikova_in = true;
     addLog('*Dveře se otevřou. Do učebny vchází zástupkyně ředitelky paní Pláteníková.*', 'lw');
     fnotif('Pláteníková! 👩‍💼', 'rep');
-    Phone.addDiary('Pláteníková přišla', 'Zástupkyně ředitelky Pláteníková vešla do učebny. Vypadá, že něco ví. Měl bych s ní promluvit.', 'diary_platenikova_in');
+    Phone.addDiary('Pláteníková přišla', 'Zástupkyně ředitelky Pláteníková vešla do učebny. Vypadá, že něco ví. Měl bych s ní promluvit.', 'diary_platenikova_in', 'Pláteníková se tváří podezřele. Promluvit s ní.');
     if(gs.room === 'ucebna'){
       const plNPC = NPCS['platenikova'];
       if(plNPC && !currentNPCs.find(n => n.id === 'platenikova'))

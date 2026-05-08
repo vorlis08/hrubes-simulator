@@ -1319,5 +1319,26 @@
   }
 })();
 </script>
+
+<!-- ── PAUSE MENU ────────────────────────────────────────────────────── -->
+<div id="pause-ov">
+  <div id="pause-frame">
+    <div id="pause-title">⏸️ PAUZA</div>
+    <div id="pause-menu">
+      <button class="pause-btn" onclick="resumeGame()">▶️ Pokračovat</button>
+      <button class="pause-btn" onclick="openPauseDiary()">📖 Deníček</button>
+      <button class="pause-btn" onclick="openPauseStats()">📊 Statistiky</button>
+      <button class="pause-btn" onclick="closePause();togglePhone()">📱 Telefon</button>
+      <button class="pause-btn" onclick="openPauseObjectives()">🎯 Úkoly</button>
+      <button class="pause-btn" onclick="openPauseControls()">🎮 Ovládání</button>
+      <button class="pause-btn pause-btn-danger" onclick="confirmQuit()">🏠 Zpět na profil</button>
+    </div>
+    <div id="pause-sub" class="pause-sub-hidden">
+      <button class="pause-back" onclick="closePauseSub()">← Zpět</button>
+      <div id="pause-sub-content"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

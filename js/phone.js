@@ -82,9 +82,9 @@ const Phone = {
   },
 
   // ── Deník ────────────────────────────────
-  addDiary(title, text, tag){
+  addDiary(title, text, tag, hint){
     if(tag && this.diary.some(d => d.tag === tag)) return;
-    this.diary.push({ title, text, time: this._time(), tag: tag||null });
+    this.diary.push({ title, text, time: this._time(), tag: tag||null, hint: hint||null });
   },
 
   // ── Časované zprávy ─────────────────────
@@ -350,9 +350,9 @@ function togglePhone(){
 
 // ── Úvodní zprávy – jen máma, nic spoilerového ──
 function phoneInitStartMessages(){
-  Phone.addSms('Máma', '👩', 'Fando, nezapomeň si vzít svačinu. A neděl bordel!', 'intro_mama', [
-    {label:'Pošli prachy na svačinu 💸', text:'Jo mami, a pošli mi prachy na svačinu 💸', cls:'sms-r-good'},
-    {label:'Nech mě žít můj sen 🙄', text:'Mami, já mám 17, nech mě žít svůj křemžskej sen 🙄', cls:'sms-r-bad',
+  Phone.addSms('Máma', '👩', 'Fando, půjčila jsem ti 150 Kč. To je NA CELÝ DEN. Nekupuj blbosti.', 'intro_mama', [
+    {label:'To stačí na žemli a kratom 😂', text:'To stačí tak na žemli a kratom 😂', cls:'sms-r-good'},
+    {label:'Za hodinu potřebuju dalších 150 🙏', text:'Díky mami, za hodinu potřebuju dalších 150 🙏', cls:'sms-r-bad',
       effect(){ if(typeof addLog==='function') addLog('Máma: *přečteno, žádná odpověď*','ls'); }},
   ]);
   Phone.addPost('kremze_info', '🏠', '🌅🏘️', 'Křemže Info: Krásné ráno v Křemži! Dnes bude teplo ☀️ #kremze #rano', 15, 'kg_kremze_rano');
@@ -365,32 +365,32 @@ function phoneStartTimedMessages(){
 
   // 45s – Honza pošle random zprávu
   Phone.scheduleSms(45000, safe(() => {
-    Phone.addSms('Honza', '🧑‍🦱', 'Fando, co děláš? Dneska bude nuda nebo se něco stane? 😂', 'sms_honza_random', [
-      {label:'Přežít do oběda 💀', text:'Dneska? Plán je přežít do oběda 💀', cls:'sms-r-good'},
-      {label:'Hledám Fábii 🚗', text:'Nemluv na mě, snažím se najít Fábii 🚗', cls:'sms-r-bad'},
+    Phone.addSms('Honza', '🧑‍🦱', 'Ty vole, Figurová dneska vypadá jak by někoho chtěla zabít. Víc než normálně.', 'sms_honza_random', [
+      {label:'To je její resting face 😂', text:'To je její resting face 😂', cls:'sms-r-good'},
+      {label:'Schováš mě pod lavici? 😰', text:'Schováš mě pod lavici? 😰', cls:'sms-r-bad'},
     ]);
   }));
 
   // 90s – Mates filozofuje
   Phone.scheduleSms(90000, safe(() => {
-    Phone.addSms('Mates', '😌', 'Víš co mě napadlo... co kdybychom otevřeli hospodu na Měsíci? 🌙🍺', 'sms_mates_random', [
-      {label:'Geniální a mimo 🚀🍺', text:'Matesi, ty jsi geniální a zároveň totálně mimo 🚀🍺', cls:'sms-r-good'},
-      {label:'Půjč mi stovku 💸', text:'Zavři hubu a radši mi půjč stovku 💸', cls:'sms-r-bad'},
+    Phone.addSms('Mates', '😌', 'Přemýšlím... kdybych prodal všechno co mám, stačilo by to na jednosměrku do Amsterdamu?', 'sms_mates_random', [
+      {label:'S tím co máš? Do Budějic 😂', text:'S tím co máš? Tak do Českých Budějic 😂', cls:'sms-r-good'},
+      {label:'Neodcházej, kdo mi bude půjčovat 💸', text:'Matesi prosím tě neodcházej, kdo mi bude půjčovat 💸', cls:'sms-r-bad'},
     ]);
     Phone.addPost('mates_chill', '😌', '🌙🍺', 'Mates: Hospoda na Měsíci. Kdo je se mnou? 🚀 #moonbeer #entrepreneur', 8, 'kg_mates_moon');
   }));
 
   // 150s – Jana selfie
   Phone.scheduleSms(150000, safe(() => {
-    Phone.addPost('jana_kosova', '💃', '💅✨', 'Jana: Coffee, sunshine, good vibes only ☀️ #morningvibes #kremze', 45, 'kg_jana_morning');
-    Phone.addComment('kg_jana_morning', 'johnny_rich', 'Krásná jako vždy 😍');
-    Phone.addComment('kg_jana_morning', 'mates_chill', '☕👍');
+    Phone.addPost('jana_kosova', '💃', '💅✨', 'Jana: 73 selfie a tohle je to nejlepší. Život influencerky v Křemži je boj. 💅 #struggle #kremze', 45, 'kg_jana_morning');
+    Phone.addComment('kg_jana_morning', 'johnny_rich', 'Perfect as always 😍');
+    Phone.addComment('kg_jana_morning', 'mates_chill', 'ten filter dělá divy 😂');
   }));
 
   // 200s – Milan business post
   Phone.scheduleSms(200000, safe(() => {
-    Phone.addPost('milan_dealer', '😎', '💰🌿', 'Milan: Grind never stops. Nový stock právě dorazil 💪 #hustle #kremze', 23, 'kg_milan_grind');
-    Phone.addComment('kg_milan_grind', 'mates_chill', 'Dej slevu brácho 😂');
+    Phone.addPost('milan_dealer', '😎', '💰🌿', 'Milan: Nový byznys plán: franchise řetězec za každou Billou v jižních Čechách 🌿💰 #hustle', 23, 'kg_milan_grind');
+    Phone.addComment('kg_milan_grind', 'mates_chill', 'Investuju! (za kolik procent?) 😂');
   }));
 
   // 270s – kremze_info zprávy
@@ -400,23 +400,23 @@ function phoneStartTimedMessages(){
 
   // 350s – Máma se ptá jestli jí
   Phone.scheduleSms(350000, safe(() => {
-    Phone.addSms('Máma', '👩', 'Fando, jíš vůbec? Kup si něco v Bille! 🥪', 'sms_mama_jis', [
-      {label:'Snídal jsem kratom 🌿', text:'Mami, snídal jsem kratom od Milana, počítá se to? 🌿', cls:'sms-r-good'},
-      {label:'Zachraňuju Křemži 🦸', text:'Nemám čas jíst, zachraňuju Křemži 🦸', cls:'sms-r-bad'},
+    Phone.addSms('Máma', '👩', 'Fando, babička volala. Říkala ať jíš. Já říkám ať jíš. Všichni říkaj ať jíš. JEZ.', 'sms_mama_jis', [
+      {label:'Jedl jsem žemli z Bille 🥪', text:'Mami, jedl jsem žemli z Bille 🥪', cls:'sms-r-good'},
+      {label:'Zachraňuju českou ekonomiku 🦸', text:'Nemám čas, zachraňuju českou ekonomiku 🦸', cls:'sms-r-bad'},
     ]);
   }));
 
   // 500s – Mikuláš inzerát
   Phone.scheduleSms(500000, safe(() => {
     Phone.addPost('mikulas_herbs', '🌿', '🌿✨', 'Mikuláš: Čerstvý blend k dispozici. Přírodní, kvalitní, bez chemie. DM pro info 🌿 #herbs #natural', 7, 'kg_mik_herbs');
-    Phone.addComment('kg_mik_herbs', 'milan_dealer', 'Konkurence? 😤');
-    Phone.addComment('kg_mik_herbs', 'jana_kosova', 'Potřebuju! 💚');
+    Phone.addComment('kg_mik_herbs', 'milan_dealer', 'Tohle je válka. 😤');
+    Phone.addComment('kg_mik_herbs', 'jana_kosova', 'DM mi!! 💚');
   }));
 
   // 650s – Johnny flex
   Phone.scheduleSms(650000, safe(() => {
-    Phone.addPost('johnny_rich', '🤵', '🥃🏠', 'Johnny: Another day, another deal. Vila life hits different. #luxury #grind #VazaSystems', 92, 'kg_johnny_flex');
-    Phone.addComment('kg_johnny_flex', 'mates_chill', 'Pozvánka kdy? 🍺');
-    Phone.addComment('kg_johnny_flex', 'kremze_info', '📸 Nejlajkovanější post tohoto týdne!');
+    Phone.addPost('johnny_rich', '🤵', '🥃🏠', 'Johnny: Reminder: I own this town. Literally. Check the land registry. #facts #VazaSystems', 92, 'kg_johnny_flex');
+    Phone.addComment('kg_johnny_flex', 'mates_chill', 'Můžeš mi vlastnit dluh? 🍺');
+    Phone.addComment('kg_johnny_flex', 'kremze_info', '👑 Nejkontroverzní post roku!');
   }));
 }

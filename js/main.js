@@ -118,7 +118,7 @@ function normKey(k){ return (k && k.length === 1) ? k.toLowerCase() : k; }
 window.addEventListener('keydown', e => {
   // Pokud hráč píše do inputu (hádanka, login, apod.), blokuj herní klávesy
   if(isTyping()){
-    if(e.key === 'Escape'){ closeAllOverlays(); e.target.blur(); }
+    if(e.key === 'Escape'){ e.target.blur(); }
     if(e.key === 'Enter' && document.getElementById('riddle-ov').classList.contains('on'))
       submitPassword();
     return;
@@ -135,6 +135,28 @@ window.addEventListener('keydown', e => {
   keys[nk] = true;
   if(MOVE_KEYS.has(nk)) e.preventDefault();
 
+  // ESC – musí být PŘED early return (gs.running=false při pauze)
+  if(nk === 'Escape'){
+    e.preventDefault();
+    const pauseOv = document.getElementById('pause-ov');
+    if(pauseOv.classList.contains('on')){
+      if(!document.getElementById('pause-sub').classList.contains('pause-sub-hidden')){
+        closePauseSub();
+      } else {
+        resumeGame();
+      }
+    } else if(Phone.isOpen()){
+      closePhone();
+    } else if(document.getElementById('dov').classList.contains('on') ||
+              document.getElementById('riddle-ov').classList.contains('on') ||
+              document.getElementById('note-ov').classList.contains('on')){
+      closeAllOverlays();
+    } else if(gs.running){
+      openPause();
+    }
+    return;
+  }
+
   if(nk === 'q'){
     document.getElementById('quest-ov').classList.toggle('on');
   }
@@ -147,7 +169,6 @@ window.addEventListener('keydown', e => {
   if(nk === 'e'){ e.preventDefault(); interact(); }
   if(nk === '1' && !Phone.isOpen()) useKratom();
   if(nk === '2' && !Phone.isOpen()) useZemle();
-  if(nk === 'Escape'){ closeAllOverlays(); }
   if(nk === 'Enter' && document.getElementById('riddle-ov').classList.contains('on'))
     submitPassword();
 });
@@ -171,8 +192,130 @@ function closeAllOverlays(){
   document.getElementById('foto-kubatova-ov').classList.remove('on');
   document.getElementById('c2-cert-ov').classList.remove('on');
   document.getElementById('phone-ov').classList.remove('on');
+  document.getElementById('pause-ov').classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
+}
+
+// ─── Pause menu ──────────────────────────────────────────────────────────
+let _pausedRunning = false;
+
+function openPause(){
+  if(!gs.running && !_pausedRunning) return;
+  _pausedRunning = gs.running;
+  gs.running = false;
+  document.getElementById('pause-ov').classList.add('on');
+  document.getElementById('pause-menu').style.display = '';
+  document.getElementById('pause-sub').classList.add('pause-sub-hidden');
+}
+
+function resumeGame(){
+  document.getElementById('pause-ov').classList.remove('on');
+  gs.running = _pausedRunning;
+  _pausedRunning = false;
+}
+
+function closePause(){
+  resumeGame();
+}
+
+function _showPauseSub(html){
+  document.getElementById('pause-menu').style.display = 'none';
+  const sub = document.getElementById('pause-sub');
+  sub.classList.remove('pause-sub-hidden');
+  document.getElementById('pause-sub-content').innerHTML = html;
+}
+
+function closePauseSub(){
+  document.getElementById('pause-menu').style.display = '';
+  document.getElementById('pause-sub').classList.add('pause-sub-hidden');
+}
+
+function openPauseDiary(){
+  const entries = Phone.diary.slice().reverse();
+  if(!entries.length){
+    _showPauseSub('<div style="text-align:center;color:#666;padding:30px 0;font-style:italic">Deníček je prázdný.<br>Příběh se teprve píše...</div>');
+    return;
+  }
+  const html = entries.map(d =>
+    `<div class="ps-diary-entry">
+      <div class="ps-diary-time">${d.time}</div>
+      <div class="ps-diary-title">${d.title}</div>
+      <div class="ps-diary-text">${d.text}</div>
+      ${d.hint ? '<div class="ps-diary-hint">💡 ' + d.hint + '</div>' : ''}
+    </div>`
+  ).join('');
+  _showPauseSub(html);
+}
+
+function openPauseStats(){
+  const time = gs.ts || 0;
+  const mins = Math.floor(time / 60000);
+  const secs = Math.floor((time % 60000) / 1000);
+  const visited = gs.visited ? gs.visited.size : 0;
+  const questsDone = gs.objectives ? gs.objectives.filter(o => o.done).length : 0;
+  const questsActive = gs.objectives ? gs.objectives.filter(o => o.active && !o.done).length : 0;
+  const itemCount = Object.values(gs.inv).filter(v => v > 0).length;
+  const smsSent = Phone.messages.filter(m => m.replied).length;
+  const kgLikes = Phone.kremzogram.filter(p => p.playerLiked).length;
+
+  const stats = [
+    ['💰 Peníze', gs.money + ' Kč'],
+    ['⚡ Energie', Math.round(gs.energy) + '%'],
+    ['👑 Reputace', gs.rep + ' REP'],
+    ['⏱️ Herní čas', mins + ':' + secs.toString().padStart(2,'0')],
+    ['🗺️ Navštíveno lokací', visited],
+    ['✅ Splněné úkoly', questsDone],
+    ['📋 Aktivní úkoly', questsActive],
+    ['🎒 Předměty v inventáři', itemCount],
+    ['💬 Odpovězené SMS', smsSent],
+    ['❤️ Lajknuté příspěvky', kgLikes],
+    ['🌿 Kratom užit', gs.story.kratom_used ? 'Ano' : 'Ne'],
+    ['📍 Aktuální lokace', gs.room || '?'],
+  ];
+
+  _showPauseSub(stats.map(([l,v]) => `<div class="ps-stat"><span class="ps-stat-label">${l}</span><span class="ps-stat-val">${v}</span></div>`).join(''));
+}
+
+function openPauseObjectives(){
+  const objs = gs.objectives ? gs.objectives.filter(o => o.active) : [];
+  if(!objs.length){
+    _showPauseSub('<div style="text-align:center;color:#666;padding:30px 0;font-style:italic">Žádné aktivní úkoly.</div>');
+    return;
+  }
+  _showPauseSub(objs.map(o =>
+    `<div class="ps-obj ${o.done ? 'ps-obj-done' : ''}">
+      <span style="color:${o.done ? '#6a6' : 'var(--gold)'}">${o.done ? '✅' : '◇'}</span>
+      <span style="color:var(--muted2);font-size:9px;margin:0 6px">[${o.tag}]</span>
+      <span style="color:${o.done ? '#666' : '#ccc'};font-size:12px">${o.text}</span>
+    </div>`
+  ).join(''));
+}
+
+function openPauseControls(){
+  const controls = [
+    ['W A S D', 'Pohyb'],
+    ['E', 'Interakce s NPC / objekty'],
+    ['T', 'Otevřít telefon'],
+    ['Q', 'Zobrazit úkoly'],
+    ['1', 'Použít kratom'],
+    ['2', 'Sníst žemli'],
+    ['ESC', 'Pauza / Zavřít menu'],
+    ['Tab / ←→', 'Přepínání tabů telefonu'],
+    ['↑↓', 'Navigace v telefonu'],
+    ['Enter', 'Odpovědět / Lajknout'],
+    ['1-2', 'Vybrat odpověď na SMS'],
+  ];
+  _showPauseSub(controls.map(([k,d]) =>
+    `<div class="ps-ctrl"><span class="ps-ctrl-key">${k}</span><span class="ps-ctrl-desc">${d}</span></div>`
+  ).join(''));
+}
+
+function confirmQuit(){
+  _showPauseSub(`<div class="ps-confirm">
+    <p>Opravdu chceš opustit hru?<br><span style="font-size:11px;color:#888">Postup nebude uložen.</span></p>
+    <button class="ps-confirm-yes" onclick="closePause();returnToHomescreen()">Ano, opustit hru</button>
+  </div>`);
 }
 
 // ─── Tooltipy inventáře ──────────────────────────────────────────────────
