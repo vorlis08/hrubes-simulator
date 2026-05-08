@@ -673,6 +673,7 @@
       </div>
       <div id="kh"><div id="kh-lbl">🌿 KRATOM TRIP</div><div id="kh-bar"><div id="kh-fill" style="width:100%"></div></div></div>
       <div id="piko-badge" onclick="usePikoSelf()">💊 PIKO – použít? (SMRT)</div>
+      <div id="kg-btn" onclick="openKremzogram()" title="📸 Křemžogram">📸 Křemžogram</div>
     </div>
   </div>
   <div id="phone-hint-r">📱 [R] ZÁPISNÍK</div>
@@ -910,6 +911,17 @@
     <audio id="art-detail-audio" controls style="display:none;width:100%;margin-bottom:14px"></audio>
     <button id="art-detail-open-btn">🌐 Otevřít web</button>
     <div class="art-detail-hint">klikni pro zavření</div>
+  </div>
+</div>
+
+<!-- Křemžogram overlay -->
+<div id="kremzogram-ov" onclick="closeKremzogram()">
+  <div id="kg-wrap" onclick="event.stopPropagation()">
+    <div id="kg-header">
+      <span id="kg-logo">📸 Křemžogram</span>
+      <span id="kg-close" onclick="closeKremzogram()">✕</span>
+    </div>
+    <div id="kg-feed"></div>
   </div>
 </div>
 
@@ -1198,6 +1210,7 @@
 <script src="js/optimization.js"></script>
 <script src="js/effects.js"></script>
 <script src="js/render.js"></script>
+<script src="js/kremzogram.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
 <script src="js/admin.js?v=4"></script>
