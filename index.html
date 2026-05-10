@@ -827,6 +827,43 @@
     </div>
   </div></div>
 
+  <!-- Inventář overlay (E) -->
+  <div id="inv-ov">
+    <div id="inv-ov-header">
+      <div id="inv-ov-title">🎒 INVENTÁŘ</div>
+      <div id="inv-ov-hint">↑↓←→ navigace · Enter použít · Tab kategorie · Esc zavřít</div>
+    </div>
+    <div id="inv-ov-body">
+      <div id="inv-ov-cats">
+        <button class="inv-cat active" data-cat="consumable">🍕 Jídlo & Drogy</button>
+        <button class="inv-cat" data-cat="quest">📋 Questové</button>
+        <button class="inv-cat" data-cat="evidence">📱 Důkazy</button>
+        <button class="inv-cat" data-cat="keys">🔑 Klíče & Nástroje</button>
+        <button class="inv-cat" data-cat="all">★ Vše</button>
+      </div>
+      <div id="inv-ov-main">
+      <div id="inv-ov-grid"></div>
+      <div id="inv-ov-detail">
+        <div id="inv-ov-detail-emoji"></div>
+        <div id="inv-ov-detail-name"></div>
+        <div id="inv-ov-detail-desc"></div>
+        <div id="inv-ov-detail-actions"></div>
+      </div>
+      </div>
+      <div id="inv-ov-combo">
+        <div id="inv-combo-title">🍕 PIZZA ŽEMLE & KRATOM COMBO</div>
+        <div id="inv-combo-slots">
+          <div class="combo-slot" id="combo-slot-food"><span class="combo-empty">Jídlo / pití</span></div>
+          <div class="combo-plus">+</div>
+          <div class="combo-slot" id="combo-slot-kratom"><span class="combo-empty">Kratom / blend</span></div>
+          <div class="combo-eq">=</div>
+          <div class="combo-slot combo-result" id="combo-slot-result"><span class="combo-empty">???</span></div>
+        </div>
+        <button id="inv-combo-btn" class="db prim" disabled>Kombinovat</button>
+      </div>
+    </div>
+  </div>
+
   <div id="prox"><kbd>E</kbd> <span id="ptxt">Interagovat</span></div>
 
   <!-- Šamanovo heslo -->
@@ -1224,6 +1261,7 @@
 <script src="js/objectives.js"></script>
 <script src="js/notebook.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/inventory.js"></script>
 <script src="js/phone.js"></script>
 <script src="js/items.js"></script>
 <script src="js/quests.js?v=3"></script>

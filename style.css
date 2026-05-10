@@ -815,6 +815,73 @@ canvas.elixir-trip{animation:elixirTrip 3s infinite}
   opacity:0;transition:opacity .15s;transform:translate(-50%,-100%)}
 #inv-tooltip.show{opacity:1}
 
+/* ── Inventář overlay (E) ──────────────────────────────────────────── */
+#inv-ov{position:fixed;inset:0;z-index:800;background:rgba(4,6,13,0.92);
+  backdrop-filter:blur(12px);display:none;flex-direction:column;padding:24px 32px;
+  opacity:0;transition:opacity .2s}
+#inv-ov.on{display:flex;opacity:1}
+#inv-ov-header{display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px}
+#inv-ov-title{font-family:var(--fd);font-size:28px;letter-spacing:3px;color:var(--gold)}
+#inv-ov-hint{font-family:var(--fm);font-size:10px;color:var(--muted);letter-spacing:1px}
+#inv-ov-body{display:flex;flex-direction:column;gap:16px;flex:1;overflow-y:auto}
+#inv-ov-main{display:grid;grid-template-columns:1fr 280px;gap:16px;min-height:0}
+@media(max-width:700px){
+  #inv-ov-main{grid-template-columns:1fr}
+  #inv-ov-detail{max-height:180px;flex-direction:row;flex-wrap:wrap;justify-content:flex-start}
+  #inv-ov-detail-emoji{font-size:32px}
+  #inv-ov{padding:16px}
+}
+#inv-ov-cats{display:flex;gap:6px;overflow-x:auto;flex-shrink:0}
+.inv-cat{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:6px;
+  padding:6px 14px;font-family:var(--fm);font-size:11px;color:var(--muted2);cursor:pointer;
+  transition:all .15s;outline:none}
+.inv-cat:hover,.inv-cat:focus{border-color:var(--gold);color:#fff}
+.inv-cat.active{background:rgba(240,192,64,.1);border-color:var(--gold);color:var(--gold)}
+#inv-ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));
+  gap:8px;align-content:start;overflow-y:auto;padding-right:8px;min-height:90px}
+.inv-cell{width:72px;height:72px;border-radius:8px;border:1px solid var(--border2);
+  background:rgba(255,255,255,.02);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;transition:all .15s;position:relative;user-select:none}
+.inv-cell:hover,.inv-cell.kb-focus{border-color:var(--gold);background:rgba(240,192,64,.07);
+  transform:scale(1.06);box-shadow:0 0 16px rgba(240,192,64,.12)}
+.inv-cell .inv-cell-emoji{font-size:24px;line-height:1}
+.inv-cell .inv-cell-qty{position:absolute;top:3px;right:5px;font-family:var(--fd);
+  font-size:12px;color:var(--gold)}
+.inv-cell .inv-cell-name{font-size:7px;color:var(--muted);font-family:var(--fm);
+  text-transform:uppercase;letter-spacing:.6px;margin-top:2px;text-align:center;
+  max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inv-cell.usable{border-color:rgba(34,197,94,.3)}
+.inv-cell.usable:hover,.inv-cell.usable.kb-focus{border-color:var(--green);
+  box-shadow:0 0 16px rgba(34,197,94,.15)}
+#inv-ov-detail{grid-row:2/4;display:flex;flex-direction:column;align-items:center;
+  background:rgba(255,255,255,.02);border:1px solid var(--border2);border-radius:10px;
+  padding:20px;gap:10px}
+#inv-ov-detail-emoji{font-size:48px}
+#inv-ov-detail-name{font-family:var(--fd);font-size:20px;color:var(--gold);letter-spacing:2px;text-align:center}
+#inv-ov-detail-desc{font-family:var(--fm);font-size:11px;color:var(--muted2);
+  line-height:1.6;text-align:center}
+#inv-ov-detail-actions{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:auto}
+#inv-ov-detail-actions .db{width:100%;text-align:center}
+#inv-ov-combo{grid-column:1/-1;background:rgba(240,192,64,.04);border:1px solid var(--border);
+  border-radius:10px;padding:12px 18px}
+#inv-combo-title{font-family:var(--fd);font-size:14px;color:var(--gold);letter-spacing:2px;margin-bottom:10px}
+#inv-combo-slots{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.combo-slot{width:64px;height:64px;border-radius:8px;border:1px dashed var(--border);
+  background:rgba(255,255,255,.02);display:flex;align-items:center;justify-content:center;
+  font-size:28px;cursor:pointer;transition:all .15s}
+.combo-slot:hover,.combo-slot.kb-focus{border-color:var(--gold);border-style:solid}
+.combo-slot.filled{border-style:solid;border-color:var(--green);background:rgba(34,197,94,.06)}
+.combo-empty{font-size:8px;color:var(--muted);font-family:var(--fm);text-align:center;padding:4px}
+.combo-plus,.combo-eq{font-family:var(--fd);font-size:20px;color:var(--muted)}
+.combo-result{border-color:var(--gold);border-style:dashed}
+#inv-combo-btn{margin-top:4px;font-size:12px;padding:6px 20px}
+#inv-combo-btn:disabled{opacity:.3;cursor:default}
+
+/* ── Dialog keyboard focus ─────────────────────────────────────────── */
+.db.kb-focus{border-color:var(--gold)!important;box-shadow:0 0 12px rgba(240,192,64,.2);
+  outline:2px solid var(--gold);outline-offset:2px}
+
 /* ── Pre-game room ─────────────────────────────────────────────────── */
 .pregame-room{
   display:flex;flex-direction:column;align-items:center;gap:18px;

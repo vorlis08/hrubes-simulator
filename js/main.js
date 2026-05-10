@@ -126,10 +126,22 @@ window.addEventListener('keydown', e => {
   }
 
   const nk = normKey(e.key);
+  const shiftCombo = e.shiftKey && nk === 'Tab' ? 'shift+Tab' : nk;
+
+  // Inventář má nejvyšší prioritu – překryje vše
+  if(typeof Inventory !== 'undefined' && Inventory.isOpen()){
+    e.preventDefault();
+    Inventory.handleKey(shiftCombo);
+    return;
+  }
+
+  // Dialog keyboard navigation (Enter, arrows, numbers)
+  if(typeof dialogHandleKey === 'function' && document.getElementById('dov').classList.contains('on')){
+    if(dialogHandleKey(shiftCombo)){ e.preventDefault(); return; }
+  }
 
   if(Phone.isOpen()){
-    const shiftKey = e.shiftKey && nk === 'Tab' ? 'shift+Tab' : nk;
-    if(Phone.handleKey(shiftKey)){ e.preventDefault(); return; }
+    if(Phone.handleKey(shiftCombo)){ e.preventDefault(); return; }
   }
 
   keys[nk] = true;
@@ -152,7 +164,17 @@ window.addEventListener('keydown', e => {
   if(!gs.running || gs.dead) return;
 
   if(nk === 'r'){ toggleNotebook(); }
-  if(nk === 'e'){ e.preventDefault(); interact(); }
+  if(nk === 'e'){
+    e.preventDefault();
+    // E otvírá inventář, pokud není blízko NPC (prox není viditelný)
+    const proxVisible = document.getElementById('prox').classList.contains('show');
+    if(proxVisible){
+      interact();
+    } else {
+      Inventory.toggle();
+    }
+  }
+  if(nk === 'i'){ Inventory.toggle(); }
   if(nk === '1' && !Phone.isOpen()) useKratom();
   if(nk === '2' && !Phone.isOpen()) useZemle();
   if(nk === 'Enter' && document.getElementById('riddle-ov').classList.contains('on'))
@@ -171,6 +193,7 @@ document.addEventListener('visibilitychange', () => {
 
 // ─── Safety: Escape zavře VŠECHNY overlaye ─────────────────────────────
 function closeAllOverlays(){
+  if(typeof Inventory !== 'undefined') Inventory.close();
   document.getElementById('dov').classList.remove('on');
   document.getElementById('riddle-ov').classList.remove('on');
   document.getElementById('note-ov').classList.remove('on');
@@ -180,6 +203,7 @@ function closeAllOverlays(){
   closeNotebook();
   document.getElementById('phone-ov').classList.remove('on');
   document.getElementById('kremzogram-ov').classList.remove('on');
+  document.getElementById('quest-ov').classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
 }
