@@ -885,6 +885,14 @@ canvas.elixir-trip{animation:elixirTrip 3s infinite}
   letter-spacing:2px;cursor:pointer;transition:all .15s;width:200px}
 .pause-btn:hover{background:rgba(240,192,64,.15);border-color:var(--gold)}
 
+/* ── Settings overlay ─────────────────────────────────────────────── */
+#settings-ov{position:fixed;inset:0;z-index:860;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(2,3,8,0.94);backdrop-filter:blur(14px)}
+#settings-ov.on{display:flex}
+#settings-wrap{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;min-width:280px}
+#settings-title{font-family:var(--fd);font-size:30px;letter-spacing:5px;color:var(--gold)}
+
 /* ── Dialog keyboard focus ─────────────────────────────────────────── */
 .db.kb-focus{border-color:var(--gold)!important;box-shadow:0 0 12px rgba(240,192,64,.2);
   outline:2px solid var(--gold);outline-offset:2px}

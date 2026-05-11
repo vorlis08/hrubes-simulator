@@ -153,7 +153,7 @@ window.addEventListener('keydown', e => {
     if(Phone.isOpen()){ closePhone(); return; }
     // Check if any overlay is open
     const anyOpen = ['dov','riddle-ov','note-ov','screenshot-ov','foto-kubatova-ov',
-      'c2-cert-ov','phone-ov','kremzogram-ov','quest-ov']
+      'c2-cert-ov','phone-ov','kremzogram-ov','quest-ov','settings-ov']
       .some(id => document.getElementById(id)?.classList.contains('on'))
       || (typeof Inventory !== 'undefined' && Inventory.isOpen())
       || document.getElementById('notebook-ov')?.classList.contains('on');
@@ -219,6 +219,13 @@ function togglePause(){
   }
 }
 
+function openStats(){
+  // TODO: stats overlay
+}
+function openSettings(){
+  document.getElementById('settings-ov').classList.add('on');
+}
+
 // ─── Safety: Escape zavře VŠECHNY overlaye ─────────────────────────────
 function closeAllOverlays(){
   if(typeof Inventory !== 'undefined') Inventory.close();
@@ -232,6 +239,7 @@ function closeAllOverlays(){
   document.getElementById('phone-ov').classList.remove('on');
   document.getElementById('kremzogram-ov').classList.remove('on');
   document.getElementById('quest-ov').classList.remove('on');
+  document.getElementById('settings-ov').classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
 }

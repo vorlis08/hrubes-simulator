@@ -842,7 +842,19 @@
     <div id="pause-wrap">
       <div id="pause-title">⏸ PAUZA</div>
       <button class="pause-btn" onclick="togglePause()">▶ Pokračovat</button>
-      <button class="pause-btn" onclick="togglePause();toggleMusic()">🎵 Hudba</button>
+      <button class="pause-btn" onclick="togglePause();document.getElementById('quest-ov').classList.add('on')">📖 Deník</button>
+      <button class="pause-btn" onclick="togglePause();toggleNotebook()">📝 Poznámky</button>
+      <button class="pause-btn" onclick="togglePause();openStats()">📊 Statistika</button>
+      <button class="pause-btn" onclick="togglePause();openSettings()">⚙ Nastavení</button>
+    </div>
+  </div>
+
+  <!-- Settings overlay -->
+  <div id="settings-ov">
+    <div id="settings-wrap">
+      <div id="settings-title">⚙ NASTAVENÍ</div>
+      <div id="settings-body"><p style="color:#888;font-size:14px;margin-top:20px">Připravujeme…</p></div>
+      <button class="pause-btn" onclick="document.getElementById('settings-ov').classList.remove('on')">✕ Zavřít</button>
     </div>
   </div>
 
