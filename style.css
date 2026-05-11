@@ -785,10 +785,10 @@ canvas.elixir-trip{animation:elixirTrip 3s infinite}
   border-radius:12px;padding:18px;box-shadow:0 0 40px rgba(0,0,0,.6),0 0 80px rgba(240,192,64,.06);
   width:min(420px,90vw)}
 #inv-ov-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-.inv-slot{aspect-ratio:1;border-radius:6px;border:1px solid rgba(255,255,255,.06);
-  background:rgba(255,255,255,.015);display:flex;flex-direction:column;align-items:center;
+.inv-slot{aspect-ratio:1;border-radius:6px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;
   justify-content:center;cursor:pointer;transition:all .12s;position:relative;user-select:none}
-.inv-slot.empty{cursor:default;opacity:.3}
+.inv-slot.empty{cursor:default;opacity:.45}
 .inv-slot.empty.sel{opacity:.5;border-color:rgba(240,192,64,.3)}
 .inv-slot:hover:not(.empty){border-color:rgba(240,192,64,.5);background:rgba(240,192,64,.06)}
 .inv-slot.sel{border-color:var(--gold);background:rgba(240,192,64,.1);
@@ -809,8 +809,8 @@ canvas.elixir-trip{animation:elixirTrip 3s infinite}
 #inv-ov-pocket{margin-top:10px;border-top:1px solid rgba(240,192,64,.12);padding-top:8px}
 .inv-pocket-label{font-family:var(--fd);font-size:12px;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
 .inv-pocket-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
-.inv-pocket-slot{aspect-ratio:1;border-radius:6px;border:1px dashed rgba(240,192,64,.15);
-  background:rgba(240,192,64,.02);display:flex;flex-direction:column;align-items:center;
+.inv-pocket-slot{aspect-ratio:1;border-radius:6px;border:1px dashed rgba(240,192,64,.25);
+  background:rgba(240,192,64,.04);display:flex;flex-direction:column;align-items:center;
   justify-content:center;cursor:pointer;transition:all .12s;position:relative;user-select:none}
 .inv-pocket-slot.empty{opacity:.25;cursor:default}
 .inv-pocket-slot.empty.sel{opacity:.5;border-color:rgba(240,192,64,.3)}
