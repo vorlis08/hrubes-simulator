@@ -772,67 +772,63 @@ canvas.elixir-trip{animation:elixirTrip 3s infinite}
   opacity:0;transition:opacity .15s;transform:translate(-50%,-100%)}
 #inv-tooltip.show{opacity:1}
 
-/* ── Inventář overlay (E) — Minecraft style ──────────────────────── */
+/* ── Inventář overlay (E) ──────────────────────────────────────────── */
 #inv-ov{position:fixed;inset:0;z-index:800;display:none;
   align-items:center;justify-content:center;
-  background:rgba(0,0,0,0.72)}
+  background:rgba(2,3,8,0.88);backdrop-filter:blur(10px)}
 #inv-ov.on{display:flex}
 #inv-ov-top{display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:8px;padding:0 2px}
-#inv-ov-title{font-family:var(--fd);font-size:18px;letter-spacing:2px;color:#ddd}
-#inv-ov-keys{font-family:var(--fm);font-size:9px;color:#888;letter-spacing:1px}
-#inv-ov-wrap{background:#8b8b8b;border:4px solid #1e1e1e;
-  border-radius:0;padding:12px;
-  box-shadow:inset 2px 2px 0 #a0a0a0,inset -2px -2px 0 #555,4px 4px 0 rgba(0,0,0,.5);
-  width:min(400px,92vw);image-rendering:pixelated}
-#inv-ov-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
-.inv-slot{aspect-ratio:1;border-radius:0;
-  border:2px solid;border-color:#373737 #fff #fff #373737;
-  background:#8b8b8b;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;cursor:pointer;transition:background .08s;position:relative;user-select:none}
-.inv-slot.empty{cursor:default;opacity:.6}
-.inv-slot.empty.sel{opacity:.8;background:#6a6a6a}
-.inv-slot:hover:not(.empty){background:#7a7aaa}
-.inv-slot.sel{background:#5c5ca0;border-color:#222 #aaa #aaa #222}
-.inv-slot.usable.sel{background:#3a7a3a;border-color:#1a4a1a #7fbf7f #7fbf7f #1a4a1a}
-.inv-slot.held,.inv-pocket-slot.held{background:#7a4a1a!important;
-  border-color:#4a2a0a #c08040 #c08040 #4a2a0a!important;
+  margin-bottom:10px;padding:0 2px}
+#inv-ov-title{font-family:var(--fd);font-size:22px;letter-spacing:3px;color:var(--gold)}
+#inv-ov-keys{font-family:var(--fm);font-size:9px;color:var(--muted);letter-spacing:1px}
+#inv-ov-wrap{background:rgba(8,10,20,0.95);border:2px solid rgba(240,192,64,0.25);
+  border-radius:12px;padding:18px;box-shadow:0 0 40px rgba(0,0,0,.6),0 0 80px rgba(240,192,64,.06);
+  width:min(420px,90vw)}
+#inv-ov-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.inv-slot{aspect-ratio:1;border-radius:6px;border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.015);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;transition:all .12s;position:relative;user-select:none}
+.inv-slot.empty{cursor:default;opacity:.3}
+.inv-slot.empty.sel{opacity:.5;border-color:rgba(240,192,64,.3)}
+.inv-slot:hover:not(.empty){border-color:rgba(240,192,64,.5);background:rgba(240,192,64,.06)}
+.inv-slot.sel{border-color:var(--gold);background:rgba(240,192,64,.1);
+  box-shadow:inset 0 0 12px rgba(240,192,64,.08)}
+.inv-slot.usable.sel{border-color:var(--green);background:rgba(34,197,94,.08);
+  box-shadow:inset 0 0 12px rgba(34,197,94,.06)}
+.inv-slot.held,.inv-pocket-slot.held{border-color:var(--orange)!important;
+  background:rgba(249,115,22,.15)!important;box-shadow:0 0 12px rgba(249,115,22,.2)!important;
   animation:held-pulse .8s ease infinite alternate}
-@keyframes held-pulse{0%{box-shadow:0 0 6px rgba(249,115,22,.2)}100%{box-shadow:0 0 14px rgba(249,115,22,.4)}}
+@keyframes held-pulse{0%{box-shadow:0 0 8px rgba(249,115,22,.15)}100%{box-shadow:0 0 16px rgba(249,115,22,.3)}}
 .inv-ico{font-size:22px;line-height:1}
-.inv-qty{position:absolute;bottom:1px;right:3px;font-family:var(--fd);
-  font-size:12px;color:#fff;line-height:1;
-  text-shadow:1px 1px 0 #222,-1px -1px 0 #222,1px -1px 0 #222,-1px 1px 0 #222}
-.inv-lbl{font-size:7px;color:#333;font-family:var(--fm);
-  text-transform:uppercase;letter-spacing:.3px;margin-top:1px;
+.inv-qty{position:absolute;top:2px;right:4px;font-family:var(--fd);
+  font-size:11px;color:var(--gold);line-height:1}
+.inv-lbl{font-size:7px;color:var(--muted);font-family:var(--fm);
+  text-transform:uppercase;letter-spacing:.5px;margin-top:1px;
   max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* ── Pocket inside inventory overlay ──────────────────────────────── */
-#inv-ov-pocket{margin-top:8px;border-top:2px solid #555;padding-top:6px}
-.inv-pocket-label{font-family:var(--fd);font-size:11px;letter-spacing:2px;color:#444;margin-bottom:4px}
-.inv-pocket-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
-.inv-pocket-slot{aspect-ratio:1;border-radius:0;
-  border:2px solid;border-color:#373737 #fff #fff #373737;
-  background:#8b8b8b;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;cursor:pointer;transition:background .08s;position:relative;user-select:none}
-.inv-pocket-slot.empty{opacity:.5;cursor:default}
-.inv-pocket-slot.empty.sel{opacity:.7;background:#6a6a6a}
-.inv-pocket-slot.sel{background:#5c5ca0;border-color:#222 #aaa #aaa #222}
-.inv-pocket-slot:hover:not(.empty){background:#7a7aaa}
-/* ── Pocket HUD bar during gameplay — Minecraft hotbar ───────────── */
+#inv-ov-pocket{margin-top:10px;border-top:1px solid rgba(240,192,64,.12);padding-top:8px}
+.inv-pocket-label{font-family:var(--fd);font-size:12px;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
+.inv-pocket-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.inv-pocket-slot{aspect-ratio:1;border-radius:6px;border:1px dashed rgba(240,192,64,.15);
+  background:rgba(240,192,64,.02);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;transition:all .12s;position:relative;user-select:none}
+.inv-pocket-slot.empty{opacity:.25;cursor:default}
+.inv-pocket-slot.empty.sel{opacity:.5;border-color:rgba(240,192,64,.3)}
+.inv-pocket-slot.sel{border-color:var(--gold);background:rgba(240,192,64,.08);border-style:solid}
+.inv-pocket-slot:hover:not(.empty){border-color:rgba(240,192,64,.4);background:rgba(240,192,64,.05)}
+/* ── Pocket HUD bar during gameplay ──────────────────────────────── */
 #inv-pocket-hud{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);
-  z-index:120;display:flex;gap:2px;padding:4px;
-  background:#1a1a1a;border:3px solid #333;
-  border-radius:0;box-shadow:inset 1px 1px 0 #444,2px 2px 0 rgba(0,0,0,.5)}
-.pocket-hud-slot{width:48px;height:48px;border-radius:0;
-  border:2px solid;border-color:#555 #111 #111 #555;
-  background:#2a2a2a;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;cursor:pointer;transition:background .08s;position:relative;user-select:none}
-.pocket-hud-slot.usable{border-color:#2a5a2a #0a2a0a #0a2a0a #2a5a2a;background:#1a3a1a}
-.pocket-hud-slot:hover{background:#3a3a5a;border-color:#666 #222 #222 #666}
+  z-index:120;display:flex;gap:6px;padding:6px 10px;
+  background:rgba(8,10,20,.85);border:1px solid rgba(240,192,64,.15);
+  border-radius:10px;backdrop-filter:blur(6px)}
+.pocket-hud-slot{width:52px;height:52px;border-radius:6px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.02);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;transition:all .12s;position:relative;user-select:none}
+.pocket-hud-slot.usable{border-color:rgba(34,197,94,.2)}
+.pocket-hud-slot:hover{border-color:rgba(240,192,64,.5);background:rgba(240,192,64,.06)}
 .pocket-hud-slot .inv-ico{font-size:18px}
-.pocket-hud-slot .inv-qty{font-size:10px;bottom:1px;right:2px;
-  text-shadow:1px 1px 0 #000,-1px -1px 0 #000}
-.pocket-hud-slot .inv-lbl{font-size:6px;color:#888}
+.pocket-hud-slot .inv-qty{font-size:9px}
+.pocket-hud-slot .inv-lbl{font-size:6px}
 
 /* ── Pause overlay ────────────────────────────────────────────────── */
 #pause-ov{position:fixed;inset:0;z-index:850;display:none;

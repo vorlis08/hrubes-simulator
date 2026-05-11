@@ -235,6 +235,7 @@ const Settings = (() => {
     _cfg.quality = q;
     _cfg.qualityOverride = true;
     _save(); renderUI();
+    if(typeof resize === 'function') resize();
   }
   function setDialogSpeed(s){
     _cfg.dialogSpeed = s;

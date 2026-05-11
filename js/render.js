@@ -4935,7 +4935,9 @@ function render(){
   }
 
   // Vigneta – cached offscreen canvas (místo createRadialGradient každý frame)
-  ctx.drawImage(overlayCache.getVignette(W, H), 0, 0);
+  if(tier >= 1){
+    ctx.drawImage(overlayCache.getVignette(W, H), 0, 0);
+  }
 
   // Ambient occlusion – cached offscreen canvas
   if(tier >= 2 && _hasAO){

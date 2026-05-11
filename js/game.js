@@ -6,7 +6,25 @@
 const canvas = document.getElementById('canvas');
 const ctx    = canvas.getContext('2d');
 
-function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; gradientCache.clear(); }
+function _getQualityScale(){
+  if(typeof Settings === 'undefined') return 1;
+  const q = Settings.getQualityTierOverride();
+  if(q === null) return 1;
+  if(q === 0) return 0.55;
+  return 1;
+}
+function resize(){
+  const s = _getQualityScale();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const scale = s * (s < 1 ? 1 : dpr);
+  canvas.width = Math.floor(innerWidth * scale);
+  canvas.height = Math.floor(innerHeight * scale);
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  if(s < 1) canvas.style.imageRendering = 'auto';
+  else canvas.style.imageRendering = '';
+  gradientCache.clear();
+}
 resize();
 window.addEventListener('resize', () => { resize(); if(gs.running) initRoom(); });
 
@@ -1560,8 +1578,8 @@ function gameLoop(ts){
     if(gs.maze){ gs.ts += dt; _mazeUpdate(dt); }
     else if(gs.running) update(dt);
     if(typeof Phone !== 'undefined') Phone.updateTimers();
-    // Throttle rendering to ~60fps (16.67ms) to avoid unnecessary GPU work
-    if(ts - _lastRenderTs >= 15){ render(); _lastRenderTs = ts; }
+    const _renderInterval = (_getQualityScale() < 1) ? 30 : 15;
+    if(ts - _lastRenderTs >= _renderInterval){ render(); _lastRenderTs = ts; }
   } catch(e) {
     console.error('[gameLoop] chyba:', e);
     // Zobrazit chybu v herním deníku – pomáhá ladit bez otvírání konzole
