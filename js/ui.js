@@ -113,6 +113,7 @@ function updateInv(){
   const seps = document.querySelectorAll('.isep');
   if(seps[0]) seps[0].style.display = (grpVisible(g1) && grpVisible(g2)) ? '' : 'none';
   if(seps[1]) seps[1].style.display = (grpVisible(g2) && grpVisible(g3)) ? '' : 'none';
+  if(typeof Inventory !== 'undefined') Inventory._rebuildPocketBar();
 }
 
 function addLog(txt, cls = ''){

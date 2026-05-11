@@ -73,6 +73,7 @@ function startGame(){
 
   // Hráč začíná doma
   gs.room = 'doma';
+  Inventory.initPocket();
   initObj(); initNotebook(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
   addStoryEntry('prolog', 'Nový den v Křemži. Musím vydělat prachy a nastartovat Fábii.', '🏠');
   phoneInitStartMessages();
