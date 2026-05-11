@@ -130,7 +130,7 @@ function addLog(txt, cls = ''){
 }
 
 function fnotif(txt, type = 'pos'){
-  // Zápis do deníku místo levitujících notifikací
+  // Zápis do logu
   const clsMap = {pos:'lr', neg:'lw', itm:'lm', rep:'lp', lw:'lw'};
   addLog(txt, clsMap[type] || 'ls');
 }

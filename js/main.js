@@ -71,13 +71,13 @@ function startGame(){
   gs.pregame_artifacts = {};
   lastTime     = performance.now();
 
-  // Hráč začíná v učebně (intro quest)
-  gs.room = 'ucebna';
+  // Hráč začíná doma
+  gs.room = 'doma';
   gs.story.map_unlocked = false;
   gs.story.intro_done = false;
   Inventory.initPocket();
-  initObj(); initNotebook(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
-  addStoryEntry('prolog', 'Další nuda v učebně. Hodina se vleče. Snad mě pustí...', '✏️');
+  initObj(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
+  addStoryEntry('prolog', 'Další den v Křemži. Vstávám z postele a musím se dostat do školy...', '🏡');
   // Hide minimap and map key until intro is done
   const mapCard = document.getElementById('map-card');
   if(mapCard) mapCard.style.display = 'none';
@@ -164,7 +164,7 @@ window.addEventListener('keydown', e => {
       'c2-cert-ov','phone-ov','kremzogram-ov','quest-ov','settings-ov','map-ov','stats-ov']
       .some(id => document.getElementById(id)?.classList.contains('on'))
       || (typeof Inventory !== 'undefined' && Inventory.isOpen())
-      || document.getElementById('notebook-ov')?.classList.contains('on');
+;
     if(anyOpen){
       closeAllOverlays();
     } else if(gs.running && !gs.dead){
@@ -182,13 +182,12 @@ window.addEventListener('keydown', e => {
     // legacy: keep Q as alias for map
     if(gs.running && !gs.dead && gs.story.map_unlocked) toggleMap();
   }
-  if(nk === 't'){
+  if(nk === 't' || nk === 'r'){
     togglePhone();
   }
 
   if(!gs.running || gs.dead) return;
 
-  if(nk === 'r'){ toggleNotebook(); }
   if(nk === 'e'){
     e.preventDefault();
     // E otvírá inventář, pokud není blízko NPC (prox není viditelný)
@@ -390,56 +389,105 @@ function renderMap(){
   const canvasEl = document.getElementById('map-ov-canvas');
   const locEl = document.getElementById('map-ov-location');
   const questsEl = document.getElementById('map-ov-quests');
+  const navHint = document.getElementById('map-ov-nav-hint');
   if(!canvasEl) return;
 
   const rm = ROOMS[gs.room];
   const roomName = rm ? (rm.icon + ' ' + rm.name) : gs.room;
   const roomSub = rm ? rm.sub : '';
 
-  // Map nodes with positions
-  const MAP_NODES = [
-    {id:'doma',       x:85, y:18, icon:'🏡', name:'Doma',       sub:'Tvůj byt'},
-    {id:'kremze',     x:70, y:35, icon:'🏠', name:'Křemže',     sub:'Náměstí'},
-    {id:'ulice',      x:50, y:52, icon:'🌆', name:'Ulice',      sub:'Pravá Křemže'},
-    {id:'hospoda',    x:30, y:40, icon:'🍺', name:'Hospoda',    sub:'Big Poppa'},
-    {id:'billa',      x:50, y:28, icon:'🛒', name:'Billa',      sub:'Mariánské nám.'},
-    {id:'ucebna',     x:20, y:22, icon:'✏️', name:'Učebna',     sub:'Obchodní akademie'},
-    {id:'sklep',      x:50, y:70, icon:'🕯️', name:'Sklep',      sub:'Mikulášův sklep'},
-    {id:'johnny_vila',x:85, y:55, icon:'🏠', name:'Johnnyho vila',sub:'Soukromý'},
-    {id:'koupelna',   x:92, y:65, icon:'🚿', name:'Koupelna',   sub:'Ve vile'},
-    {id:'cibulka_lab',x:20, y:55, icon:'🔬', name:'Cibulkova lab',sub:'Za krbem'},
+  // Main ring: RORDER cycle with positions along a horizontal path
+  const MAIN = [
+    {id:'ucebna',  x:10, y:40, label:'Učebna',   icon:'✏️'},
+    {id:'billa',   x:30, y:40, label:'Billa',     icon:'🛒'},
+    {id:'hospoda', x:50, y:40, label:'Hospoda',   icon:'🍺'},
+    {id:'ulice',   x:70, y:40, label:'Ulice',     icon:'🌆'},
+    {id:'kremze',  x:90, y:40, label:'Křemže',    icon:'🏠'},
   ];
-
-  // Connections between rooms
-  const MAP_EDGES = [
-    ['ucebna','billa'],['billa','hospoda'],['hospoda','ulice'],['ulice','kremze'],
-    ['kremze','ucebna'],['kremze','doma'],['billa','sklep'],['hospoda','cibulka_lab'],
-    ['kremze','johnny_vila'],['johnny_vila','koupelna'],
+  // Branch rooms that connect off the main path
+  const BRANCHES = [
+    {id:'doma',        x:90, y:15, label:'Doma',         icon:'🏡', parent:'kremze'},
+    {id:'sklep',       x:30, y:68, label:'Sklep',        icon:'🕯️', parent:'billa'},
+    {id:'johnny_vila', x:90, y:65, label:'Johnnyho vila', icon:'🏠', parent:'kremze'},
+    {id:'koupelna',    x:90, y:82, label:'Koupelna',     icon:'🚿', parent:'johnny_vila'},
+    {id:'cibulka_lab', x:50, y:68, label:'Cibulkova lab', icon:'🔬', parent:'hospoda'},
   ];
+  const ALL = [...MAIN, ...BRANCHES];
+  const pen = '#3a2a10';
+  const penLight = '#8a7050';
+  const penFog = '#c8b090';
 
-  let mapHTML = '<svg viewBox="0 0 100 85" class="map-svg">';
-  // Edges
-  MAP_EDGES.forEach(([a,b]) => {
-    const na = MAP_NODES.find(n=>n.id===a), nb = MAP_NODES.find(n=>n.id===b);
-    if(!na||!nb) return;
-    const visited = gs.visited.has(a) && gs.visited.has(b);
-    mapHTML += `<line x1="${na.x}" y1="${na.y}" x2="${nb.x}" y2="${nb.y}" stroke="${visited ? 'rgba(240,192,64,.3)' : 'rgba(255,255,255,.06)'}" stroke-width=".5" ${visited?'stroke-dasharray="none"':'stroke-dasharray="1,1"'}/>`;
+  let svg = '<svg viewBox="0 0 100 95" class="map-svg">';
+  // Paper fold lines
+  svg += `<line x1="50" y1="0" x2="50" y2="95" stroke="${penFog}" stroke-width=".15" stroke-dasharray="1.5,1"/>`;
+  svg += `<line x1="0" y1="47" x2="100" y2="47" stroke="${penFog}" stroke-width=".1" stroke-dasharray="1,1.5"/>`;
+
+  // Draw main path connections with arrows showing direction
+  // RORDER cycle: ucebna ←→ billa ←→ hospoda ←→ ulice ←→ kremze ←→ ucebna (wraps)
+  for(let i = 0; i < MAIN.length; i++){
+    const a = MAIN[i], b = MAIN[(i+1) % MAIN.length];
+    const visited = gs.visited.has(a.id) && gs.visited.has(b.id);
+    const col = visited ? pen : penFog;
+    if(i < MAIN.length - 1){
+      // Straight line between adjacent rooms
+      const wobble = (i % 2 === 0) ? -1.5 : 1.5;
+      svg += `<path d="M${a.x},${a.y} Q${(a.x+b.x)/2},${a.y+wobble} ${b.x},${b.y}" fill="none" stroke="${col}" stroke-width=".4"/>`;
+      // Arrow pointing right (→ = next)
+      const mx = (a.x+b.x)/2, my = a.y + wobble/2;
+      svg += `<text x="${mx}" y="${my-2}" text-anchor="middle" font-size="2.5" fill="${col}">→</text>`;
+      svg += `<text x="${mx}" y="${my+4}" text-anchor="middle" font-size="2.5" fill="${col}">←</text>`;
+    } else {
+      // Wrap-around: kremze → ucebna (drawn as a curve going above)
+      svg += `<path d="M${b.x},${b.y-3} Q${95},${12} ${50},${10} Q${5},${12} ${a.x},${a.y-3}" fill="none" stroke="${col}" stroke-width=".3" stroke-dasharray=".8,.6"/>`;
+      svg += `<text x="50" y="8" text-anchor="middle" font-size="2" fill="${col}" font-style="italic">cyklus</text>`;
+    }
+  }
+
+  // Draw branch connections
+  BRANCHES.forEach(br => {
+    const p = ALL.find(n=>n.id===br.parent);
+    if(!p) return;
+    const visited = gs.visited.has(br.id) && gs.visited.has(br.parent);
+    const col = visited ? pen : penFog;
+    const wobble = (br.x > p.x) ? 2 : -2;
+    svg += `<path d="M${p.x},${p.y} Q${p.x+wobble},${(p.y+br.y)/2} ${br.x},${br.y}" fill="none" stroke="${col}" stroke-width=".3" stroke-dasharray=".6,.4"/>`;
   });
-  // Nodes
-  MAP_NODES.forEach(n => {
+
+  // Draw nodes
+  ALL.forEach(n => {
     const isCurrent = gs.room === n.id;
     const isVisited = gs.visited.has(n.id);
     if(!isVisited && !isCurrent) return;
-    const fill = isCurrent ? '#f0c040' : 'rgba(255,255,255,.25)';
-    const r = isCurrent ? 3.5 : 2;
-    mapHTML += `<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${fill}" ${isCurrent?'class="map-pulse"':''}/>`;
-    mapHTML += `<text x="${n.x}" y="${n.y-4}" text-anchor="middle" fill="${isCurrent?'#f0c040':'rgba(255,255,255,.4)'}" font-size="${isCurrent?3.5:2.8}" font-family="var(--fm)">${n.name}</text>`;
+    const col = isCurrent ? '#c04000' : pen;
+    const r = isCurrent ? 4 : 2.5;
+    // Hand-drawn circle effect
+    if(isCurrent){
+      svg += `<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="none" stroke="#c04000" stroke-width=".6" ${isCurrent?'class="map-pulse"':''}/>`;
+      svg += `<circle cx="${n.x}" cy="${n.y}" r="1.5" fill="#c04000"/>`;
+    } else {
+      svg += `<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="none" stroke="${pen}" stroke-width=".35" stroke-dasharray=".8,.3"/>`;
+      svg += `<circle cx="${n.x}" cy="${n.y}" r="1" fill="${pen}" opacity=".4"/>`;
+    }
+    const above = n.y > 50;
+    const ty = above ? n.y - r - 1.5 : n.y + r + 3.5;
+    svg += `<text x="${n.x}" y="${ty}" text-anchor="middle" fill="${col}" font-size="${isCurrent?3.2:2.6}" font-weight="${isCurrent?'bold':'normal'}">${n.label}</text>`;
+    svg += `<text x="${n.x}" y="${ty + (above ? -3 : 3)}" text-anchor="middle" font-size="3">${n.icon}</text>`;
   });
-  mapHTML += '</svg>';
-  canvasEl.innerHTML = mapHTML;
 
-  // Location info
+  svg += '</svg>';
+  canvasEl.innerHTML = svg;
+
   locEl.innerHTML = `<div class="map-loc-name">${roomName}</div><div class="map-loc-sub">${roomSub}</div>`;
+
+  // Nav hint: show what's left and right
+  const idx = RORDER.indexOf(gs.room);
+  if(idx >= 0){
+    const leftRoom = ROOMS[RORDER[(idx - 1 + 5) % 5]];
+    const rightRoom = ROOMS[RORDER[(idx + 1) % 5]];
+    navHint.innerHTML = `← ${leftRoom.name} &nbsp;|&nbsp; ${rightRoom.name} →`;
+  } else {
+    navHint.innerHTML = '';
+  }
 
   // Quests
   const activeObjs = (gs.objectives || []).filter(o => o.active);
@@ -448,32 +496,33 @@ function renderMap(){
     return;
   }
 
-  // Quest descriptions (player's voice)
   const QUEST_DESC = {
-    main_money: 'Musím sehnat 2000 Kč a nastartovat tu zkurvenou Fábii. Jinak tu zkysnu navěky.',
-    main_rep: 'Hlavní cíl – sehnat klíče od Fábie, nastartovat a vypadnout z Křemže.',
-    main_cihalova: 'Číhalová se zase mohla posrat z toho, že jsem to s kratomem trochu přehnal a usnul. Teď je na mě dost nasraná a chce po mě, abych šel najít něco dobrého. Údajně by něco pro ní měl mít její kamarád, bezďák.',
-    side_krejci: 'Krejčí je v háji – někdo ji vydírá. Musím přijít na to kdo.',
-    side_figurova: 'Figurová chce, abych sledoval Milana. Špinavá práce, ale platí dobře.',
-    side_jana: 'Jana chce kratom. 20 gramů. Dodám, ona zaplatí.',
-    side_johnny: 'Johnny chce rande s Janou. Musím to domluvit.',
-    side_paja: 'Pája chce založit Betanu. Potřebuje moji pomoc.',
-    side_honza_ukol: 'Honza potřebuje komot z češtiny. Nějak to zařídím.',
-    quest_cihalova_burn: 'Zbavit se Číhalové. Trvale. Krb v hospodě vypadá jako dobrý nápad...',
-    quest_kgb: 'KGB a GRU agenti operují v Křemži. Musím je postřílet v minihře.',
-    quest_maturita: 'Maturita se blíží. Přežít za každou cenu.',
-    quest_saman_minulost: 'Šaman chce ingredience na elixír – bylinu, vodu a prach z pentagramu.',
-    quest_fabie: 'Mám klíče (nebo vím kde jsou). Nastartovat Fábii a vypadnout!',
+    main_money: 'Dva litry. To je všechno, co mě dělí od svobody. Měl bych začít makat a sehnat tu zkurvenou dvoutisícovku, jinak tu v tý Křemži zkysnu navěky.',
+    main_rep: 'Klíče od Fábie. To je mise číslo jedna. Asi bych měl obejít lidi a zjistit, kdo je má. Nastartovat, vypadnout, hotovo.',
+    main_cihalova: 'Číhalová se mohla posrat z toho, že jsem na hodině usnul po kratomu. Teď je dost nasraná a chce po mně, abych jí sehnal něco pěkného. Prej má její kámoš, ten bezďák, něco pro ní. Měl bych ho najít, než se úplně rozjede.',
+    side_krejci: 'Krejčí vypadá, že brečela. Někdo ji asi vydírá? Možná bych se měl zeptat, co se děje. Nebo ne. Ale platí fakt dobře...',
+    side_figurova: 'Figurová mě zastavila a chce, abych sledoval Milana. Špinavá práce pro učitelku, ale platí za to. Asi bych měl zjistit, co ten Milan dělá, a pak jí to donést.',
+    side_jana: 'Jana mi napsala, že chce kratom. 20 gramů. Dodám jí to a ona zaplatí. Kde ten kratom ale kurva seženu?',
+    side_johnny: 'Johnny chce rande s Janou. Jako fakt, ten bohatej sígr to myslí vážně. Měl bych to nějak domluvit, třeba z toho něco kápne.',
+    side_paja: 'Pája chce založit Betanu. Jako fakt, nějakej startup. Prej potřebuje moji pomoc. Co já vim o startupech? Ale říkal, že mi zaplatí, tak proč ne.',
+    side_honza_ukol: 'Honza potřebuje komot z češtiny, jinak propadne. Asi bych mu měl pomoct, je to kámoš. Ale kde seženu komot?',
+    quest_cihalova_burn: 'Dostal jsem od Matese pytel na odpadky, ještě trochu smrdí. Očekávej, že ti ještě někdy koupim démona ty zmrde! Možná bych ho ale mohl k něčemu využít? Ten krb v hospodě vypadá jako dobrý nápad...',
+    quest_kgb: 'Kurva, agenti KGB a GRU operujou přímo v Křemži?! Asi bych je měl postřílet, než nás tu všechny pozavíraj.',
+    quest_maturita: 'Maturita. Jak já to mám přežít? Neumim ani zapnout kalkulačku. Asi bych měl začít se učit... nebo ne.',
+    quest_saman_minulost: 'Ten šaman ode mě chce bylinu, vodu a prach z pentagramu. Jako fakt. Prach z pentagramu. Kde to kurva najdu? Měl bych se asi podívat po Cibulkově labu, koupelně a sklepě.',
+    quest_fabie: 'Mám klíče! Nebo aspoň vim, kde jsou. Zbývá jenom nastartovat tu Fábii a vypadnout z týhle díry!',
   };
 
   questsEl.innerHTML = activeObjs.map(o => {
     const desc = QUEST_DESC[o.id] || '';
     const expanded = gs._expandedQuest === o.id;
+    const clickHint = desc && !expanded ? ' · klikni pro detail' : '';
     return `<div class="map-quest ${o.done?'done':''} ${expanded?'expanded':''}" onclick="gs._expandedQuest=gs._expandedQuest==='${o.id}'?null:'${o.id}';renderMap()">
       <div class="map-quest-header">
-        <span class="map-quest-check">${o.done?'✅':'◇'}</span>
+        <span class="map-quest-check">${o.done?'✅':'◻'}</span>
         <span class="map-quest-tag">${o.tag}</span>
-        <span class="map-quest-text">${o.text}</span>
+        <span class="map-quest-text">${o.text}<span class="map-quest-hint">${clickHint}</span></span>
+        <span class="map-quest-expand">${desc ? (expanded ? '▾' : '▸') : ''}</span>
       </div>
       ${expanded && desc ? '<div class="map-quest-desc">"'+desc+'"</div>' : ''}
     </div>`;
@@ -494,7 +543,6 @@ function closeAllOverlays(){
   document.getElementById('screenshot-ov').classList.remove('on');
   document.getElementById('foto-kubatova-ov').classList.remove('on');
   document.getElementById('c2-cert-ov').classList.remove('on');
-  closeNotebook();
   document.getElementById('phone-ov').classList.remove('on');
   document.getElementById('kremzogram-ov').classList.remove('on');
   document.getElementById('quest-ov').classList.remove('on');

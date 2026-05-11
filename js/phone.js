@@ -1,12 +1,11 @@
 'use strict';
 // ═══════════════════════════════════════════
-//  TELEFON – SMS, Křemžogram, Deník
+//  TELEFON – SMS, Křemžogram
 // ═══════════════════════════════════════════
 
 const Phone = {
   messages: [],
   kremzogram: [],
-  diary: [],
   _unreadSms: 0,
   _unreadKg: 0,
   _activeTab: 'sms',
@@ -19,7 +18,6 @@ const Phone = {
   reset(){
     this.messages = [];
     this.kremzogram = [];
-    this.diary = [];
     this._unreadSms = 0;
     this._unreadKg = 0;
     this._activeTab = 'sms';
@@ -79,12 +77,6 @@ const Phone = {
     p.playerLiked = true;
     p.likes++;
     if(this.isOpen() && this._activeTab === 'kg') this._renderKg();
-  },
-
-  // ── Deník ────────────────────────────────
-  addDiary(title, text, tag, hint){
-    if(tag && this.diary.some(d => d.tag === tag)) return;
-    this.diary.push({ title, text, time: this._time(), tag: tag||null, hint: hint||null });
   },
 
   // ── Časované zprávy ─────────────────────
@@ -155,22 +147,21 @@ const Phone = {
     document.querySelectorAll('.phone-content').forEach(c => c.classList.toggle('active', c.id === 'phone-' + tab));
     if(tab === 'sms'){ this._unreadSms = 0; this._renderSms(); }
     if(tab === 'kg'){ this._unreadKg = 0; this._renderKg(); }
-    if(tab === 'diary') this._renderDiary();
     this._updateBadge();
   },
 
   // ── Klávesová navigace ──────────────────
   handleKey(key){
     if(!this.isOpen()) return false;
-    const tabs = ['sms','kg','diary'];
+    const tabs = ['sms','kg'];
     const ti = tabs.indexOf(this._activeTab);
 
     if(key === 'Tab' || key === 'ArrowRight'){
-      this.switchTab(tabs[(ti + 1) % 3]);
+      this.switchTab(tabs[(ti + 1) % 2]);
       return true;
     }
     if(key === 'shift+Tab' || key === 'ArrowLeft'){
-      this.switchTab(tabs[(ti + 2) % 3]);
+      this.switchTab(tabs[(ti + 2) % 2]);
       return true;
     }
 
@@ -218,14 +209,13 @@ const Phone = {
   _getActiveItems(){
     if(this._activeTab === 'sms') return this.messages.slice().reverse();
     if(this._activeTab === 'kg') return this.kremzogram.slice().reverse();
-    if(this._activeTab === 'diary') return this.diary.slice().reverse();
     return [];
   },
 
   _highlightSelected(){
     const container = document.getElementById('phone-' + this._activeTab);
     if(!container) return;
-    const items = container.querySelectorAll('.sms-msg, .kg-post, .diary-entry');
+    const items = container.querySelectorAll('.sms-msg, .kg-post');
     items.forEach((el, i) => {
       el.classList.toggle('phone-selected', i === this._selectedIdx);
       if(i === this._selectedIdx) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -284,20 +274,6 @@ const Phone = {
         `<div class="kg-likes ${heartCls}" ${heartClick}>❤️ ${p.likes}</div>` +
         cmts + '</div>';
     }).join('');
-  },
-
-  // ── Render Deník ────────────────────────
-  _renderDiary(){
-    const c = document.getElementById('phone-diary');
-    if(!this.diary.length){
-      c.innerHTML = '<div class="phone-empty">Deník je prázdný</div>';
-      return;
-    }
-    c.innerHTML = this.diary.slice().reverse().map((d, i) =>
-      `<div class="diary-entry${i === this._selectedIdx ? ' phone-selected' : ''}" data-idx="${i}">` +
-      `<div class="diary-head"><span class="diary-title">${d.title}</span><span class="sms-time">${d.time}</span></div>` +
-      `<div class="diary-body">${d.text}</div></div>`
-    ).join('');
   },
 
   _time(){

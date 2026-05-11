@@ -646,7 +646,7 @@
   <!-- Levý panel – log (skrytý) -->
   <div id="lpanel" style="display:none">
     <div class="pcard" id="logcard">
-      <div class="plabel">Deník událostí <span style="margin-left:auto; font-size: 8px; color:var(--muted2);">Úkoly [Q]</span></div>
+      <div class="plabel">Události <span style="margin-left:auto; font-size: 8px; color:var(--muted2);">Úkoly [Q]</span></div>
       <div id="logc"></div>
     </div>
   </div>
@@ -656,16 +656,22 @@
     <div id="objlist"></div>
   </div>
 
-  <!-- Map overlay (M key) -->
+  <!-- Map overlay (M key) – paper style -->
   <div id="map-ov">
-    <div id="map-ov-left">
-      <div id="map-ov-title">🗺 MAPA KŘEMŽE <span class="map-close-hint">[M] zavřít</span></div>
-      <div id="map-ov-canvas"></div>
-      <div id="map-ov-location"></div>
-    </div>
-    <div id="map-ov-right">
-      <div id="map-ov-quests-title">📋 ÚKOLY</div>
-      <div id="map-ov-quests"></div>
+    <div id="map-ov-paper">
+      <div id="map-ov-left">
+        <div id="map-ov-title">
+          <svg id="map-ov-logo" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="none" stroke="#d45500" stroke-width="2.5"/><polygon points="24,6 38,38 10,38" fill="none" stroke="#d45500" stroke-width="2"/><text x="24" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#d45500" font-family="serif">OA</text></svg>
+          MAPA <span class="map-close-hint">[M] zavřít</span>
+        </div>
+        <div id="map-ov-canvas"></div>
+        <div id="map-ov-location"></div>
+        <div id="map-ov-nav-hint"></div>
+      </div>
+      <div id="map-ov-right">
+        <div id="map-ov-quests-title">Úkoly</div>
+        <div id="map-ov-quests"></div>
+      </div>
     </div>
   </div>
 
@@ -690,7 +696,6 @@
       <div id="piko-badge" onclick="usePikoSelf()">💊 PIKO – použít? (SMRT)</div>
     </div>
   </div>
-  <div id="phone-hint-r">📱 [R] ZÁPISNÍK</div>
 
   <!-- Mapa lokací – pravý dolní roh -->
   <div id="map-card">
@@ -855,7 +860,6 @@
       <div id="pause-title">⏸ PAUZA</div>
       <button class="pause-btn" onclick="togglePause()">▶ Pokračovat</button>
       <button class="pause-btn" onclick="togglePause();toggleMap()">🗺 Mapa</button>
-      <button class="pause-btn" onclick="togglePause();toggleNotebook()">📝 Poznámky</button>
       <button class="pause-btn" id="stats-pause-btn" style="display:none" onclick="togglePause();openStats()">📊 Statistika</button>
       <button class="pause-btn" onclick="togglePause();openSettings()">⚙ Nastavení</button>
     </div>
@@ -906,17 +910,6 @@
   </div>
 
 
-</div>
-
-<!-- Zápisník overlay -->
-<div id="notebook-ov" onclick="closeNotebook()">
-  <div id="notebook-frame" onclick="event.stopPropagation()">
-    <div id="notebook-header">
-      <div id="notebook-title">📱 Fandův zápisník</div>
-      <div id="notebook-sub">Klávesa R · klikni ven pro zavření</div>
-    </div>
-    <div id="notebook-body"></div>
-  </div>
 </div>
 
 <!-- Note overlay -->
@@ -981,11 +974,9 @@
     <div id="phone-tabs">
       <div class="phone-tab active" data-tab="sms" onclick="Phone.switchTab('sms')">💬 Zprávy</div>
       <div class="phone-tab" data-tab="kg" onclick="Phone.switchTab('kg')">📸 Křemžogram</div>
-      <div class="phone-tab" data-tab="diary" onclick="Phone.switchTab('diary')">📓 Deník</div>
     </div>
     <div id="phone-sms" class="phone-content active"></div>
     <div id="phone-kg" class="phone-content"></div>
-    <div id="phone-diary" class="phone-content"></div>
   </div>
 </div>
 
@@ -1276,9 +1267,8 @@
 <script src="js/profile.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/config.js"></script>
-<script src="js/state.js"></script>
+<script src="js/state.js?v=2"></script>
 <script src="js/objectives.js"></script>
-<script src="js/notebook.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/inventory.js"></script>
 <script src="js/phone.js"></script>

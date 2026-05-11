@@ -208,8 +208,6 @@ function resetGameState(){
   gs.quests  = {};
   gs.visited = new Set(['ucebna']);
   gs.objectives = [];
-  gs.notebook = [];
-
   gs.ts                   = 0;
   gs.lastDrain            = 0;
   gs.won                  = false;
@@ -293,3 +291,8 @@ function getPrice(base){
   const mult = (typeof Settings !== 'undefined') ? Settings.getPriceMult() : 1;
   return Math.round(base * mult);
 }
+
+function addStoryEntry(){}
+function initNotebook(){}
+function toggleNotebook(){}
+function closeNotebook(){}
