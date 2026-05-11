@@ -206,7 +206,7 @@ function resetGameState(){
   gs.player  = { x:0, y:0, spd:4.4, face:'r', mv:false };
   gs.story   = {};
   gs.quests  = {};
-  gs.visited = new Set(['ucebna']);
+  gs.visited = new Set(['doma']);
   gs.objectives = [];
   gs.ts                   = 0;
   gs.lastDrain            = 0;

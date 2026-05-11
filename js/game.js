@@ -372,44 +372,6 @@ function checkProx(){
     if(dist2(p, {x:doorCX, y:doorCY}) < PROX_R * 1.5){ best = {isDoor:true}; }
   }
 
-  // Dveře v RORDER místnostech (levá/pravá strana)
-  const rIdx = RORDER.indexOf(gs.room);
-  if(rIdx >= 0){
-    const leftDoorX = 35, rightDoorX = canvas.width - 35, doorY = canvas.height * 0.5;
-    if(dist2(p, {x:leftDoorX, y:doorY}) < PROX_R * 2){
-      best = {isRoomDoor:true, doorDir:'prev', targetName: ROOMS[RORDER[(rIdx - 1 + 5) % 5]].name};
-    }
-    if(dist2(p, {x:rightDoorX, y:doorY}) < PROX_R * 2){
-      best = {isRoomDoor:true, doorDir:'next', targetName: ROOMS[RORDER[(rIdx + 1) % 5]].name};
-    }
-  }
-  // Dveře ze sklepa (zpět do Billy)
-  if(gs.room === 'sklep'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){ best = {isSlepExit:true}; }
-  }
-  // Dveře z koupelny (zpět do vily)
-  if(gs.room === 'koupelna'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){ best = {isKoupelnaExit:true}; }
-  }
-  // Dveře z Johnnyho vily (ven do Křemže)
-  if(gs.room === 'johnny_vila'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){
-      if(gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
-        best = {isVillaExitTrap:true};
-      } else {
-        best = {isVilaExit:true};
-      }
-    }
-  }
-  // Dveře ze stalking roomu
-  if(gs.room === 'johnny_stalking'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){ best = {isStalkerExit:true}; }
-  }
-
   // Artefakty na bustách doma – zobrazuj proximity hint jen pro vzatelné
   if(gs.room === 'doma' && activeProfile){
     const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
@@ -541,16 +503,6 @@ function checkProx(){
       document.getElementById('ptxt').textContent = '💧 Nabrat vodu z umyvadla';
     } else if(best.isElixirPrach){
       document.getElementById('ptxt').textContent = '✨ Sebrat prach z pentagramu';
-    } else if(best.isRoomDoor){
-      document.getElementById('ptxt').textContent = '🚪 Jít do: ' + best.targetName;
-    } else if(best.isSlepExit){
-      document.getElementById('ptxt').textContent = '🚪 Zpět do Billy';
-    } else if(best.isKoupelnaExit){
-      document.getElementById('ptxt').textContent = '🚪 Zpět do vily';
-    } else if(best.isVilaExit){
-      document.getElementById('ptxt').textContent = '🚪 Odejít z vily';
-    } else if(best.isStalkerExit){
-      document.getElementById('ptxt').textContent = '🚪 Zpět do vily';
     } else if(best.isItem){
       document.getElementById('ptxt').textContent = best.type === 'kratom' ? 'Sebrat kratom' : 'Sebrat pizza žemli';
     } else {
@@ -882,103 +834,6 @@ function interact(){
         `<button class="db" onclick="closeDialog()">Ještě ne</button>`;
       document.getElementById('dov').classList.add('on');
       return;
-    }
-  }
-
-  // Dveře v RORDER místnostech (levá/pravá)
-  const rIdx2 = RORDER.indexOf(gs.room);
-  if(rIdx2 >= 0){
-    const leftDoorX = 35, rightDoorX = canvas.width - 35, doorY = canvas.height * 0.5;
-    if(dist2(gs.player, {x:leftDoorX, y:doorY}) < PROX_R * 2){
-      if(!gs.story.intro_done && gs.room === 'ucebna'){
-        addLog('Je hodina, nemůžeš odejít. Zkus promluvit s nějakou z učitelek.', 'lw');
-        return;
-      }
-      changeRoom('prev'); return;
-    }
-    if(dist2(gs.player, {x:rightDoorX, y:doorY}) < PROX_R * 2){
-      if(!gs.story.intro_done && gs.room === 'ucebna'){
-        addLog('Je hodina, nemůžeš odejít. Zkus promluvit s nějakou z učitelek.', 'lw');
-        return;
-      }
-      changeRoom('next'); return;
-    }
-  }
-  // Sklep → Billa
-  if(gs.room === 'sklep'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(gs.player, {x:exitX, y:exitY}) < PROX_R * 1.5){
-      changeRoom('down'); return;
-    }
-  }
-  // Koupelna → vila
-  if(gs.room === 'koupelna'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(gs.player, {x:exitX, y:exitY}) < PROX_R * 1.5){
-      gs.room = 'johnny_vila'; initRoom(canvas.width * 0.90, canvas.height * 0.40); return;
-    }
-  }
-  // Johnnyho vila → Křemže
-  if(gs.room === 'johnny_vila'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(gs.player, {x:exitX, y:exitY}) < PROX_R * 1.5){
-      // Sad Johnny trap handled separately (isVillaExitTrap)
-      if(gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
-        runQF('q_johnny_knee_shot'); return;
-      }
-      // Villa exit quest logic
-      if(gs.story.johnny_villa_rewards && !gs.story.johnny_return_left){
-        gs.story.johnny_return_left = true;
-      }
-      if(gs.johnny_stay_deadline > 0) gs.johnny_stay_deadline = 0;
-      if(gs.jana_escape_deadline && gs.ts < gs.jana_escape_deadline && !gs.story.jana_escaped_success){
-        gs.story.jana_escaped_success = true;
-        gs.jana_escape_deadline = 0;
-        gs.johnny_chase_pos = null;
-        setTimeout(() => {
-          addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
-          if(gs.story.leg_shot){
-            setTimeout(() => {
-              addLog('*Jana si všimne krve na nohavici.* "Ježíši, on tě trefil! Sedni si."', 'lw');
-              setTimeout(() => {
-                addLog('*Jana ti strhne kus látky z košile a pevně ovine nohu.*', 'lm');
-                fnotif('🩹 Jana obvázala nohu', 'pos');
-                gs.story.leg_bandaged = true;
-              }, 1500);
-            }, 1200);
-          }
-          gainRep(12, 'Utekl s Janou z Johnnyho vily');
-          gs.inv.klice_vila = 1; updateInv();
-          gs.story.jana_rescued_villa = true;
-          gs.story.johnny_villa_done = true;
-          doneObj('side_johnny');
-          fnotif('+12 REP','rep'); fnotif('Jana zachráněna 💅','pos'); fnotif('🔑 Klíče od vily','itm');
-          addLog('Jana se vydá do Billy. Můžeš ji tam potkat.', 'ls');
-        }, 800);
-      } else if(gs.jana_escape_deadline && !gs.story.jana_escaped_success){
-        gs.jana_escape_deadline = 0;
-      }
-      if(gs.story.shisha_smoked && !gs.shisha_effects && !gs.shisha_cured && !gs.story.jana_escaped_success){
-        gs.shisha_effects = true;
-        const _dtm = (typeof Settings !== 'undefined') ? Settings.getDeathTimerMult() : 1;
-        gs.shisha_deadline = gs.ts + 300000 * _dtm;
-        setTimeout(() => {
-          addLog('*Hlavou ti projede ostrá bolest. Svět se roztřese.* Ty účinky z tý šíši...', 'lw');
-          screenShake(300);
-          setTimeout(() => {
-            addLog('*Žaludek se ti obrací. Vidíš dvojitě.* Toto není normální šíša. Milan to vzal bůhvíkde...', 'lw');
-            fnotif('⚠ OTRAVA ŠÍŠOU – najdi protilék!', 'rep');
-          }, 1500);
-        }, 800);
-      }
-      gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.60); return;
-    }
-  }
-  // Stalking room → vila
-  if(gs.room === 'johnny_stalking'){
-    const exitX = canvas.width * 0.5, exitY = canvas.height - 35;
-    if(dist2(gs.player, {x:exitX, y:exitY}) < PROX_R * 1.5){
-      gs.room = 'johnny_vila'; initRoom(canvas.width * 0.10, canvas.height * 0.55); return;
     }
   }
 
@@ -1383,34 +1238,79 @@ function update(dt){
   if(gs.room === 'johnny_vila'){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
-    p.y = Math.max(30, Math.min(H2 - 30, p.y));
+    p.y = Math.max(30, p.y);
+    if(gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
+      const exitX = W2 * 0.5, exitY = H2 * 0.92;
+      if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){ p.y = Math.min(p.y, H2 * 0.92); }
+    }
+    if(p.y > H2){
+      if(gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
+        p.y = H2 - 5; return;
+      }
+      if(gs.story.johnny_villa_rewards && !gs.story.johnny_return_left) gs.story.johnny_return_left = true;
+      if(gs.johnny_stay_deadline > 0) gs.johnny_stay_deadline = 0;
+      if(gs.jana_escape_deadline && gs.ts < gs.jana_escape_deadline && !gs.story.jana_escaped_success){
+        gs.story.jana_escaped_success = true; gs.jana_escape_deadline = 0; gs.johnny_chase_pos = null;
+        setTimeout(() => {
+          addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
+          if(gs.story.leg_shot){
+            setTimeout(() => { addLog('*Jana si všimne krve na nohavici.* "Ježíši, on tě trefil! Sedni si."', 'lw');
+              setTimeout(() => { addLog('*Jana ti strhne kus látky z košile a pevně ovine nohu.*', 'lm'); fnotif('🩹 Jana obvázala nohu', 'pos'); gs.story.leg_bandaged = true; }, 1500);
+            }, 1200);
+          }
+          gainRep(12, 'Utekl s Janou z Johnnyho vily'); gs.inv.klice_vila = 1; updateInv();
+          gs.story.jana_rescued_villa = true; gs.story.johnny_villa_done = true; doneObj('side_johnny');
+          fnotif('+12 REP','rep'); fnotif('Jana zachráněna 💅','pos'); fnotif('🔑 Klíče od vily','itm');
+          addLog('Jana se vydá do Billy. Můžeš ji tam potkat.', 'ls');
+        }, 800);
+      } else if(gs.jana_escape_deadline && !gs.story.jana_escaped_success){ gs.jana_escape_deadline = 0; }
+      if(gs.story.shisha_smoked && !gs.shisha_effects && !gs.shisha_cured && !gs.story.jana_escaped_success){
+        gs.shisha_effects = true;
+        const _dtm = (typeof Settings !== 'undefined') ? Settings.getDeathTimerMult() : 1;
+        gs.shisha_deadline = gs.ts + 300000 * _dtm;
+        setTimeout(() => { addLog('*Hlavou ti projede ostrá bolest. Svět se roztřese.* Ty účinky z tý šíši...', 'lw'); screenShake(300);
+          setTimeout(() => { addLog('*Žaludek se ti obrací. Vidíš dvojitě.* Toto není normální šíša. Milan to vzal bůhvíkde...', 'lw'); fnotif('⚠ OTRAVA ŠÍŠOU – najdi protilék!', 'rep'); }, 1500);
+        }, 800);
+      }
+      gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.60); return;
+    }
   } else if(gs.room === 'koupelna'){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
-    p.y = Math.max(30, Math.min(H2 - 30, p.y));
+    p.y = Math.max(30, p.y);
+    if(p.y > H2){ gs.room = 'johnny_vila'; initRoom(canvas.width * 0.90, canvas.height * 0.40); return; }
   } else if(gs.room === 'sklep'){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
-    p.y = Math.max(30, Math.min(H2 - 30, p.y));
+    p.y = Math.max(30, p.y);
+    if(p.y > H2) { changeRoom('down'); return; }
   } else if(gs.room === 'johnny_stalking'){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(H2 * 0.35, Math.min(H2 - 30, p.y));
+    if(p.y >= H2 - 35){ gs.room = 'johnny_vila'; initRoom(canvas.width * 0.10, canvas.height * 0.55); return; }
   } else if(gs.room === 'cibulka_lab'){
-    // Cibulkova laboratoř – pohyb omezen, exit pouze krbem (interakce)
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(canvas.height * 0.52, Math.min(H2 - 30, p.y));
   } else if(gs.room === 'doma'){
     const W2 = canvas.width, H2 = canvas.height;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
-    p.y = Math.max(30, Math.min(H2 - 30, p.y));
+    p.y = Math.max(30, p.y);
+    if(p.y < 0){ changeRoom('up'); return; }
+    if(p.y > H2) p.y = H2;
   } else if(gs.room !== 'heaven' && gs.room !== 'heaven_gate'){
-    // All rooms: clamp player inside bounds, exits via action button only
-    p.x = Math.max(30, Math.min(canvas.width - 30, p.x));
-    p.y = Math.max(30, Math.min(canvas.height - 30, p.y));
+    // RORDER rooms: left/right edge = room change, top/bottom blocked
+    // Intro quest: can't leave učebna until talking to teacher
+    if(!gs.story.intro_done && gs.room === 'ucebna'){
+      p.x = Math.max(30, Math.min(canvas.width - 30, p.x));
+      p.y = Math.max(30, Math.min(canvas.height - 30, p.y));
+    } else {
+      if(p.x < 0)             { changeRoom('prev'); return; }
+      if(p.x > canvas.width)  { changeRoom('next'); return; }
+      p.y = Math.max(30, Math.min(canvas.height - 30, p.y));
+    }
   } else {
-    // V nebi – vlevo/vpravo zamknout, nahoru/dolů přepnout místnost
     p.x = Math.max(0, Math.min(canvas.width, p.x));
     if(p.y < 0)             { changeRoom('up');   return; }
     if(p.y > canvas.height) { changeRoom('down'); return; }

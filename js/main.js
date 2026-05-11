@@ -398,19 +398,20 @@ function renderMap(){
 
   // Main ring: RORDER cycle with positions along a horizontal path
   const MAIN = [
-    {id:'ucebna',  x:10, y:40, label:'Učebna',   icon:'✏️'},
-    {id:'billa',   x:30, y:40, label:'Billa',     icon:'🛒'},
-    {id:'hospoda', x:50, y:40, label:'Hospoda',   icon:'🍺'},
-    {id:'ulice',   x:70, y:40, label:'Ulice',     icon:'🌆'},
-    {id:'kremze',  x:90, y:40, label:'Křemže',    icon:'🏠'},
+    {id:'ucebna',  x:10, y:45, label:'Učebna',   icon:'✏️'},
+    {id:'billa',   x:30, y:45, label:'Billa',     icon:'🛒'},
+    {id:'hospoda', x:50, y:45, label:'Hospoda',   icon:'🍺'},
+    {id:'ulice',   x:70, y:45, label:'Ulice',     icon:'🌆'},
+    {id:'kremze',  x:90, y:45, label:'Křemže',    icon:'🏠'},
   ];
   // Branch rooms that connect off the main path
   const BRANCHES = [
-    {id:'doma',        x:90, y:15, label:'Doma',         icon:'🏡', parent:'kremze'},
-    {id:'sklep',       x:30, y:68, label:'Sklep',        icon:'🕯️', parent:'billa'},
-    {id:'johnny_vila', x:90, y:65, label:'Johnnyho vila', icon:'🏠', parent:'kremze'},
-    {id:'koupelna',    x:90, y:82, label:'Koupelna',     icon:'🚿', parent:'johnny_vila'},
-    {id:'cibulka_lab', x:50, y:68, label:'Cibulkova lab', icon:'🔬', parent:'hospoda'},
+    {id:'doma',        x:82, y:18, label:'Doma',         icon:'🏡', parent:'kremze'},
+    {id:'sklep',       x:22, y:72, label:'Sklep',        icon:'🕯️', parent:'billa'},
+    {id:'johnny_vila', x:78, y:72, label:'Vila', icon:'🏠', parent:'kremze'},
+    {id:'koupelna',    x:92, y:85, label:'Koupelna',     icon:'🚿', parent:'johnny_vila'},
+    {id:'cibulka_lab', x:42, y:72, label:'Lab',  icon:'🔬', parent:'hospoda'},
+    {id:'johnny_stalking', x:62, y:72, label:'Tajná m.', icon:'📡', parent:'ulice'},
   ];
   const ALL = [...MAIN, ...BRANCHES];
   const pen = '#3a2a10';
@@ -438,8 +439,8 @@ function renderMap(){
       svg += `<text x="${mx}" y="${my+4}" text-anchor="middle" font-size="2.5" fill="${col}">←</text>`;
     } else {
       // Wrap-around: kremze → ucebna (drawn as a curve going above)
-      svg += `<path d="M${b.x},${b.y-3} Q${95},${12} ${50},${10} Q${5},${12} ${a.x},${a.y-3}" fill="none" stroke="${col}" stroke-width=".3" stroke-dasharray=".8,.6"/>`;
-      svg += `<text x="50" y="8" text-anchor="middle" font-size="2" fill="${col}" font-style="italic">cyklus</text>`;
+      svg += `<path d="M${a.x},${a.y-4} Q${95},${8} ${50},${6} Q${5},${8} ${b.x},${b.y-4}" fill="none" stroke="${col}" stroke-width=".3" stroke-dasharray=".8,.6"/>`;
+      svg += `<text x="50" y="4" text-anchor="middle" font-size="2" fill="${col}" font-style="italic">cyklus</text>`;
     }
   }
 
@@ -486,7 +487,13 @@ function renderMap(){
     const rightRoom = ROOMS[RORDER[(idx + 1) % 5]];
     navHint.innerHTML = `← ${leftRoom.name} &nbsp;|&nbsp; ${rightRoom.name} →`;
   } else {
-    navHint.innerHTML = '';
+    const br = BRANCHES.find(b => b.id === gs.room);
+    if(br){
+      const parentRm = ROOMS[br.parent];
+      navHint.innerHTML = `↩ Zpět: ${parentRm ? parentRm.name : br.parent}`;
+    } else {
+      navHint.innerHTML = '';
+    }
   }
 
   // Quests
