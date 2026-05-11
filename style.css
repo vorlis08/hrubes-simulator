@@ -10,8 +10,22 @@
 *{margin:0;padding:0;box-sizing:border-box}
 .game-paused *{animation-play-state:paused!important}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);color:#fff;font-family:var(--fb)}
-#gc{position:relative;width:100vw;height:100vh}
-canvas{display:block;width:100vw;height:100vh}
+#gc{position:relative;width:100vw;height:100vh;max-width:1400px;margin:0 auto}
+canvas{display:block;width:100%;height:100%}
+@media(min-width:1401px){
+  html,body{display:flex;align-items:center;justify-content:center}
+  #gc{height:calc(100vw * 9 / 16);max-height:100vh}
+}
+
+/* ── Touch controls ─────────────────────────────────────────────────── */
+#touch-controls{display:none;position:fixed;bottom:0;left:0;right:0;height:180px;z-index:500;pointer-events:none}
+.touch-show #touch-controls{display:block}
+#touch-joystick{position:absolute;left:30px;bottom:30px;width:130px;height:130px;pointer-events:auto}
+#joy-base{width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15)}
+#joy-knob{position:absolute;left:40px;top:40px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.25);transition:none}
+#touch-buttons{position:absolute;right:20px;bottom:30px;display:flex;gap:12px;pointer-events:auto}
+.touch-btn{width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:13px;font-family:var(--fb);font-weight:600;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none}
+.touch-btn:active{background:rgba(255,255,255,.22)}
 
 @keyframes tripCanvas{
   0%  {filter:hue-rotate(0deg)   saturate(4)contrast(1.55)brightness(1.2)}

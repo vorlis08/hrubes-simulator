@@ -215,6 +215,69 @@ document.addEventListener('visibilitychange', () => {
   if(document.hidden) for(const k in keys) keys[k] = false;
 });
 
+// ─── Touch ovládání (tablet/mobil) ──────────────────────────────────────
+(function initTouch(){
+  const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if(!isTouchDevice) return;
+  document.body.classList.add('touch-show');
+
+  const joystick = document.getElementById('touch-joystick');
+  const knob = document.getElementById('joy-knob');
+  if(!joystick || !knob) return;
+
+  const BASE_R = 65, KNOB_R = 25, DEAD = 12;
+  let joyActive = false, joyId = null, baseX = 0, baseY = 0;
+
+  joystick.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    joyActive = true;
+    joyId = t.identifier;
+    const rect = joystick.getBoundingClientRect();
+    baseX = rect.left + BASE_R;
+    baseY = rect.top + BASE_R;
+  }, {passive:false});
+
+  window.addEventListener('touchmove', e => {
+    if(!joyActive) return;
+    for(const t of e.changedTouches){
+      if(t.identifier !== joyId) continue;
+      let dx = t.clientX - baseX, dy = t.clientY - baseY;
+      const dist = Math.hypot(dx, dy);
+      const maxDist = BASE_R - KNOB_R;
+      if(dist > maxDist){ dx = dx/dist*maxDist; dy = dy/dist*maxDist; }
+      knob.style.left = (BASE_R - KNOB_R + dx) + 'px';
+      knob.style.top  = (BASE_R - KNOB_R + dy) + 'px';
+      keys['a'] = dx < -DEAD;
+      keys['d'] = dx > DEAD;
+      keys['w'] = dy < -DEAD;
+      keys['s'] = dy > DEAD;
+    }
+  }, {passive:true});
+
+  function resetJoy(){
+    joyActive = false; joyId = null;
+    knob.style.left = (BASE_R - KNOB_R) + 'px';
+    knob.style.top  = (BASE_R - KNOB_R) + 'px';
+    keys['w'] = keys['s'] = keys['a'] = keys['d'] = false;
+  }
+  window.addEventListener('touchend', e => {
+    for(const t of e.changedTouches){ if(t.identifier === joyId) resetJoy(); }
+  });
+  window.addEventListener('touchcancel', resetJoy);
+
+  const btnMap = {
+    'tb-interact': () => { const px = document.getElementById('prox'); if(px && px.classList.contains('show')) interact(); else if(typeof Inventory !== 'undefined') Inventory.toggle(); },
+    'tb-inv': () => { if(typeof Inventory !== 'undefined') Inventory.toggle(); },
+    'tb-map': () => { if(gs.running && !gs.dead && gs.story.map_unlocked) toggleMap(); },
+    'tb-phone': () => { togglePhone(); }
+  };
+  for(const [id, fn] of Object.entries(btnMap)){
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('touchstart', e => { e.preventDefault(); fn(); }, {passive:false});
+  }
+})();
+
 // ─── Pauza ──────────────────────────────────────────────────────────────
 function togglePause(){
   if(gs._paused){

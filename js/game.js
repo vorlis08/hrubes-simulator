@@ -17,10 +17,13 @@ function resize(){
   const s = _getQualityScale();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const scale = s * (s < 1 ? 1 : dpr);
-  canvas.width = Math.floor(innerWidth * scale);
-  canvas.height = Math.floor(innerHeight * scale);
-  canvas.style.width = innerWidth + 'px';
-  canvas.style.height = innerHeight + 'px';
+  const gc = document.getElementById('gc');
+  const w = gc.clientWidth || innerWidth;
+  const h = gc.clientHeight || innerHeight;
+  canvas.width = Math.floor(w * scale);
+  canvas.height = Math.floor(h * scale);
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
   if(s < 1) canvas.style.imageRendering = 'auto';
   else canvas.style.imageRendering = '';
   gradientCache.clear();
