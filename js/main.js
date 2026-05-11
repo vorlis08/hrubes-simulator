@@ -150,8 +150,20 @@ window.addEventListener('keydown', e => {
 
   if(nk === 'Escape'){
     e.preventDefault();
-    if(Phone.isOpen()){ closePhone(); }
-    else { closeAllOverlays(); }
+    if(Phone.isOpen()){ closePhone(); return; }
+    // Check if any overlay is open
+    const anyOpen = ['dov','riddle-ov','note-ov','screenshot-ov','foto-kubatova-ov',
+      'c2-cert-ov','phone-ov','kremzogram-ov','quest-ov']
+      .some(id => document.getElementById(id)?.classList.contains('on'))
+      || (typeof Inventory !== 'undefined' && Inventory.isOpen())
+      || document.getElementById('notebook-ov')?.classList.contains('on');
+    if(anyOpen){
+      closeAllOverlays();
+    } else if(gs.running && !gs.dead){
+      togglePause();
+    } else if(gs._paused){
+      togglePause();
+    }
     return;
   }
 
@@ -191,6 +203,21 @@ window.addEventListener('blur', () => {
 document.addEventListener('visibilitychange', () => {
   if(document.hidden) for(const k in keys) keys[k] = false;
 });
+
+// ─── Pauza ──────────────────────────────────────────────────────────────
+function togglePause(){
+  if(gs._paused){
+    gs._paused = false;
+    gs.running = true;
+    lastTime = performance.now();
+    document.getElementById('pause-ov').classList.remove('on');
+    requestAnimationFrame(gameLoop);
+  } else {
+    gs._paused = true;
+    gs.running = false;
+    document.getElementById('pause-ov').classList.add('on');
+  }
+}
 
 // ─── Safety: Escape zavře VŠECHNY overlaye ─────────────────────────────
 function closeAllOverlays(){

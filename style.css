@@ -873,6 +873,18 @@ canvas.elixir-trip{animation:elixirTrip 3s infinite}
 .pocket-hud-slot .inv-qty{font-size:9px}
 .pocket-hud-slot .inv-lbl{font-size:6px}
 
+/* ── Pause overlay ────────────────────────────────────────────────── */
+#pause-ov{position:fixed;inset:0;z-index:850;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(2,3,8,0.92);backdrop-filter:blur(12px)}
+#pause-ov.on{display:flex}
+#pause-wrap{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+#pause-title{font-family:var(--fd);font-size:36px;letter-spacing:6px;color:var(--gold)}
+.pause-btn{padding:10px 32px;border:1px solid rgba(240,192,64,.25);border-radius:8px;
+  background:rgba(240,192,64,.06);color:var(--gold);font-family:var(--fd);font-size:16px;
+  letter-spacing:2px;cursor:pointer;transition:all .15s;width:200px}
+.pause-btn:hover{background:rgba(240,192,64,.15);border-color:var(--gold)}
+
 /* ── Dialog keyboard focus ─────────────────────────────────────────── */
 .db.kb-focus{border-color:var(--gold)!important;box-shadow:0 0 12px rgba(240,192,64,.2);
   outline:2px solid var(--gold);outline-offset:2px}
