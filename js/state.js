@@ -232,9 +232,33 @@ function resetGameState(){
 
 function gainRep(amount, reason){
   if(amount <= 0) return;
-  gs.rep += amount;
+  const mult = (typeof Settings !== 'undefined') ? Settings.getRepMult() : 1;
+  const actual = Math.max(1, Math.round(amount * mult));
+  gs.rep += actual;
   updateHUD();
-  if(reason) addLog(`+${amount} REP: ${reason}`, 'lr');
-  fnotif(`+${amount} REP`, 'rep');
+  if(reason) addLog(`+${actual} REP: ${reason}`, 'lr');
+  fnotif(`+${actual} REP`, 'rep');
   if(gs.money >= 2000) doneObj('main_money');
+}
+
+function earnMoney(base){
+  const mult = (typeof Settings !== 'undefined') ? Settings.getRewardMult() : 1;
+  const actual = Math.round(base * mult);
+  gs.money += actual;
+  updateHUD();
+  return actual;
+}
+
+function payMoney(base){
+  const mult = (typeof Settings !== 'undefined') ? Settings.getPriceMult() : 1;
+  const actual = Math.round(base * mult);
+  if(gs.money < actual) return 0;
+  gs.money -= actual;
+  updateHUD();
+  return actual;
+}
+
+function getPrice(base){
+  const mult = (typeof Settings !== 'undefined') ? Settings.getPriceMult() : 1;
+  return Math.round(base * mult);
 }

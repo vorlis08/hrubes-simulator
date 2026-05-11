@@ -1268,7 +1268,8 @@ function update(dt){
       // Šíša efekty – aktivují se po odchodu z vily
       if(gs.story.shisha_smoked && !gs.shisha_effects && !gs.shisha_cured && !gs.story.jana_escaped_success){
         gs.shisha_effects = true;
-        gs.shisha_deadline = gs.ts + 300000; // 5 minut
+        const _dtm = (typeof Settings !== 'undefined') ? Settings.getDeathTimerMult() : 1;
+        gs.shisha_deadline = gs.ts + 300000 * _dtm;
         setTimeout(() => {
           addLog('*Hlavou ti projede ostrá bolest. Svět se roztřese.* Ty účinky z tý šíši...', 'lw');
           screenShake(300);

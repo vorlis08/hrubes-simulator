@@ -42,9 +42,9 @@ const QF = {
     gs.cihalova_deadline = 0;
     gs.cihalova_collapsed = true;
     gs.cihalova_overdose_dead = true;
-    gs.money += 800; updateHUD();
+    const _r1 = earnMoney(800);
     addLog('Podal jsi Číhalové celou dávku naráz. "Díky, Hrubeš..." *polkne*', 'lw');
-    fnotif('+800 Kč','pos');
+    fnotif(`+${_r1} Kč`,'pos');
     doneObj('main_cihalova');
     closeDialog();
     setTimeout(() => {
@@ -64,7 +64,7 @@ const QF = {
   q_cihalova_deliver(){
     if(!gs.inv.piko){ addLog('Nemáš piko!','lw'); closeDialog(); return; }
     gs.inv.piko          = 0; updateInv();
-    gs.money            += 800;
+    earnMoney(800);
     gs.story.cihalova    = 2;
     gs.cihalova_collapsed = true;
     gs.cihalova_deadline  = 0;
@@ -106,11 +106,11 @@ const QF = {
   },
   q_krejci_reward(){
     if(!gs.story.krejci_resolved){ addLog('Ještě jsi nic nevyřídil.','lw'); closeDialog(); return; }
-    gs.money += 300; updateHUD();
+    const _rk = earnMoney(300);
     gs.story.krejci = 2;
     gainRep(4, 'Ochránil Krejčí před vydíráním');
-    addLog('Krejčí: +300 Kč 💰', 'lm');
-    fnotif('+300 Kč','pos'); doneObj('side_krejci');
+    addLog(`Krejčí: +${_rk} Kč 💰`, 'lm');
+    fnotif(`+${_rk} Kč`,'pos'); doneObj('side_krejci');
     addStoryEntry('krejci', 'Vyřešil jsem vydírání Krejčí. Odměna 300 Kč.', '✅');
     updateHUD(); closeDialog();
   },
@@ -134,10 +134,10 @@ const QF = {
   },
   q_figurova_reward(){
     if(gs.story.figurova >= 2){ closeDialog(); return; }
-    gs.money += 400; gs.story.figurova = 2;
+    const _rf = earnMoney(400); gs.story.figurova = 2;
     gainRep(5, 'Prošpehoval Milana pro Figurovou');
-    addLog('Figurová: absence smazány + 400 Kč 💰', 'lm');
-    fnotif('+400 Kč','pos'); fnotif('+5 REP','rep');
+    addLog(`Figurová: absence smazány + ${_rf} Kč 💰`, 'lm');
+    fnotif(`+${_rf} Kč`,'pos'); fnotif('+5 REP','rep');
     doneObj('side_figurova'); updateHUD(); closeDialog();
   },
   q_figurova_cert(){
@@ -209,7 +209,7 @@ const QF = {
     const milanGone = gs.story.milan_shot || gs.story.milan_voodoo_dead;
     if(!gs.story.mates_dead || !milanGone){ closeDialog(); return; }
     gs.story.figurova_dark_done = true;
-    gs.money += 3000; updateHUD();
+    earnMoney(3000);
     if(gs.inv.milan_phone){ gs.inv.milan_phone = 0; updateInv(); }
     gs.story.fabie_promised = true;
     // Figurová dá svoje klíčky – jsou ale falešné (neotevřou Fandovu Fábii)
@@ -287,7 +287,7 @@ const QF = {
   },
   q_jana_deliver(){
     if(gs.inv.kratom < 20){ addLog('Nemáš dost kratomu! (20g)','lw'); closeDialog(); return; }
-    gs.inv.kratom -= 20; gs.money += 200; gs.story.jana = 2;
+    gs.inv.kratom -= 20; earnMoney(200); gs.story.jana = 2;
     updateInv(); updateHUD();
     gainRep(10, 'Zachránil jsi Janu z únavy');
     addLog('Jana dostala kratom. +200 Kč 💰', 'lm');
@@ -306,23 +306,28 @@ const QF = {
     });
   },
   q_jana_buy_zemle(){
-    if(gs.money < 35){ addLog('Nemáš 35 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 35; gs.inv.zemle++; updateInv(); updateHUD();
+    const _p = getPrice(35);
+    if(gs.money < _p){ addLog(`Nemáš ${_p} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(35); gs.inv.zemle++; updateInv();
     addLog('Koupil jsi pizza žemli v Bille. 🍕','ls');
     fnotif('+1 🍕','itm'); closeDialog();
   },
   // ─── Lenka – záskok za Janu v Bille ──────────────────────────────────────
   q_lenka_zemle(){
-    if(gs.money < 35){ addLog('Nemáš 35 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 35; gs.inv.zemle++; updateInv(); updateHUD();
+    const _p = getPrice(35);
+    if(gs.money < _p){ addLog(`Nemáš ${_p} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(35); gs.inv.zemle++; updateInv();
     addLog('Lenka ti prodala pizza žemli. 🍕','ls');
     fnotif('+1 🍕','itm'); closeDialog();
   },
   q_lenka_margherita(){
-    if(gs.money < 80){ addLog('Nemáš 80 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 80; updateHUD();
-    const gain = Math.min(45, 100 - gs.energy);
-    gs.energy = Math.min(100, gs.energy + 45);
+    const _pm = getPrice(80);
+    if(gs.money < _pm){ addLog(`Nemáš ${_pm} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(80);
+    const _zg = (typeof Settings !== 'undefined') ? Settings.getZemleGain() : 30;
+    const mgGain = Math.round(_zg * 1.5);
+    const gain = Math.min(mgGain, 100 - gs.energy);
+    gs.energy = Math.min(100, gs.energy + mgGain);
     addLog(`🍕 Lenka ti ohřála margheritu. +${gain} energie`, 'ls');
     fnotif(`+${gain} ⚡`,'pos'); closeDialog();
   },
@@ -362,8 +367,9 @@ const QF = {
     }, 3000);
   },
   q_mates_pivo(){
-    if(gs.money < 100){ addLog('Nemáš 100 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 100; gs.story.mates = (gs.story.mates || 0) + 1;
+    const _ppivo = getPrice(100);
+    if(gs.money < _ppivo){ addLog(`Nemáš ${_ppivo} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(100); gs.story.mates = (gs.story.mates || 0) + 1;
     gainRep(2, 'Koupil Matesovi démona');
     addLog('Koupil jsi Matesovi démona. 🍺', 'ls');
     updateHUD(); closeDialog();
@@ -387,8 +393,9 @@ const QF = {
   q_mates_pytel(){
     if(!gs.cihalova_collapsed){ addLog('Číhalová ještě neleží.','lw'); closeDialog(); return; }
     if(gs.cihalova_in_bag){ addLog('Číhalová už v pytli je.','lw'); closeDialog(); return; }
-    if(gs.money < 50){ addLog('Nemáš 50 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 50; gs.inv.pytel = 1; updateInv(); updateHUD();
+    const _ppyt = getPrice(50);
+    if(gs.money < _ppyt){ addLog(`Nemáš ${_ppyt} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(50); gs.inv.pytel = 1; updateInv();
     addLog('Koupil jsi pytel na odpadky od Matese. 🗑️', 'lm');
     fnotif('🗑️ +1 pytel','itm');
     closeDialog();
@@ -402,10 +409,10 @@ const QF = {
   },
   q_honza_ukol_reward(){
     if(!gs.story.honza_ukol_done){ closeDialog(); return; }
-    gs.money += 200; updateHUD();
+    const _rh = earnMoney(200);
     gainRep(6, 'Honzův domácí úkol zařízený');
-    addLog('Honza: "Ty jsi borec, Fanda. Upřímně." +200 Kč 💰', 'lm');
-    fnotif('+400 Kč', 'pos');
+    addLog(`Honza: "Ty jsi borec, Fanda. Upřímně." +${_rh} Kč 💰`, 'lm');
+    fnotif(`+${_rh} Kč`, 'pos');
     doneObj('side_honza_ukol');
     gs.story.honza_ukol_rewarded = true;
     closeDialog();
@@ -459,15 +466,15 @@ const QF = {
       }
       // Tajný časovač – pokud hráč nepomůže do 60s, Johnny a Jana zmizí do vily
       gs.story.villa_timer = true;
-      gs.villa_deadline = gs.ts + 60000;
+      gs.villa_deadline = gs.ts + 60000 * ((typeof Settings !== 'undefined') ? Settings.getDeathTimerMult() : 1);
     }, 30000);
   },
   q_johnny_reward(){
     if(gs.story.johnny >= 3){ closeDialog(); return; }
-    gs.money += 300; gs.story.johnny = 3;
+    const _rj = earnMoney(300); gs.story.johnny = 3;
     gainRep(6, 'Dohodil Johnnymu rande');
-    addLog('Johnny: "Jsi bůh." +300 Kč 💰', 'lm');
-    fnotif('+300 Kč','pos');
+    addLog(`Johnny: "Jsi bůh." +${_rj} Kč 💰`, 'lm');
+    fnotif(`+${_rj} Kč`,'pos');
     doneObj('side_johnny'); updateHUD(); closeDialog();
   },
   q_jana_rescue(){
@@ -525,7 +532,7 @@ const QF = {
       triggerJanaToFireplace();
     }, 300);
     // Po nějakém čase je odvede do villy
-    gs.villa_deadline = gs.ts + 60000; // 60s timer (existující systém)
+    gs.villa_deadline = gs.ts + 60000 * ((typeof Settings !== 'undefined') ? Settings.getDeathTimerMult() : 1); // 60s timer (existující systém)
   },
 
   // Villa: dát Janě hadr → she gets excited, briefing
@@ -667,28 +674,33 @@ const QF = {
   },
   // ─── Mikuláš – blend pro Janu ────────────────────────────────────────────
   q_mik_blend_jana(){
-    if(gs.money < 50){ addLog('Nemáš 50 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 50; gs.inv.blend += 1; updateInv(); updateHUD();
+    const _pbj = getPrice(50);
+    if(gs.money < _pbj){ addLog(`Nemáš ${_pbj} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(50); gs.inv.blend += 1; updateInv();
     addLog('Mikuláš ti dal speciální blend pro Janu. 🌿','ls');
     fnotif('Blend pro Janu 🌿','itm'); closeDialog();
   },
   // ─── Šaman ────────────────────────────────────────────────────────────────
   q_saman_password(){ closeDialog(); openPassword(); },
   q_saman_50g(){
-    if(gs.money < 150){ addLog('Nemáš 150 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 150; gs.inv.kratom += 50; updateInv(); updateHUD();
+    const _ps50 = getPrice(150);
+    if(gs.money < _ps50){ addLog(`Nemáš ${_ps50} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(150); gs.inv.kratom += 50; updateInv();
     gainRep(1,'Koupil kratom');
     gs.story.saman_buys = (gs.story.saman_buys || 0) + 1;
-    if(gs.story.saman_buys >= 5 && !gs.story.saman_elixir_quest && !gs.story.saman_elixir_done) gs.story.saman_stage = 2;
-    addLog('Koupil jsi 50g za 150 Kč. 🌿','ls'); fnotif('+50g 🌿','itm'); closeDialog();
+    const _st = (typeof Settings !== 'undefined') ? Settings.getSamanThreshold() : 5;
+    if(gs.story.saman_buys >= _st && !gs.story.saman_elixir_quest && !gs.story.saman_elixir_done) gs.story.saman_stage = 2;
+    addLog(`Koupil jsi 50g za ${_ps50} Kč. 🌿`,'ls'); fnotif('+50g 🌿','itm'); closeDialog();
   },
   q_saman_200g(){
-    if(gs.money < 600){ addLog('Nemáš 600 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 600; gs.inv.kratom += 200; updateInv(); updateHUD();
+    const _ps200 = getPrice(600);
+    if(gs.money < _ps200){ addLog(`Nemáš ${_ps200} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(600); gs.inv.kratom += 200; updateInv();
     gainRep(3,'Koupil 200g kratomu');
     gs.story.saman_buys = (gs.story.saman_buys || 0) + 1;
-    if(gs.story.saman_buys >= 5 && !gs.story.saman_elixir_quest && !gs.story.saman_elixir_done) gs.story.saman_stage = 2;
-    addLog('Koupil jsi 200g za 600 Kč. 🌿','ls'); fnotif('+200g 🌿','itm'); closeDialog();
+    const _st2 = (typeof Settings !== 'undefined') ? Settings.getSamanThreshold() : 5;
+    if(gs.story.saman_buys >= _st2 && !gs.story.saman_elixir_quest && !gs.story.saman_elixir_done) gs.story.saman_stage = 2;
+    addLog(`Koupil jsi 200g za ${_ps200} Kč. 🌿`,'ls'); fnotif('+200g 🌿','itm'); closeDialog();
   },
   // ─── Bezďák / Petr Cibulka ───────────────────────────────────────────────
   q_bezdak_give_cibule(){
@@ -742,8 +754,9 @@ const QF = {
     setTimeout(()=>startKGBMinigame(), 900);
   },
   q_bezdak_buy(){
-    if(gs.money < 600){ addLog('Nemáš 600 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 600; gs.inv.piko = 1; updateInv(); updateHUD();
+    const _ppiko = getPrice(600);
+    if(gs.money < _ppiko){ addLog(`Nemáš ${_ppiko} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(600); gs.inv.piko = 1; updateInv();
     gs.story.bezdak = 1;
     document.getElementById('piko-badge').classList.add('on');
     addLog('Koupil jsi piko za 600 Kč. 💊','lw');
@@ -1093,8 +1106,9 @@ const QF = {
   // ─── Pája ─────────────────────────────────────────────────────────────────
   q_paja_loan(){
     if(gs.story.paja >= 1){ closeDialog(); return; }
-    if(gs.money < 300){ addLog('Nemáš 300 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 300; gs.story.paja = 1; updateHUD();
+    const _ppl = getPrice(300);
+    if(gs.money < _ppl){ addLog(`Nemáš ${_ppl} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(300); gs.story.paja = 1;
     gainRep(3,'Půjčil kamarádovi peníze');
     addLog('Půjčil jsi Pájovi 300 Kč. Za 35s vrátí 500 Kč.','ls');
     addObj('side_paja');
@@ -1132,9 +1146,9 @@ const QF = {
   },
   q_paja_collect(){
     if(gs.story.paja !== 2){ closeDialog(); return; }
-    gs.money += 500; gs.story.paja = 3; updateHUD();
-    addLog('Pája vrátil 500 Kč! Zisk +200 Kč 🎉','lm');
-    fnotif('+500 Kč','pos'); doneObj('side_paja');
+    const _rpc = earnMoney(500); gs.story.paja = 3;
+    addLog(`Pája vrátil ${_rpc} Kč! 🎉`,'lm');
+    fnotif(`+${_rpc} Kč`,'pos'); doneObj('side_paja');
     // Pája dá hráči klíček od šuplíku jako bonus (artefakt do dalších her)
     if(!gs.inv.klic_supliku){
       gs.inv.klic_supliku = 1; updateInv();
@@ -1314,12 +1328,12 @@ const QF = {
               gs.story.paja_pytel_taken = true;
               gs.story.krejci_paid_back = true;
               gs.inv.kgb_prukaz = 1; updateInv();
-              gs.money += 500; updateHUD();
+              const _rks = earnMoney(500);
               doneObj('quest_paja_scan');
-              addLog('Krejčí ti dala svou KGB průkazku (ГБ-7824) a 500 Kč. Odhalena jako agent!', 'lm');
+              addLog('Krejčí ti dala svou KGB průkazku (ГБ-7824) a '+_rks+' Kč. Odhalena jako agent!', 'lm');
               addLog('Zmínila operaci КРЕСТ. Cibulka by to měl vědět...', 'ls');
               fnotif('🪪 KGB průkazka +1', 'itm');
-              fnotif('+500 Kč 💰', 'pos');
+              fnotif(`+${_rks} Kč 💰`, 'pos');
             }
           )
         )
@@ -1339,11 +1353,11 @@ const QF = {
           gs.story.paja_quest_done = true;
           gs.story.paja_pytel_given = true;
           gs.story.paja_in_hospoda = false;
-          gs.money += 1000; updateHUD();
+          const _rpg = earnMoney(1000);
           gainRep(10, 'Vrátil Pájovi ukradené peníze');
           doneObj('quest_paja_theft');
-          addLog('Pája ti dal 1000 Kč odměnu! +10 REP 💰', 'lm');
-          fnotif('+1 000 Kč 💰', 'pos');
+          addLog(`Pája ti dal ${_rpg} Kč odměnu! 💰`, 'lm');
+          fnotif(`+${_rpg} Kč 💰`, 'pos');
           fnotif('+10 REP', 'rep');
         }
       )
@@ -1359,11 +1373,11 @@ const QF = {
           () => {
             gs.story.paja_quest_done = true;
             gs.story.paja_in_hospoda = false;
-            gs.money += 200; updateHUD();
+            const _rpk = earnMoney(200);
             gainRep(8, 'Vrátil Pájovi ukradené peníze');
             doneObj('quest_paja_theft');
-            addLog('Pájův quest splněn. +200 Kč, +8 REP 💰', 'lm');
-            fnotif('+200 Kč 💰', 'pos');
+            addLog(`Pájův quest splněn. +${_rpk} Kč 💰`, 'lm');
+            fnotif(`+${_rpk} Kč 💰`, 'pos');
             fnotif('+8 REP', 'rep');
           }
         )
@@ -1591,17 +1605,19 @@ const QF = {
 
   // ─── Mikuláš ──────────────────────────────────────────────────────────────
   q_mik_10g(){
-    if(gs.money < 30){ addLog('Nemáš 30 Kč!','lw'); closeDialog(); return; }
-    gs.money -= 30; gs.inv.kratom += 10; updateInv(); updateHUD();
+    const _pm10 = getPrice(30);
+    if(gs.money < _pm10){ addLog(`Nemáš ${_pm10} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(30); gs.inv.kratom += 10; updateInv();
     gainRep(1,'Koupil kratom');
-    addLog('Koupil jsi 10g od Mikuláše za 30 Kč. 🌿','ls');
+    addLog(`Koupil jsi 10g od Mikuláše za ${_pm10} Kč. 🌿`,'ls');
     fnotif('+10g 🌿','itm'); closeDialog();
   },
   q_mik_blend(){
     const forJana = gs.story.jana_rande_asked && !gs.story.jana_rande_ok;
-    const price = forJana ? 50 : 30;
+    const basePrice = forJana ? 50 : 30;
+    const price = getPrice(basePrice);
     if(gs.money < price){ addLog(`Nemáš ${price} Kč!`,'lw'); closeDialog(); return; }
-    gs.money -= price; gs.inv.blend += 1; updateInv(); updateHUD();
+    payMoney(basePrice); gs.inv.blend += 1; updateInv();
     if(forJana){
       addLog('Speciální blend pro Janu. Svět vypadá jinak.','lw');
       fnotif('Blend pro Janu 🌿','itm');
@@ -1672,10 +1688,10 @@ const QF = {
   q_milan_protiutok_reward(){
     if(!gs.story.figurova_kratomed){ closeDialog(); return; }
     gs.story.milan_protiutok_done = true;
-    gs.money += 300; updateHUD();
+    const _rmpr = earnMoney(300);
     gainRep(6, 'Zneškodnil Figurovou pro Milana');
-    addLog('Milan: "Sanitka přijela rychle. Bylo to... efektivní." *strkuje ti peníze* "Nikdy jsme se neviděli. +300 Kč" 💰', 'lm');
-    fnotif('+300 Kč','pos'); closeDialog();
+    addLog(`Milan: "Sanitka přijela rychle." *strkuje ti peníze* "Nikdy jsme se neviděli. +${_rmpr} Kč" 💰`, 'lm');
+    fnotif(`+${_rmpr} Kč`,'pos'); closeDialog();
   },
   q_milan_honza(){
     gs.story.milan_honza_ok = true;
@@ -1839,8 +1855,7 @@ const QF = {
   q_platenikova_tell(){
     gs.story.platenikova_rewarded = true;
     gainRep(30, 'Nejvyšší pochvala ředitelky');
-    gs.money += 1000;
-    updateHUD();
+    earnMoney(1000);
     addObj('quest_platenikova');
     doneObj('quest_platenikova');
     closeDialog();
@@ -1909,7 +1924,7 @@ const QF = {
   q_kasicka(){
     if(gs.kasicka_taken){ addLog('Kasička je prázdná.','lw'); return; }
     gs.kasicka_taken = true;
-    gs.money += 100; updateHUD();
+    earnMoney(100);
     addLog('Vybral jsi 100 Kč z kasičky. 💰', 'ls');
     fnotif('+100 Kč', 'pos');
   },
@@ -2006,8 +2021,9 @@ const QF = {
       fnotif('📝 Taháky získány!', 'pos');
     } else {
       // Milan žije – koupíš za 200 Kč
-      if(gs.money < 200){ addLog('Nemáš dost peněz (potřebuješ 200 Kč).', 'lw'); closeDialog(); return; }
-      gs.money -= 200; updateHUD();
+      const _pt = getPrice(200);
+      if(gs.money < _pt){ addLog(`Nemáš dost peněz (potřebuješ ${_pt} Kč).`, 'lw'); closeDialog(); return; }
+      payMoney(200);
       gs.inv.tahaky = 1; updateInv();
       addLog('Milan: "Taháky? 200 Kč. Kvalitní práce." *podá ti svazek papírků*', 'ls');
       fnotif('📝 Taháky získány! (-200 Kč)', 'pos');
@@ -2019,10 +2035,10 @@ const QF = {
   q_maturita_sell_tahaky(){
     if(!gs.inv.tahaky){ addLog('Nemáš taháky!', 'lw'); closeDialog(); return; }
     gs.inv.tahaky = 0; updateInv();
-    gs.money += 800; updateHUD(); // 4 spolužáci × 200 Kč
+    const _rst = earnMoney(800);
     gs.story.tahaky_sold = true;
-    addLog('*Prodal jsi taháky čtyřem spolužákům. 800 Kč v kapse.*', 'lm');
-    fnotif('+800 Kč 💰', 'pos');
+    addLog(`*Prodal jsi taháky čtyřem spolužákům. ${_rst} Kč v kapse.*`, 'lm');
+    fnotif(`+${_rst} Kč 💰`, 'pos');
     gainRep(5, 'Zásobil třídu taháky');
     closeDialog();
     // 50% šance, že Novák "přistihne"
@@ -2065,7 +2081,8 @@ const QF = {
     function showQuestion(){
       if(quiz.current >= quiz.questions.length){
         // Vyhodnocení
-        const passed = quiz.correct >= 3;
+        const _qt = (typeof Settings !== 'undefined') ? Settings.getQuizThreshold() : 3;
+        const passed = quiz.correct >= _qt;
         dov.innerHTML = `
           <div class="dh"><div class="dav">📝</div><div><div class="dn">MATURITA</div><div class="dr">Výsledky</div></div></div>
           <div class="dtx">${passed
@@ -2115,7 +2132,13 @@ const QF = {
       gainRep(15, 'Složil maturitu legitimně');
       QF._maturita_sms_after();
     } else {
-      addLog('*Propadl jsi u maturity. Novák ti dal šanci to zkusit znovu.*', 'lw');
+      const _canRetry = (typeof Settings !== 'undefined') ? Settings.canQuizRetry() : true;
+      if(_canRetry){
+        addLog('*Propadl jsi u maturity. Novák ti dal šanci to zkusit znovu.*', 'lw');
+      } else {
+        addLog('*Propadl jsi u maturity. Novák zavrtěl hlavou.* "Žádný opravný termín, Hrubeši."', 'lw');
+        gs.story.maturita_failed_permanently = true;
+      }
       fnotif('❌ Propadák!', 'neg');
       gainRep(-5, 'Propadák u maturity');
     }

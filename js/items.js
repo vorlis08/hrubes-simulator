@@ -50,8 +50,9 @@ function endKratom(){
 function useZemle(){
   if(gs.inv.zemle <= 0){ addLog('Nemáš žádnou žemli.','lw'); return; }
   gs.inv.zemle--;
-  const gain = Math.min(30, 100 - gs.energy);
-  gs.energy  = Math.min(100, gs.energy + 30);
+  const _zg = (typeof Settings !== 'undefined') ? Settings.getZemleGain() : 30;
+  const gain = Math.min(_zg, 100 - gs.energy);
+  gs.energy  = Math.min(100, gs.energy + _zg);
   addLog(`🍕 Snědl jsi žemli! +${gain} energie`, 'ls');
   fnotif(`+${gain} ⚡`, 'pos');
   updateInv(); updateHUD();
@@ -371,8 +372,9 @@ function _startDodgeRound(shotNum){
   const d = gs.dodge;
   if(!d) return;
   d.shotNum = shotNum;
+  const _dp = (typeof Settings !== 'undefined') ? Settings.getDodgeParams() : {window1:1600,window2:1200,penalty:300,aimTime:1200};
   d.dodgeDir = Math.random() < 0.5 ? 'left' : 'right';
-  d.dodgeWindow = shotNum === 1 ? 1600 : 1200; // 2. výstřel těžší
+  d.dodgeWindow = shotNum === 1 ? _dp.window1 : _dp.window2;
   d.playerDodged = false;
   d.playerPos = 0;
   d.phase = 'aim' + shotNum;
@@ -383,7 +385,6 @@ function _startDodgeRound(shotNum){
     d.dodgeStart = gs.ts;
     d.playerDodged = false;
     d.playerPos = 0;
-    // Input listener
     const onDodge = (e) => {
       if(d.phase !== 'dodge' + shotNum) return;
       const k = e.key.toLowerCase();
@@ -397,13 +398,13 @@ function _startDodgeRound(shotNum){
         window.removeEventListener('keydown', onDodge);
       } else {
         // Špatný směr – krátký trest (ztráta času + vizuální feedback)
-        d.dodgeStart -= 300; // urychlí countdown
+        d.dodgeStart -= _dp.penalty;
         screenShake(150);
       }
     };
     window.addEventListener('keydown', onDodge);
     d._dodgeListener = onDodge;
-  }, 1200);
+  }, _dp.aimTime);
 }
 
 function _dodgeEndFlee(){
@@ -1262,7 +1263,8 @@ function startKGBMinigame(){
   const W = mc.width, H = mc.height;
   const kctx = mc.getContext('2d');
 
-  const KILL_WIN = 18, MAX_PASS = 2;
+  const _kgb = (typeof Settings !== 'undefined') ? Settings.getKgbParams() : {killWin:18,maxPass:2,agentSpd:1.1,spdScale:0.15,ammo:50,spawnMult:1.0};
+  const KILL_WIN = _kgb.killWin, MAX_PASS = _kgb.maxPass;
   const AGENT_TYPES = [
     {label:'KGB', color:'#c0392b', hat:'#6a0000'},
     {label:'GRU', color:'#1a2a4a', hat:'#0a1020'},
@@ -1280,7 +1282,7 @@ function startKGBMinigame(){
   let agents=[], bullets=[], particles=[], flashAlpha=0;
   let kills=0, passed=0, gameOver=false, won=false;
   let ts2=0, lastT=0, spawnTimer=0;
-  let ammo=50;
+  let ammo=_kgb.ammo;
   let noAmmoSince=0; // timestamp kdy došly náboje
   // trippy effect state
   let hueShift=0, warpT=0;
@@ -1290,7 +1292,7 @@ function startKGBMinigame(){
     const lane = H*(0.18 + Math.random()*0.64);
     agents.push({
       x: W+55, y: lane,
-      spd: 1.1 + Math.random()*0.6 + kills*0.15,
+      spd: _kgb.agentSpd + Math.random()*0.6 + kills*_kgb.spdScale,
       color: tp.color, hat: tp.hat, label: tp.label,
       w:40, h:58, hit:false, hitT:0, id: Math.random(),
     });
@@ -1654,7 +1656,7 @@ function startKGBMinigame(){
 
     // Spawn – every 1.2–2.0s, gets faster
     spawnTimer -= dt;
-    const interval = Math.max(750, 2300 - kills*22);
+    const interval = Math.max(750, (2300 - kills*22) * _kgb.spawnMult);
     if(spawnTimer<=0){ spawnAgent(); spawnTimer=interval*(0.8+Math.random()*0.4); }
 
     drawBG(ts);

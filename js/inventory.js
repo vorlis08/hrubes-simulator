@@ -297,7 +297,8 @@ const Inventory = {
     gs.inv[food]--;
     if(drug === 'kratom') gs.inv.kratom -= 5; else gs.inv.blend--;
 
-    const gain = food === 'zemle' ? 30 : (food === 'pivo' ? 15 : 20);
+    const _zg = (typeof Settings !== 'undefined') ? Settings.getZemleGain() : 30;
+    const gain = food === 'zemle' ? _zg : (food === 'pivo' ? Math.round(_zg*0.5) : Math.round(_zg*0.67));
     gs.energy = Math.min(100, gs.energy + gain);
     const isBlend = drug === 'blend';
 

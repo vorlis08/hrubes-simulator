@@ -8,11 +8,38 @@ const Settings = (() => {
 
   // ── Obtížnosti ─────────────────────────────
   const DIFFICULTIES = {
-    noob:   { label:'🍼 Noob',   energyMult:0.5,  cihalovaMult:2.0, priceMult:0.7, repMult:1.5, deathTimerMult:2.0, quizForgiving:true,  desc:'Pro začátečníky. Pomalý drain, víc času, levnější zboží.' },
-    pro:    { label:'😎 Pro',    energyMult:1.0,  cihalovaMult:1.0, priceMult:1.0, repMult:1.0, deathTimerMult:1.0, quizForgiving:false, desc:'Standardní obtížnost. Tak jak to má být.' },
-    hacker: { label:'💀 Hacker', energyMult:1.5,  cihalovaMult:0.7, priceMult:1.3, repMult:0.8, deathTimerMult:0.7, quizForgiving:false, desc:'Pro zkušené. Rychlý drain, méně času, dražší zboží.' },
-    god:    { label:'🔥 God',    energyMult:2.5,  cihalovaMult:0.4, priceMult:2.0, repMult:0.5, deathTimerMult:0.4, quizForgiving:false, desc:'Nemožné. Brutální drain, minimum času, astronomické ceny.' },
-    secret: { label:'👁 ???',    energyMult:0.01, cihalovaMult:99,  priceMult:0.01,repMult:5.0, deathTimerMult:99,  quizForgiving:true,  desc:'Transcendence. Jsi nesmrtelný bůh Křemže.' },
+    noob: {
+      label:'🍼 Noob', desc:'Pro začátečníky. Pomalý drain, víc času, levnější zboží.',
+      energyMult:0.5, cihalovaMult:2.0, priceMult:0.7, rewardMult:1.3, repMult:1.5,
+      deathTimerMult:2.0, quizThreshold:2, quizRetry:true,
+      zemleGain:40, samanThreshold:3,
+      kgbKillWin:10, kgbMaxPass:5, kgbAgentSpd:0.7, kgbSpdScale:0.08, kgbAmmo:80, kgbSpawnMult:1.4,
+      dodgeWindow1:2400, dodgeWindow2:2000, dodgePenalty:100, dodgeAimTime:2000,
+    },
+    pro: {
+      label:'😎 Pro', desc:'Standardní obtížnost. Tak jak to má být.',
+      energyMult:1.0, cihalovaMult:1.0, priceMult:1.0, rewardMult:1.0, repMult:1.0,
+      deathTimerMult:1.0, quizThreshold:3, quizRetry:true,
+      zemleGain:30, samanThreshold:5,
+      kgbKillWin:18, kgbMaxPass:2, kgbAgentSpd:1.1, kgbSpdScale:0.15, kgbAmmo:50, kgbSpawnMult:1.0,
+      dodgeWindow1:1600, dodgeWindow2:1200, dodgePenalty:300, dodgeAimTime:1200,
+    },
+    hacker: {
+      label:'💀 Hacker', desc:'Pro zkušené. Rychlý drain, méně času, dražší zboží.',
+      energyMult:1.5, cihalovaMult:0.7, priceMult:1.3, rewardMult:0.8, repMult:0.8,
+      deathTimerMult:0.7, quizThreshold:4, quizRetry:false,
+      zemleGain:22, samanThreshold:8,
+      kgbKillWin:25, kgbMaxPass:1, kgbAgentSpd:1.6, kgbSpdScale:0.22, kgbAmmo:35, kgbSpawnMult:0.7,
+      dodgeWindow1:1000, dodgeWindow2:800, dodgePenalty:500, dodgeAimTime:800,
+    },
+    god: {
+      label:'🔥 God', desc:'Nemožné. Brutální drain, minimum času, astronomické ceny.',
+      energyMult:2.5, cihalovaMult:0.4, priceMult:2.0, rewardMult:0.5, repMult:0.5,
+      deathTimerMult:0.4, quizThreshold:5, quizRetry:false,
+      zemleGain:15, samanThreshold:12,
+      kgbKillWin:35, kgbMaxPass:0, kgbAgentSpd:2.2, kgbSpdScale:0.30, kgbAmmo:20, kgbSpawnMult:0.5,
+      dodgeWindow1:600, dodgeWindow2:400, dodgePenalty:9999, dodgeAimTime:400,
+    },
   };
 
   // ── Kvalita grafiky ────────────────────────
@@ -33,7 +60,6 @@ const Settings = (() => {
     highlightObjects: false,
     reducedFlash: false,
     screenShake: 100,
-    godCompleted: false,
   };
 
   let _cfg = { ..._defaults };
@@ -69,8 +95,28 @@ const Settings = (() => {
   function getDeathTimerMult(){
     return getDifficulty().deathTimerMult;
   }
-  function isQuizForgiving(){
-    return getDifficulty().quizForgiving;
+  function getQuizThreshold(){
+    return getDifficulty().quizThreshold;
+  }
+  function canQuizRetry(){
+    return getDifficulty().quizRetry;
+  }
+  function getZemleGain(){
+    return getDifficulty().zemleGain;
+  }
+  function getSamanThreshold(){
+    return getDifficulty().samanThreshold;
+  }
+  function getRewardMult(){
+    return getDifficulty().rewardMult;
+  }
+  function getKgbParams(){
+    const d = getDifficulty();
+    return { killWin:d.kgbKillWin, maxPass:d.kgbMaxPass, agentSpd:d.kgbAgentSpd, spdScale:d.kgbSpdScale, ammo:d.kgbAmmo, spawnMult:d.kgbSpawnMult };
+  }
+  function getDodgeParams(){
+    const d = getDifficulty();
+    return { window1:d.dodgeWindow1, window2:d.dodgeWindow2, penalty:d.dodgePenalty, aimTime:d.dodgeAimTime };
   }
 
   function getQualityTierOverride(){
@@ -94,12 +140,14 @@ const Settings = (() => {
     return _cfg.screenShake / 100;
   }
 
-  function isSecretUnlocked(){
-    return _cfg.godCompleted === true;
+  function applyPrice(base){
+    return Math.round(base * getDifficulty().priceMult);
   }
-  function unlockSecret(){
-    _cfg.godCompleted = true;
-    _save();
+  function applyReward(base){
+    return Math.round(base * getDifficulty().rewardMult);
+  }
+  function applyRep(base){
+    return Math.round(base * getDifficulty().repMult);
   }
 
   // ── Render settings overlay ────────────────
@@ -112,7 +160,6 @@ const Settings = (() => {
     const qual = getQuality();
 
     const diffButtons = Object.entries(DIFFICULTIES).map(([k,v]) => {
-      if(k === 'secret' && !isSecretUnlocked()) return '';
       return `<button class="set-opt${d===k?' active':''}" onclick="Settings.setDifficulty('${k}')">${v.label}</button>`;
     }).join('');
 
@@ -217,10 +264,12 @@ const Settings = (() => {
 
   return {
     get, set, getDifficulty, getQuality,
-    getEnergyDrainMs, getCihalovaTimer, getPriceMult, getRepMult,
-    getDeathTimerMult, isQuizForgiving,
+    getEnergyDrainMs, getCihalovaTimer, getPriceMult, getRepMult, getRewardMult,
+    getDeathTimerMult, getQuizThreshold, canQuizRetry, getZemleGain, getSamanThreshold,
+    getKgbParams, getDodgeParams,
+    applyPrice, applyReward, applyRep,
     getQualityTierOverride, getParticleMult, hasScanlines, hasAO,
-    getShakeIntensity, isSecretUnlocked, unlockSecret,
+    getShakeIntensity,
     renderUI,
     setVolume, setDifficulty, setQuality, setDialogSpeed,
     setShake, setFontSize, setHighlight, setReducedFlash,

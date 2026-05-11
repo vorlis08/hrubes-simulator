@@ -121,7 +121,7 @@ function submitPassword(){
   gs.story.used_passwords.push(ans);
   switch(pw.reward){
     case 'kratom': gs.inv.kratom += pw.val; updateInv(); break;
-    case 'money':  gs.money += pw.val; break;
+    case 'money':  earnMoney(pw.val); break;
     case 'energy': gs.energy = gs.maxEnergy; break;
     case 'rep':    gainRep(pw.val, 'Šamanovo heslo: ' + ans); break;
     case 'item':   gs.inv[pw.item] = pw.val; updateInv(); break;
@@ -366,7 +366,8 @@ function getStage(id){
     case 'kratom_saman':
       if(s.saman_elixir_done) return 4;
       if(s.saman_elixir_quest) return 3;
-      if((s.saman_buys || 0) >= 5 && !s.saman_elixir_quest && !s.saman_elixir_done) return 3;
+      const _samanT = (typeof Settings !== 'undefined') ? Settings.getSamanThreshold() : 5;
+      if((s.saman_buys || 0) >= _samanT && !s.saman_elixir_quest && !s.saman_elixir_done) return 3;
       if(s.saman_stage >= 2) return 2;
       if(s.saman_stage >= 1) return 1;
       return 0;
@@ -683,9 +684,13 @@ function showDialog(npc){
   };
   const filteredChoices = choices.filter(c => !c.condFlag || condCheck(c.condFlag));
 
+  const _pricify = (lbl) => {
+    if(typeof Settings === 'undefined') return lbl;
+    return lbl.replace(/(\d+)\s*Kč/g, (m, n) => getPrice(parseInt(n)) + ' Kč');
+  };
   document.getElementById('dchoices').innerHTML = filteredChoices.map(c => `
     <button class="db ${c.cls || ''}" onclick="runQF('${c.fn}')">
-      ${c.label}${c.sub ? `<span class="dc">${c.sub}</span>` : ''}
+      ${_pricify(c.label)}${c.sub ? `<span class="dc">${c.sub}</span>` : ''}
     </button>`).join('');
 
   document.getElementById('dov').classList.add('on');
