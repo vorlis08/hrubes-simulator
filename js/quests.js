@@ -14,6 +14,15 @@ const QF = {
     addObj('main_cihalova');
     addStoryEntry('prolog', 'Číhalová mě poslala pro zásilku. Timer tikne.', '📦');
     closeDialog();
+    // Quest SMS – Honza reaguje na Číhalovou
+    const _g1 = gs._gen;
+    Phone.scheduleSms(8000, () => {
+      if(gs._gen !== _g1) return;
+      Phone.addSms('Honza', '🧑‍🦱', 'Ty vole, slyšel jsem, že ti Číhalová dala úkol. Dávej si na ni bacha, ta ženská je úplně mimo.', 'sms_q_cihalova_start', [
+        {label:'Pohoda, zvládnu to 💪', text:'Pohoda, zvládnu to 💪', cls:'sms-r-good'},
+        {label:'Co nejhoršího se může stát? 😅', text:'Co nejhoršího se může stát? 😅', cls:'sms-r-bad'},
+      ]);
+    });
   },
   q_piko_self(){
     closeDialog();
@@ -44,6 +53,11 @@ const QF = {
     setTimeout(() => {
       addLog('*Sípot přestává. Ticho. Číhalová je po smrti.*','lw');
       gs.story.cihalova_dead = true;
+      // Quest SMS – Máma se dozví
+      Phone.addSms('Máma', '👩', 'Fando, slyšela jsem, že Číhalová umřela?! Co se stalo?! Zavolej mi!', 'sms_q_cihalova_dead', [
+        {label:'Nevím, mami 😶', text:'Nevím, mami, slyšel jsem to taky 😶', cls:'sms-r-good'},
+        {label:'Klid, neměla to brát 💀', text:'Klid, sama si za to mohla 💀', cls:'sms-r-bad'},
+      ]);
     }, 5500);
   },
   q_cihalova_deliver(){
@@ -60,6 +74,15 @@ const QF = {
     addObj('quest_cihalova_burn');
     addStoryEntry('prolog', 'Doručil jsem zásilku Číhalové. Zkolabovala.', '💊');
     updateHUD(); closeDialog();
+    // Quest SMS – Mates reaguje na doručení
+    const _gcd = gs._gen;
+    Phone.scheduleSms(6000, () => {
+      if(gs._gen !== _gcd) return;
+      Phone.addSms('Mates', '😌', 'Číhalová zkolabovala?? Ty vole co jsi jí dal? 😂', 'sms_q_cihalova_deliver', [
+        {label:'Vitamíny 💊', text:'Vitamíny. Silný vitamíny 💊', cls:'sms-r-good'},
+        {label:'Neptej se 🤫', text:'Neptej se, prostě neptej se 🤫', cls:'sms-r-bad'},
+      ]);
+    });
   },
 
   // ─── Krejčí ───────────────────────────────────────────────────────────────
@@ -70,6 +93,15 @@ const QF = {
     addStoryEntry('krejci', 'Krejčí dostala výhružný vzkaz. Někdo ji vydírá.', '📨');
     closeDialog();
     setTimeout(showNote, 400);
+    // Quest SMS – Mikuláš se prozrazuje
+    const _gks = gs._gen;
+    Phone.scheduleSms(15000, () => {
+      if(gs._gen !== _gks) return;
+      Phone.addSms('Mikuláš', '🌿', 'Hele Fando, co tam řešíš s Krejčí? Snad nic o mně? 😅', 'sms_q_krejci_start', [
+        {label:'Ne, klid 😇', text:'Ne, klid, nic o tobě 😇', cls:'sms-r-good'},
+        {label:'A co kdybych jo? 🤔', text:'A co kdybych jo? 🤔', cls:'sms-r-bad'},
+      ]);
+    });
   },
   q_krejci_reward(){
     if(!gs.story.krejci_resolved){ addLog('Ještě jsi nic nevyřídil.','lw'); closeDialog(); return; }
@@ -89,6 +121,15 @@ const QF = {
     addObj('side_figurova');
     addStoryEntry('figurova', 'Figurová mě najala, abych špehoval Milana.', '🕵️');
     closeDialog();
+    // Quest SMS – Milan tuší něco
+    const _gfs = gs._gen;
+    Phone.scheduleSms(12000, () => {
+      if(gs._gen !== _gfs) return;
+      Phone.addSms('Milan', '😎', 'Hrubeš, slyšel jsem, žes byl u Figurové. Co chtěla?', 'sms_q_figurova_start', [
+        {label:'Nic důležitýho 🤷', text:'Nic, ptala se na docházku 🤷', cls:'sms-r-good'},
+        {label:'Mám ti říct pravdu? 😬', text:'Hele... měl bys vědět, že... 😬', cls:'sms-r-bad', effect:() => { gs.story.milan_sms_warned = true; }},
+      ]);
+    });
   },
   q_figurova_reward(){
     if(gs.story.figurova >= 2){ closeDialog(); return; }
@@ -117,6 +158,15 @@ const QF = {
     addLog('Výraz v její tváři se změnil. Nebyla to zlost. Bylo to... chladné rozhodnutí.', 'lw');
     addStoryEntry('figurova', 'Předal jsem Figurové screenshot Milana s Kubátovou. Její výraz zledovatěl.', '📱');
     addStoryEntry('temne', 'Figurová naznačila temné plány. Tohle je bod, odkud není cesty zpět.', '⚠️');
+    // Quest SMS – Honza varuje
+    const _gfds = gs._gen;
+    Phone.scheduleSms(10000, () => {
+      if(gs._gen !== _gfds) return;
+      Phone.addSms('Honza', '🧑‍🦱', 'Fando, viděl jsem Figurovou, jak vycházela z kabinetu. Vypadala... jinak. Dávej na sebe bacha.', 'sms_q_figurova_dark', [
+        {label:'Díky za varování 🙏', text:'Díky, brácho. Dám si pozor 🙏', cls:'sms-r-good'},
+        {label:'Už je pozdě 💀', text:'Už je pozdě na varování 💀', cls:'sms-r-bad'},
+      ]);
+    });
     closeDialog();
     setTimeout(() => {
       const f = currentNPCs.find(n => n.id === 'figurova');
@@ -133,6 +183,15 @@ const QF = {
     addObj('quest_figurova_mates');
     addObj('quest_figurova_milan');
     closeDialog();
+    // Quest SMS – Figurová tlačí
+    const _gfda = gs._gen;
+    Phone.scheduleSms(15000, () => {
+      if(gs._gen !== _gfda) return;
+      Phone.addSms('Figurová', '🧐', 'Hrubeši. Nedělej to zbytečně dlouhé. Čekám výsledky.', 'sms_q_figurova_dark_push', [
+        {label:'Pracuju na tom ✅', text:'Pracuju na tom, paní učitelko ✅', cls:'sms-r-good'},
+        {label:'...(ignorovat)', text:'(nepřečteno)', cls:'sms-r-bad'},
+      ]);
+    });
   },
   q_figurova_dark_cert_leave(){
     // Hráč odchází s certifikátem, ale může se kdykoliv vrátit
@@ -215,6 +274,15 @@ const QF = {
     addObj('side_jana');
     addStoryEntry('johnny', 'Jana Kosová potřebuje 20g kratomu. Vypadá vyčerpaně.', '💤');
     closeDialog();
+    // Quest SMS – Jana píše
+    const _gjs = gs._gen;
+    Phone.scheduleSms(10000, () => {
+      if(gs._gen !== _gjs) return;
+      Phone.addSms('Jana 💅', '💃', 'Fando, prosím pospěš s tím kratomem. Padám z nohou 😴', 'sms_q_jana_start', [
+        {label:'Už to nesu! 🏃', text:'Už to nesu, Jani! 🏃', cls:'sms-r-good'},
+        {label:'Co za to? 😏', text:'A co za to dostanu? 😏', cls:'sms-r-bad'},
+      ]);
+    });
   },
   q_jana_deliver(){
     if(gs.inv.kratom < 20){ addLog('Nemáš dost kratomu! (20g)','lw'); closeDialog(); return; }
@@ -226,6 +294,15 @@ const QF = {
     doneObj('side_jana');
     addStoryEntry('johnny', 'Donesl jsem Janě kratom. Odměna 200 Kč.', '✅');
     closeDialog();
+    // Quest SMS – Jana děkuje
+    const _gjd = gs._gen;
+    Phone.scheduleSms(5000, () => {
+      if(gs._gen !== _gjd) return;
+      Phone.addSms('Jana 💅', '💃', 'Fandooo díky!! 💚 Konečně se cítím líp. Jsi záchrana 🥰', 'sms_q_jana_deliver', [
+        {label:'Rádo se stalo 😊', text:'Rádo se stalo, Jani 😊', cls:'sms-r-good'},
+        {label:'Příště dražší 💸', text:'Příště to bude dražší 💸😂', cls:'sms-r-bad'},
+      ]);
+    });
   },
   q_jana_buy_zemle(){
     if(gs.money < 35){ addLog('Nemáš 35 Kč!','lw'); closeDialog(); return; }
@@ -267,6 +344,15 @@ const QF = {
     fnotif('Mates... 🩸','rep');
     doneObj('quest_figurova_mates');
     closeDialog();
+    // Quest SMS – Honza reaguje na vraždu Matese
+    const _gmk = gs._gen;
+    Phone.scheduleSms(8000, () => {
+      if(gs._gen !== _gmk) return;
+      Phone.addSms('Honza', '🧑‍🦱', 'Fando... co se stalo v hospodě? Mates nezdvihá telefon...', 'sms_q_mates_dead', [
+        {label:'Nevím o čem mluvíš 🤷', text:'Nevím o čem mluvíš 🤷', cls:'sms-r-good'},
+        {label:'Neptej se 🔇', text:'Honzo, prosím tě, neptej se 🔇', cls:'sms-r-bad'},
+      ]);
+    });
     // SMS od Figurové – revolver na Milana
     setTimeout(() => {
       gs.inv.fig_gun = 1; updateInv();
@@ -322,6 +408,15 @@ const QF = {
     doneObj('side_honza_ukol');
     gs.story.honza_ukol_rewarded = true;
     closeDialog();
+    // Quest SMS – Honza děkuje
+    const _ghu = gs._gen;
+    Phone.scheduleSms(5000, () => {
+      if(gs._gen !== _ghu) return;
+      Phone.addSms('Honza', '🧑‍🦱', 'Ty jsi king, Fando. Dlužím ti jednu 🍺', 'sms_q_honza_ukol_done', [
+        {label:'Jasně, příště platíš ty 🍻', text:'Jasně, příště platíš ty 🍻', cls:'sms-r-good'},
+        {label:'Nedlužíš nic ❤️', text:'Nedlužíš nic, brácho ❤️', cls:'sms-r-good'},
+      ]);
+    });
   },
 
   // ─── Johnny ───────────────────────────────────────────────────────────────
@@ -331,6 +426,16 @@ const QF = {
     addObj('side_johnny');
     addStoryEntry('johnny', 'Johnny Zahradník chce rande s Janou. Mám ji přesvědčit.', '🎸');
     closeDialog();
+    // Quest SMS – Johnny netrpělivý
+    const _gjhs = gs._gen;
+    Phone.scheduleSms(20000, () => {
+      if(gs._gen !== _gjhs) return;
+      if(gs.story.johnny >= 2) return;
+      Phone.addSms('Johnny', '🤵', 'Hrubeš. Jak to jde s Janou? Nemám celej den.', 'sms_q_johnny_push', [
+        {label:'Pracuju na tom 👍', text:'Pracuju na tom, Johnny 👍', cls:'sms-r-good'},
+        {label:'Ona o tobě neví 😬', text:'Hele, ona o tobě moc neví... 😬', cls:'sms-r-bad'},
+      ]);
+    });
   },
   q_johnny_confirm(){
     if(!gs.story.jana_rande_ok){ addLog('Jana ještě nesouhlasila!','lw'); closeDialog(); return; }
@@ -374,6 +479,15 @@ const QF = {
     fnotif('Jana zachráněna 💅', 'rep');
     doneObj('side_johnny');
     closeDialog();
+    // Quest SMS – Jana po záchraně
+    const _gjr = gs._gen;
+    Phone.scheduleSms(8000, () => {
+      if(gs._gen !== _gjr) return;
+      Phone.addSms('Jana 💅', '💃', 'Fando... díky za to, co jsi udělal. Fakt 🥺 Johnny byl čím dál divnější...', 'sms_q_jana_rescued', [
+        {label:'Jsi v bezpečí, to je hlavní 💚', text:'Hlavně, že jsi v bezpečí 💚', cls:'sms-r-good'},
+        {label:'Johnny je kokot 😤', text:'Johnny je kokot, vždycky byl 😤', cls:'sms-r-bad'},
+      ]);
+    });
     // Zobraz Janin vděčný dialog po krátké pauze
     setTimeout(() => {
       const jana = currentNPCs.find(n => n.id === 'jana_kosova');
@@ -984,6 +1098,15 @@ const QF = {
     addLog('Půjčil jsi Pájovi 300 Kč. Za 35s vrátí 500 Kč.','ls');
     addObj('side_paja');
     addStoryEntry('byznys', 'Půjčil jsem Pájovi 300 Kč. Prý vrátí 500.', '🤝');
+    // Quest SMS – Pája potvrzuje půjčku
+    const _gpl = gs._gen;
+    Phone.scheduleSms(5000, () => {
+      if(gs._gen !== _gpl) return;
+      Phone.addSms('Pája', '🎰', 'Díky za prachy brácho!! Uvidíš, vrátím ti víc než jsem slíbil 💪💪', 'sms_q_paja_loan', [
+        {label:'Doufám! 🤞', text:'Doufám, Pájo! 🤞', cls:'sms-r-good'},
+        {label:'To bych se divil 😂', text:'To bych se fakt divil 😂', cls:'sms-r-bad'},
+      ]);
+    });
     const _g = gs._gen;
     setTimeout(() => {
       if(gs._gen !== _g) return; // game was restarted, ignore stale timer
@@ -1041,6 +1164,15 @@ const QF = {
     addLog('Prošetříš krádež v hospodě. Zkus mluvit s Matesem nebo Johnnym.', 'ls');
     addObj('quest_paja_theft');
     closeDialog();
+    // Quest SMS – Pája nervózní
+    const _gpi = gs._gen;
+    Phone.scheduleSms(10000, () => {
+      if(gs._gen !== _gpi) return;
+      Phone.addSms('Pája', '🎰', 'Fando, zjistils něco?? Ty prachy POTŘEBUJU zpátky!! 😤', 'sms_q_paja_investigate', [
+        {label:'Pracuju na tom 🔍', text:'Pracuju na tom, mám stopu 🔍', cls:'sms-r-good'},
+        {label:'Klid, seženu je 💪', text:'Klid Pájo, seženu ti je 💪', cls:'sms-r-good'},
+      ]);
+    });
   },
 
   q_paja_ask_johnny(){
@@ -1619,6 +1751,15 @@ const QF = {
     addStoryEntry('saman', 'Kubátová mi dala voodoo panenku a nůž. Mám vyřídit Mráze.', '🪆');
     addStoryEntry('milan', 'Kubátová má temnou minulost s Mrázem. Chce pomstu.', '🩸');
     closeDialog();
+    // Quest SMS – Mates varuje
+    const _gkub = gs._gen;
+    Phone.scheduleSms(12000, () => {
+      if(gs._gen !== _gkub) return;
+      Phone.addSms('Mates', '😌', 'Ty vole, viděl jsem tě u Kubátový. Ta ženská je... divná. Dej si na ni majzla.', 'sms_q_kubatova_quest', [
+        {label:'Jasně, díky 👍', text:'Jasně, díky za radu 👍', cls:'sms-r-good'},
+        {label:'Je v pohodě 😇', text:'Klid, je úplně v pohodě 😇', cls:'sms-r-bad'},
+      ]);
+    });
   },
   q_milan_give_phone(){
     gs.inv.milan_phone = 1; updateInv();
@@ -1641,6 +1782,12 @@ const QF = {
     fnotif('Milan... 🩸','rep');
     doneObj('quest_figurova_milan');
     closeDialog();
+    // Quest SMS – Figurová gratuluje
+    const _gms = gs._gen;
+    Phone.scheduleSms(5000, () => {
+      if(gs._gen !== _gms) return;
+      Phone.addSms('Figurová', '🧐', 'Výborně, Hrubeši. One down. Přijďte pro odměnu.', 'sms_q_milan_shot');
+    });
   },
   q_milan_warn(){
     gs.story.milan_warn_count = 1;
@@ -1895,6 +2042,7 @@ const QF = {
       addLog('📜 Maturita složena! (s pomocí taháků)', 'lm');
       fnotif('🎓 Maturita hotová!', 'pos');
       gainRep(8, 'Přežil maturitu');
+      QF._maturita_sms_after();
     }, 4000);
   },
 
@@ -1964,6 +2112,7 @@ const QF = {
       addLog('📜 Maturita složena! (legitimně!)', 'lm');
       fnotif('🎓 Maturita hotová!', 'pos');
       gainRep(15, 'Složil maturitu legitimně');
+      QF._maturita_sms_after();
     } else {
       addLog('*Propadl jsi u maturity. Novák ti dal šanci to zkusit znovu.*', 'lw');
       fnotif('❌ Propadák!', 'neg');
@@ -1989,6 +2138,7 @@ const QF = {
         gainRep(15, 'Spolupráce s KGB');
         addLog('Krejčí: "Maturita proběhne bez komplikací." *podá ti vysvědčení* "Výborná spolupráce, Hrubeši."', 'lm');
         fnotif('🎓 Maturita hotová!', 'pos');
+        QF._maturita_sms_after();
       }, 3000);
     } else {
       // Normální path – Krejčí to řeší po svém (byrokraticky)
@@ -2005,6 +2155,7 @@ const QF = {
         addLog('📜 Maturita složena. (za cenu přátelství)', 'lm');
         fnotif('🎓 Maturita hotová!', 'pos');
         gainRep(5, 'Přežil maturitu');
+        QF._maturita_sms_after();
       }, 3000);
       // Death screen pokud hráč odmítne spolupráci s Krejčí
       // (tohle se spustí z dialogu Krejčí, pokud hráč klikne "Odmítnout")
@@ -2045,6 +2196,16 @@ const QF = {
     addObj('quest_saman_prach');
     addStoryEntry('saman', 'Šaman chce vyrobit elixír mládí. Potřebuje 3 ingredience.', '🧪');
     closeDialog();
+    // Quest SMS – Šaman připomíná
+    const _gse = gs._gen;
+    Phone.scheduleSms(25000, () => {
+      if(gs._gen !== _gse) return;
+      if(gs.story.saman_elixir_done) return;
+      Phone.addSms('Šaman', '🧙', 'Hrubši... ingredience. Potřebuju je. Čas se krátí. Energie proudí špatným směrem.', 'sms_q_saman_elixir', [
+        {label:'Sháním! 🏃', text:'Sháním, Šamane! 🏃', cls:'sms-r-good'},
+        {label:'Jaký ingredience? 🤔', text:'Počkej, jaký ingredience to byly? 🤔', cls:'sms-r-bad'},
+      ]);
+    });
   },
 
   // Odevzdat ingredience Šamanovi
@@ -2071,5 +2232,26 @@ const QF = {
     fnotif('📜 Šamanova receptura!', 'pos');
     gainRep(12, 'Pomohl Šamanovi vytvořit elixír');
     closeDialog();
+    // Quest SMS – Šaman po elixíru
+    const _gsed = gs._gen;
+    Phone.scheduleSms(8000, () => {
+      if(gs._gen !== _gsed) return;
+      Phone.addSms('Šaman', '🧙', 'Hrubši. Elixír funguje. Cítím se... mladší. Dvacet let mladší. Děkuju.', 'sms_q_saman_elixir_done', [
+        {label:'Rádo se stalo 🙏', text:'Rádo se stalo, Šamane 🙏', cls:'sms-r-good'},
+        {label:'Nemáš ještě jeden? 😏', text:'Nemáš ještě jeden pro mě? 😏', cls:'sms-r-bad'},
+      ]);
+    });
+  },
+
+  // ─── Maturita SMS ───────────────────────────────────────────────────────
+  _maturita_sms_after(){
+    const _gmat = gs._gen;
+    Phone.scheduleSms(6000, () => {
+      if(gs._gen !== _gmat) return;
+      Phone.addSms('Máma', '👩', 'Fando!! Složil jsi maturitu?! Babička chce vědět! 🎓', 'sms_q_maturita_done', [
+        {label:'JO MAMI! 🎉', text:'JO MAMI, SLOŽIL! 🎉🎓', cls:'sms-r-good'},
+        {label:'Neptej se jak 😅', text:'Jo, ale neptej se jak 😅', cls:'sms-r-bad'},
+      ]);
+    });
   },
 };
