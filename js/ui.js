@@ -137,12 +137,14 @@ function fnotif(txt, type = 'pos'){
 
 let _shakeIv = null;
 function screenShake(ms){
+  const intensity = (typeof Settings !== 'undefined') ? Settings.getShakeIntensity() : 1;
+  if(intensity <= 0) return;
   const gc = document.getElementById('gc');
   if(_shakeIv){ clearInterval(_shakeIv); gc.style.transform = ''; }
   let t = 0;
   _shakeIv = setInterval(() => {
     const decay = 1 - t / ms;
-    const amp = 12 * decay;
+    const amp = 12 * decay * intensity;
     gc.style.transform = `translate(${(Math.random()-.5)*amp}px,${(Math.random()-.5)*amp}px)`;
     t += 50;
     if(t >= ms){ clearInterval(_shakeIv); _shakeIv = null; gc.style.transform = ''; }

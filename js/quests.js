@@ -9,7 +9,8 @@ const QF = {
   // ─── Číhalová ─────────────────────────────────────────────────────────────
   q_cihalova_start(){
     gs.story.cihalova   = 1;
-    gs.cihalova_deadline = gs.ts + CIHALOVA_TIMER * 1000;
+    const _ct = (typeof Settings !== 'undefined') ? Settings.getCihalovaTimer() : CIHALOVA_TIMER;
+    gs.cihalova_deadline = gs.ts + _ct * 1000;
     addLog('Přijal jsi úkol od Číhalové – hlavně pohni! Číhalová už se klepe', 'lw');
     addObj('main_cihalova');
     addStoryEntry('prolog', 'Číhalová mě poslala pro zásilku. Timer tikne.', '📦');

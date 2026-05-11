@@ -1368,7 +1368,8 @@ function update(dt){
     endElixir();
   }
 
-  if(gs.room !== 'heaven' && gs.room !== 'heaven_gate' && gs.ts - gs.lastDrain > ENERGY_DRAIN_MS){
+  const _drainMs = (typeof Settings !== 'undefined') ? Settings.getEnergyDrainMs() : ENERGY_DRAIN_MS;
+  if(gs.room !== 'heaven' && gs.room !== 'heaven_gate' && gs.ts - gs.lastDrain > _drainMs){
     gs.energy = Math.max(0, gs.energy - 1);
     gs.lastDrain = gs.ts;
     if(gs.energy <= 0 && !gs.dead){

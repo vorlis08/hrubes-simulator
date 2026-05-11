@@ -4926,8 +4926,11 @@ function render(){
   if(gs.voodoo_anim) drawVoodooAnim(W,H);
 
   // Scanlines – cached offscreen canvas (místo stovek fillRect volání)
-  const tier = fpsMonitor ? fpsMonitor.getQualityTier() : 3;
-  if(tier >= 2){
+  const _tierOv = (typeof Settings !== 'undefined') ? Settings.getQualityTierOverride() : null;
+  const tier = _tierOv !== null ? _tierOv : (fpsMonitor ? fpsMonitor.getQualityTier() : 3);
+  const _hasScan = (typeof Settings !== 'undefined') ? Settings.hasScanlines() : true;
+  const _hasAO = (typeof Settings !== 'undefined') ? Settings.hasAO() : true;
+  if(tier >= 2 && _hasScan){
     ctx.drawImage(overlayCache.getScanlines(W, H), 0, 0);
   }
 
@@ -4935,7 +4938,7 @@ function render(){
   ctx.drawImage(overlayCache.getVignette(W, H), 0, 0);
 
   // Ambient occlusion – cached offscreen canvas
-  if(tier >= 2){
+  if(tier >= 2 && _hasAO){
     ctx.drawImage(overlayCache.getAmbientOcclusion(W, H, 0.08), 0, 0);
   }
 

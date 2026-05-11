@@ -123,10 +123,12 @@ function drawPulsingAura(ctx, x, y, maxRadius, color, t, freq = 0.003) {
 
 // ─── Dynamický počet částic na základě FPS ──────────────────────────
 function getParticleCount(baseCount, fpsMonitor) {
-  if (!fpsMonitor || fpsMonitor.fps > 50) return baseCount;
-  if (fpsMonitor.fps > 40) return Math.floor(baseCount * 0.8);
-  if (fpsMonitor.fps > 30) return Math.floor(baseCount * 0.5);
-  return Math.floor(baseCount * 0.3);
+  const pMult = (typeof Settings !== 'undefined') ? Settings.getParticleMult() : 1.0;
+  const adjusted = Math.floor(baseCount * pMult);
+  if (!fpsMonitor || fpsMonitor.fps > 50) return adjusted;
+  if (fpsMonitor.fps > 40) return Math.floor(adjusted * 0.8);
+  if (fpsMonitor.fps > 30) return Math.floor(adjusted * 0.5);
+  return Math.floor(adjusted * 0.3);
 }
 
 // ─── Bloom effect (na světlech) ───────────────────────────────────────

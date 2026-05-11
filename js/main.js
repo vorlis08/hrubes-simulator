@@ -223,6 +223,7 @@ function openStats(){
   // TODO: stats overlay
 }
 function openSettings(){
+  Settings.renderUI();
   document.getElementById('settings-ov').classList.add('on');
 }
 
