@@ -463,6 +463,7 @@ function showDialog(npc){
     addLog('Figurová tě sleduje. Zaveď ji ke sklepu v Bille.', 'ls');
     return;
   }
+  if(gs.stats) gs.stats.npcTalks++;
   const stage = getStage(npc.id);
   const d     = NPCS[npc.id].dialogs[stage];
   if(!d) return;

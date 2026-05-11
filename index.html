@@ -844,7 +844,7 @@
       <button class="pause-btn" onclick="togglePause()">▶ Pokračovat</button>
       <button class="pause-btn" onclick="togglePause();document.getElementById('quest-ov').classList.add('on')">📖 Deník</button>
       <button class="pause-btn" onclick="togglePause();toggleNotebook()">📝 Poznámky</button>
-      <button class="pause-btn" onclick="togglePause();openStats()">📊 Statistika</button>
+      <button class="pause-btn" id="stats-pause-btn" style="display:none" onclick="togglePause();openStats()">📊 Statistika</button>
       <button class="pause-btn" onclick="togglePause();openSettings()">⚙ Nastavení</button>
     </div>
   </div>
@@ -855,6 +855,15 @@
       <div id="settings-title">⚙ NASTAVENÍ</div>
       <div id="settings-body"></div>
       <button class="pause-btn" onclick="document.getElementById('settings-ov').classList.remove('on')">✕ Zavřít</button>
+    </div>
+  </div>
+
+  <!-- Stats overlay -->
+  <div id="stats-ov">
+    <div id="stats-wrap">
+      <div id="stats-title">📊 STATISTIKY</div>
+      <div id="stats-body"></div>
+      <button class="pause-btn" onclick="document.getElementById('stats-ov').classList.remove('on')">✕ Zavřít</button>
     </div>
   </div>
 

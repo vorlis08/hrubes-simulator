@@ -15,7 +15,7 @@ const INV_EMOJIS = {
   foto_figurova:'🧐', foto_kubatova:'📸', masturbator:'💦', kgb_detector:'🔍',
   pytel_penez:'💰', kgb_prukaz:'🪪', klic_supliku:'🗝️', cibulka_papirek:'📄',
   maturita:'🏆', hadr:'🧻', sklenice_jana:'🥃', tahaky:'📝', bylina_lab:'🌿',
-  voda_koupelna:'💧', prach_pentagram:'⭐', elixir:'🧪', receptura:'📜', vysvedceni:'🎓'
+  voda_koupelna:'💧', prach_pentagram:'⭐', elixir:'🧪', receptura:'📜', vysvedceni:'🎓', datapad:'📊'
 };
 
 const INV_SHORT = {
@@ -31,7 +31,7 @@ const INV_SHORT = {
   cibulka_papirek:'Papírek', maturita:'Maturita', hadr:'Hadr',
   sklenice_jana:'Sklenice', tahaky:'Taháky', bylina_lab:'Bylina',
   voda_koupelna:'Voda', prach_pentagram:'Prach', elixir:'Elixír',
-  receptura:'Receptura', vysvedceni:'Vysvědčení'
+  receptura:'Receptura', vysvedceni:'Vysvědčení', datapad:'Datapad'
 };
 
 const INV_USABLE = {
@@ -49,6 +49,7 @@ const INV_USABLE = {
   c2_cert: () => { if(typeof showC2Cert === 'function') showC2Cert(); },
   cibulka_papirek: () => { if(typeof showCibulkaPapirek === 'function') showCibulkaPapirek(); },
   sklenice_jana: () => { if(typeof useGlassDrug === 'function') useGlassDrug(); },
+  datapad: () => { if(typeof useDatapad === 'function') useDatapad(); },
 };
 
 const COMBO_FOODS = ['zemle','pivo','kratom_kava'];

@@ -27,6 +27,7 @@ function activateKratom(duration, dose_amount){
   fnotif('🌿 KRATOM!', 'itm');
   updateHUD();
 
+  if(gs.stats) gs.stats.kratomUses++;
   gs.kratom_history.push({ dose, ts: gs.ts });
   gs.kratom_history = gs.kratom_history.filter(x => gs.ts - x.ts < 100000);
   if(gs.kratom_history.reduce((a,b) => a + b.dose, 0) > 30){
@@ -50,6 +51,7 @@ function endKratom(){
 function useZemle(){
   if(gs.inv.zemle <= 0){ addLog('Nemáš žádnou žemli.','lw'); return; }
   gs.inv.zemle--;
+  if(gs.stats) gs.stats.zemleEaten++;
   const _zg = (typeof Settings !== 'undefined') ? Settings.getZemleGain() : 30;
   const gain = Math.min(_zg, 100 - gs.energy);
   gs.energy  = Math.min(100, gs.energy + _zg);
@@ -69,6 +71,7 @@ function _consumeBlend(){
   document.getElementById('dov').classList.remove('on');
   gs.inv.blend -= 1; updateInv();
   gs.story.blend_consumed = (gs.story.blend_consumed || 0) + 1;
+  if(gs.stats) gs.stats.blendUses++;
   addLog('🍃 Zkouřil jsi blend. Geometrie tančí, stěny dýchají...', 'lw');
   fnotif('🌿🔥 BLEND TRIP', 'itm');
 
@@ -121,6 +124,7 @@ function usePikoSelf(){
   if(!gs.inv.piko){ addLog('Nemáš piko!','lw'); return; }
   closeDialog();
   gs.inv.piko = 0; updateInv();
+  if(gs.stats) gs.stats.pikoUses++;
   document.getElementById('piko-badge').classList.remove('on');
   setTimeout(() => triggerDeath(
     'Vzal sis piko sám. Bylo to čisté. Pak přišla tma.\nAni Křemže tě neoplakala.',

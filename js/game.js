@@ -30,7 +30,8 @@ function dist2(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
 function initRoom(spawnX, spawnY){
   const rm = ROOMS[gs.room];
   gs.visited.add(gs.room);
-  gs.roomFadeAlpha = 1;  // fade-in při vstupu do místnosti
+  gs.roomFadeAlpha = 1;
+  if(gs.stats) gs.stats.roomChanges++;
 
   // Minimalistický název místnosti místo banner
   const rname = document.getElementById('room-name');
@@ -428,6 +429,11 @@ function checkProx(){
     if(!gs.story.kgb_detector_from_lab && dist2(p, {x:supX, y:supY}) < PROX_R * 1.2){
       best = {isCibulkaSuplik:true};
     }
+    // Datapad na laboratorním stole
+    if(!gs.story.datapad_taken){
+      const dpX = canvas.width * 0.35, dpY = canvas.height * 0.68;
+      if(dist2(p, {x:dpX, y:dpY}) < PROX_R){ best = {isDatapad:true}; }
+    }
   }
 
   const ph = document.getElementById('prox');
@@ -487,6 +493,8 @@ function checkProx(){
       document.getElementById('ptxt').textContent = '🔥 Zpět do hospody';
     } else if(best.isShishaAntidote){
       document.getElementById('ptxt').textContent = '💚 Vzít zelenou ampulku (protilék)';
+    } else if(best.isDatapad){
+      document.getElementById('ptxt').textContent = '📊 Vzít Cibulkův datapad';
     } else if(best.isCibulkaSuplik){
       document.getElementById('ptxt').textContent = gs.inv.klic_supliku ? '🗝️ Otevřít šuplík klíčkem' : '🔒 Šuplík (potřebuješ klíček)';
     } else if(best.isElixirBylina){
@@ -523,6 +531,20 @@ function interact(){
         fnotif('💚 Protilék zaúčinkoval!', 'pos');
         gainRep(5, 'Přežil otravu Milanovou šíšou');
       }, 800);
+      return;
+    }
+  }
+  // Datapad na laboratorním stole
+  if(gs.room === 'cibulka_lab' && !gs.story.datapad_taken){
+    const dpX = canvas.width * 0.35, dpY = canvas.height * 0.68;
+    if(dist2(gs.player, {x:dpX, y:dpY}) < PROX_R){
+      gs.story.datapad_taken = true;
+      gs.inv.datapad = 1;
+      if(gs.stats) gs.stats.itemsCollected++;
+      updateInv();
+      addLog('*Na stole mezi kelímky leží zapomenutý datapad. Displej bliká – Cibulkova databáze statistik.*', 'lm');
+      fnotif('📊 Cibulkův Datapad!', 'itm');
+      gainRep(3, 'Nalezl Cibulkův datapad');
       return;
     }
   }
@@ -1197,6 +1219,7 @@ function update(dt){
     const anyKey = keys['w']||keys['s']||keys['a']||keys['d']||
                    keys['ArrowUp']||keys['ArrowDown']||keys['ArrowLeft']||keys['ArrowRight'];
     p.mv = !!anyKey;
+    if(anyKey && gs.stats) gs.stats.steps++;
     const inHeaven = gs.room === 'heaven' || gs.room === 'heaven_gate';
     const legWounded = gs.story.leg_shot && !gs.story.leg_bandaged;
     const spd = p.spd * (inHeaven ? 0.38 : legWounded ? 0.55 : 1) * dt / FRAME_MS;
@@ -1372,6 +1395,7 @@ function update(dt){
   const _drainMs = (typeof Settings !== 'undefined') ? Settings.getEnergyDrainMs() : ENERGY_DRAIN_MS;
   if(gs.room !== 'heaven' && gs.room !== 'heaven_gate' && gs.ts - gs.lastDrain > _drainMs){
     gs.energy = Math.max(0, gs.energy - 1);
+    if(gs.stats) gs.stats.energyDrained++;
     gs.lastDrain = gs.ts;
     if(gs.energy <= 0 && !gs.dead){
       triggerDeath(

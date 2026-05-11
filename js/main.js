@@ -78,6 +78,9 @@ function startGame(){
   addStoryEntry('prolog', 'Nový den v Křemži. Musím vydělat prachy a nastartovat Fábii.', '🏠');
   phoneInitStartMessages();
   phoneStartTimedMessages();
+  // Stats button visibility
+  const statsBtn = document.getElementById('stats-pause-btn');
+  if(statsBtn) statsBtn.style.display = (activeProfile && activeProfile.statsUnlocked) ? '' : 'none';
   requestAnimationFrame(gameLoop);
 
 }
@@ -219,9 +222,121 @@ function togglePause(){
   }
 }
 
-function openStats(){
-  // TODO: stats overlay
+function useDatapad(){
+  if(!activeProfile) return;
+  if(activeProfile.statsUnlocked){
+    openStats();
+    return;
+  }
+  activeProfile.statsUnlocked = true;
+  profileSaveProgressLocal();
+  gs.inv.datapad = 0;
+  updateInv();
+  addLog('*Aktivuješ datapad. Cibulkův sledovací systém se napojuje na tvůj profil. Statistiky odemčeny!*', 'lm');
+  fnotif('📊 Statistiky odemčeny!', 'pos');
+  screenShake(150);
+  const btn = document.getElementById('stats-pause-btn');
+  if(btn) btn.style.display = '';
+  setTimeout(() => openStats(), 600);
 }
+
+function openStats(){
+  if(!activeProfile || !activeProfile.statsUnlocked){
+    addLog('📊 Statistiky nejsou odemčeny. Najdi Cibulkův datapad v jeho laboratoři.', 'lw');
+    return;
+  }
+  renderStatsOverlay();
+  document.getElementById('stats-ov').classList.add('on');
+}
+function renderStatsOverlay(){
+  const body = document.getElementById('stats-body');
+  if(!body) return;
+  const s = gs.stats || {};
+  const playtime = gs.ts ? Math.floor(gs.ts / 1000) : 0;
+  const mins = Math.floor(playtime / 60);
+  const secs = playtime % 60;
+  const visited = gs.visited ? gs.visited.size : 0;
+  const totalRooms = Object.keys(ROOMS).length;
+  const quests = gs.quests ? Object.values(gs.quests).filter(q => q === 'done').length : 0;
+  const totalQuests = gs.quests ? Object.keys(gs.quests).length : 0;
+  const invCount = gs.inv ? Object.values(gs.inv).filter(v => v > 0).length : 0;
+
+  const bar = (val, max, color) => {
+    const pct = max > 0 ? Math.min(100, (val / max) * 100) : 0;
+    return `<div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${color}"></div></div>`;
+  };
+
+  body.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card stat-card-hero">
+        <div class="stat-card-icon">⏱</div>
+        <div class="stat-card-val">${mins}:${secs.toString().padStart(2,'0')}</div>
+        <div class="stat-card-label">Herní čas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">💰</div>
+        <div class="stat-card-val">${gs.money} Kč</div>
+        <div class="stat-card-label">Peníze</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">⭐</div>
+        <div class="stat-card-val">${gs.rep}</div>
+        <div class="stat-card-label">REP</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">⚡</div>
+        <div class="stat-card-val">${gs.energy}%</div>
+        <div class="stat-card-label">Energie</div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">💸 Ekonomika</div>
+      <div class="stat-row"><span>Celkem vyděláno</span><span class="stat-num">${s.moneyEarned} Kč</span></div>
+      <div class="stat-row"><span>Celkem utraceno</span><span class="stat-num">${s.moneySpent} Kč</span></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">🗺 Průzkum</div>
+      <div class="stat-row"><span>Navštívené místnosti</span><span class="stat-num">${visited} / ${totalRooms}</span></div>
+      ${bar(visited, totalRooms, '#4ecdc4')}
+      <div class="stat-row"><span>Přechody mezi místnostmi</span><span class="stat-num">${s.roomChanges}</span></div>
+      <div class="stat-row"><span>Kroky</span><span class="stat-num">${s.steps}</span></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">📋 Questy</div>
+      <div class="stat-row"><span>Splněné questy</span><span class="stat-num">${quests} / ${totalQuests}</span></div>
+      ${bar(quests, totalQuests, '#f7b731')}
+      <div class="stat-row"><span>Dialogy / volby</span><span class="stat-num">${s.dialogChoices}</span></div>
+      <div class="stat-row"><span>Rozhovory s NPC</span><span class="stat-num">${s.npcTalks}</span></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">🧪 Substance</div>
+      <div class="stat-row"><span>🌿 Kratom</span><span class="stat-num">${s.kratomUses}×</span></div>
+      <div class="stat-row"><span>🍃 Blend</span><span class="stat-num">${s.blendUses}×</span></div>
+      <div class="stat-row"><span>💊 Piko</span><span class="stat-num">${s.pikoUses}×</span></div>
+      <div class="stat-row"><span>🍕 Žemle</span><span class="stat-num">${s.zemleEaten}×</span></div>
+      <div class="stat-row"><span>🍺 Piva</span><span class="stat-num">${s.pivosDrunk}×</span></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">🎮 Minihry</div>
+      <div class="stat-row"><span>Odehráno</span><span class="stat-num">${s.minigamesPlayed}</span></div>
+      <div class="stat-row"><span>Vyhráno</span><span class="stat-num">${s.minigamesWon}</span></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-section-title">📦 Inventář</div>
+      <div class="stat-row"><span>Aktuální předměty</span><span class="stat-num">${invCount}</span></div>
+      <div class="stat-row"><span>Celkem sebráno</span><span class="stat-num">${s.itemsCollected}</span></div>
+      <div class="stat-row"><span>Celkem REP</span><span class="stat-num">${s.repEarned}</span></div>
+      <div class="stat-row"><span>Energie spotřebována</span><span class="stat-num">${s.energyDrained}</span></div>
+    </div>
+  `;
+}
+
 function openSettings(){
   Settings.renderUI();
   document.getElementById('settings-ov').classList.add('on');
@@ -241,6 +356,8 @@ function closeAllOverlays(){
   document.getElementById('kremzogram-ov').classList.remove('on');
   document.getElementById('quest-ov').classList.remove('on');
   document.getElementById('settings-ov').classList.remove('on');
+  const statsOv = document.getElementById('stats-ov');
+  if(statsOv) statsOv.classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
 }

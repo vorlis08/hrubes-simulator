@@ -5993,6 +5993,18 @@ function drawCibulkaLab(W,H,t){
   ctx.strokeStyle='rgba(50,65,100,0.40)'; ctx.lineWidth=1; rrect(dskX+W*0.12,dskY+5,W*0.16,dskH-14,2); ctx.stroke();
   ctx.font='7px JetBrains Mono,monospace'; ctx.textAlign='left'; ctx.fillStyle='rgba(40,255,100,0.70)';
   ['> SLEDOVANI: AKTIVNI','> KGB: IDENTIFIKOVANO','> CIBULKA: ONLINE'].forEach((ln,i)=>{ ctx.fillText(ln,dskX+W*0.13,dskY+14+i*10); });
+  // Datapad na stole (pokud nebyl sebrán)
+  if(!gs.story.datapad_taken){
+    const dpx=dskX+W*0.06, dpy=dskY+dskH-22, dpw=W*0.05, dph=14;
+    ctx.fillStyle='#1a1e2e'; rrect(dpx,dpy,dpw,dph,2); ctx.fill();
+    ctx.strokeStyle=`rgba(80,200,255,${0.4+0.3*Math.sin(t*0.004)})`; ctx.lineWidth=1;
+    rrect(dpx,dpy,dpw,dph,2); ctx.stroke();
+    ctx.fillStyle=`rgba(80,200,255,${0.5+0.3*Math.sin(t*0.005)})`; ctx.font='5px JetBrains Mono,monospace';
+    ctx.textAlign='center'; ctx.fillText('STATS',dpx+dpw/2,dpy+9); ctx.textAlign='left';
+    const dpG=ctx.createRadialGradient(dpx+dpw/2,dpy+dph/2,0,dpx+dpw/2,dpy+dph/2,dpw);
+    dpG.addColorStop(0,`rgba(80,200,255,${0.06+0.04*Math.sin(t*0.003)})`); dpG.addColorStop(1,'transparent');
+    ctx.fillStyle=dpG; ctx.beginPath(); ctx.arc(dpx+dpw/2,dpy+dph/2,dpw,0,Math.PI*2); ctx.fill();
+  }
   // Kelimky
   for(let k=0;k<3;k++){
     const kx=dskX+dskW-40+k*14, ky=dskY+5;
