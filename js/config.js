@@ -8,7 +8,7 @@ const SCARED_SEC      = 0; // unused
 const FREEZE_MS       = 8000;
 const PROX_R          = 90;
 const ENERGY_DRAIN_MS = 2000;
-const CIHALOVA_TIMER  = 90; // sekund na doručení pika
+const CIHALOVA_TIMER  = 60; // sekund na doručení pika (base pro Pro)
 
 const REP_LEVELS = [
   {min:0,   label:'🎒 Trapná nula',        color:'#94a3b8'},

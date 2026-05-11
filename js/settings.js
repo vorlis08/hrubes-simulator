@@ -10,34 +10,34 @@ const Settings = (() => {
   const DIFFICULTIES = {
     noob: {
       label:'🍼 Noob', desc:'Pro začátečníky. Pomalý drain, víc času, levnější zboží.',
-      energyMult:0.5, cihalovaMult:2.0, priceMult:0.7, rewardMult:1.3, repMult:1.5,
+      energyMult:0.5, cihalovaMult:2.0, priceMult:0.7, rewardMult:1.0, repMult:1.5,
       deathTimerMult:2.0, quizThreshold:2, quizRetry:true,
       zemleGain:40, samanThreshold:3,
-      kgbKillWin:10, kgbMaxPass:5, kgbAgentSpd:0.7, kgbSpdScale:0.08, kgbAmmo:80, kgbSpawnMult:1.4,
+      kgbKillWin:10, kgbMaxPass:3, kgbAgentSpd:0.7, kgbSpdScale:0.08, kgbAmmo:18, kgbSpawnMult:1.4,
       dodgeWindow1:2400, dodgeWindow2:2000, dodgePenalty:100, dodgeAimTime:2000,
     },
     pro: {
-      label:'😎 Pro', desc:'Standardní obtížnost. Tak jak to má být.',
+      label:'😎 Pro', desc:'Standardní obtížnost. Statistiky a porovnání se měří zde.',
       energyMult:1.0, cihalovaMult:1.0, priceMult:1.0, rewardMult:1.0, repMult:1.0,
       deathTimerMult:1.0, quizThreshold:3, quizRetry:true,
       zemleGain:30, samanThreshold:5,
-      kgbKillWin:18, kgbMaxPass:2, kgbAgentSpd:1.1, kgbSpdScale:0.15, kgbAmmo:50, kgbSpawnMult:1.0,
+      kgbKillWin:18, kgbMaxPass:2, kgbAgentSpd:1.1, kgbSpdScale:0.15, kgbAmmo:25, kgbSpawnMult:1.0,
       dodgeWindow1:1600, dodgeWindow2:1200, dodgePenalty:300, dodgeAimTime:1200,
     },
     hacker: {
       label:'💀 Hacker', desc:'Pro zkušené. Rychlý drain, méně času, dražší zboží.',
-      energyMult:1.5, cihalovaMult:0.7, priceMult:1.3, rewardMult:0.8, repMult:0.8,
+      energyMult:1.5, cihalovaMult:0.167, priceMult:1.3, rewardMult:1.0, repMult:0.8,
       deathTimerMult:0.7, quizThreshold:4, quizRetry:false,
       zemleGain:22, samanThreshold:8,
-      kgbKillWin:25, kgbMaxPass:1, kgbAgentSpd:1.6, kgbSpdScale:0.22, kgbAmmo:35, kgbSpawnMult:0.7,
+      kgbKillWin:25, kgbMaxPass:1, kgbAgentSpd:1.6, kgbSpdScale:0.22, kgbAmmo:31, kgbSpawnMult:0.7,
       dodgeWindow1:1000, dodgeWindow2:800, dodgePenalty:500, dodgeAimTime:800,
     },
     god: {
       label:'🔥 God', desc:'Nemožné. Brutální drain, minimum času, astronomické ceny.',
-      energyMult:2.5, cihalovaMult:0.4, priceMult:2.0, rewardMult:0.5, repMult:0.5,
+      energyMult:2.5, cihalovaMult:0.083, priceMult:2.0, rewardMult:1.0, repMult:0.5,
       deathTimerMult:0.4, quizThreshold:5, quizRetry:false,
       zemleGain:15, samanThreshold:12,
-      kgbKillWin:35, kgbMaxPass:0, kgbAgentSpd:2.2, kgbSpdScale:0.30, kgbAmmo:20, kgbSpawnMult:0.5,
+      kgbKillWin:35, kgbMaxPass:0, kgbAgentSpd:1.6, kgbSpdScale:0.30, kgbAmmo:42, kgbSpawnMult:0.5,
       dodgeWindow1:600, dodgeWindow2:400, dodgePenalty:9999, dodgeAimTime:400,
     },
   };
@@ -84,7 +84,7 @@ const Settings = (() => {
     return 2000 / getDifficulty().energyMult;
   }
   function getCihalovaTimer(){
-    return 90 * getDifficulty().cihalovaMult;
+    return 60 * getDifficulty().cihalovaMult;
   }
   function getPriceMult(){
     return getDifficulty().priceMult;
@@ -190,6 +190,7 @@ const Settings = (() => {
         <div class="set-label">🎮 Obtížnost</div>
         <div class="set-opts">${diffButtons}</div>
         <div class="set-desc">${diff.desc}</div>
+        ${d !== 'pro' ? '<div class="set-warn">⚠ Statistiky a žebříčky se počítají pouze na obtížnosti Pro.</div>' : ''}
       </div>
 
       <div class="set-section">
