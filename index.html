@@ -651,10 +651,22 @@
     </div>
   </div>
 
-  <!-- Quest overlay -->
-  <div id="quest-ov">
-    <div class="plabel">Aktivní cíle <span style="margin-left:auto; font-size: 8px; color:var(--muted2);">Zavřít [Q]</span></div>
+  <!-- Quest overlay (legacy, kept for objective rendering) -->
+  <div id="quest-ov" style="display:none">
     <div id="objlist"></div>
+  </div>
+
+  <!-- Map overlay (M key) -->
+  <div id="map-ov">
+    <div id="map-ov-left">
+      <div id="map-ov-title">🗺 MAPA KŘEMŽE <span class="map-close-hint">[M] zavřít</span></div>
+      <div id="map-ov-canvas"></div>
+      <div id="map-ov-location"></div>
+    </div>
+    <div id="map-ov-right">
+      <div id="map-ov-quests-title">📋 ÚKOLY</div>
+      <div id="map-ov-quests"></div>
+    </div>
   </div>
 
   <!-- Pravý panel – HUD -->
@@ -827,11 +839,11 @@
     </div>
   </div></div>
 
-  <!-- Inventář overlay (E) -->
+  <!-- Batoh overlay (I / E when no prox) -->
   <div id="inv-ov"><div id="inv-ov-wrap">
     <div id="inv-ov-top">
-      <span id="inv-ov-title">🎒 INVENTÁŘ</span>
-      <span id="inv-ov-keys">Esc · Tab · [F] přesun</span>
+      <span id="inv-ov-title">🎒 BATOH</span>
+      <span id="inv-ov-keys">Esc · Tab · [C] combo</span>
     </div>
     <div id="inv-ov-grid"></div>
     <div id="inv-ov-pocket"></div>
@@ -842,7 +854,7 @@
     <div id="pause-wrap">
       <div id="pause-title">⏸ PAUZA</div>
       <button class="pause-btn" onclick="togglePause()">▶ Pokračovat</button>
-      <button class="pause-btn" onclick="togglePause();document.getElementById('quest-ov').classList.add('on')">📖 Deník</button>
+      <button class="pause-btn" onclick="togglePause();toggleMap()">🗺 Mapa</button>
       <button class="pause-btn" onclick="togglePause();toggleNotebook()">📝 Poznámky</button>
       <button class="pause-btn" id="stats-pause-btn" style="display:none" onclick="togglePause();openStats()">📊 Statistika</button>
       <button class="pause-btn" onclick="togglePause();openSettings()">⚙ Nastavení</button>

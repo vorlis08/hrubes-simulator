@@ -312,6 +312,15 @@ const QF = {
     addLog('Koupil jsi pizza žemli v Bille. 🍕','ls');
     fnotif('+1 🍕','itm'); closeDialog();
   },
+  q_jana_buy_batoh(){
+    const _p = getPrice(80);
+    if(gs.money < _p){ addLog(`Nemáš ${_p} Kč!`,'lw'); closeDialog(); return; }
+    payMoney(80);
+    gs.story.has_batoh = true;
+    addLog('🎒 Koupil jsi batoh! Teď uneseš víc věcí. Otevři ho klávesou [I] nebo [E].','ls');
+    fnotif('🎒 Batoh!','itm');
+    closeDialog();
+  },
   // ─── Lenka – záskok za Janu v Bille ──────────────────────────────────────
   q_lenka_zemle(){
     const _p = getPrice(35);

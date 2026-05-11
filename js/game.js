@@ -193,6 +193,11 @@ function initRoom(spawnX, spawnY){
 }
 
 function changeRoom(dir){
+  // Intro quest – can't leave učebna until talking to teacher
+  if(!gs.story.intro_done && gs.room === 'ucebna'){
+    addLog('Je hodina, nemůžeš odejít. Zkus promluvit s nějakou z učitelek.', 'lw');
+    return;
+  }
   const isSklep  = gs.room === 'sklep';
   const p = gs.player;
   const W = canvas.width, H = canvas.height;

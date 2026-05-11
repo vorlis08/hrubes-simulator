@@ -464,6 +464,22 @@ function showDialog(npc){
     return;
   }
   if(gs.stats) gs.stats.npcTalks++;
+
+  // Intro quest – talking to any teacher unlocks movement
+  if(!gs.story.intro_done && gs.room === 'ucebna' &&
+     ['cihalova','krejci','figurova','platenikova','novak'].includes(npc.id)){
+    gs.story.intro_done = true;
+    gs.story.map_unlocked = true;
+    setTimeout(() => {
+      addLog('*Hodina skončila. Můžeš odejít z učebny.*', 'lm');
+      fnotif('🗺 Mapa odemčena! [M]', 'pos');
+      const mapCard = document.getElementById('map-card');
+      if(mapCard) mapCard.style.display = '';
+      addObj('main_money');
+      addObj('main_cihalova');
+    }, 1500);
+  }
+
   const stage = getStage(npc.id);
   const d     = NPCS[npc.id].dialogs[stage];
   if(!d) return;
@@ -526,7 +542,9 @@ function showDialog(npc){
     choices.push({label:'✅ Jana souhlasí', cls:'prim', fn:'q_johnny_confirm'});
   // Jana – koupit žemli v Bille
   if(npc.id === 'jana_kosova' && gs.room === 'billa')
-    choices.push({label:'🍕 Koupit žemli (35 Kč)', cls:'prim', fn:'q_jana_buy_zemle', sub:'Billa freshness guarantee'});
+    choices.push({label:`🍕 Koupit žemli (${getPrice(35)} Kč)`, cls:'prim', fn:'q_jana_buy_zemle', sub:'Billa freshness guarantee'});
+  if(npc.id === 'jana_kosova' && gs.room === 'billa' && !gs.story.has_batoh)
+    choices.push({label:`🎒 Koupit batoh (${getPrice(80)} Kč)`, cls:'special', fn:'q_jana_buy_batoh', sub:'Pro víc předmětů'});
   // Jana – poděkování po záchraně z vily
   if(npc.id === 'jana_kosova' && gs.room === 'billa' && gs.story.jana_rescued_villa && !gs.story.jana_thanked)
     choices.push({label:'💅 "Jak se máš po tom, co se stalo?"', cls:'special', fn:'q_jana_thank'});

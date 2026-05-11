@@ -68,6 +68,10 @@ const Inventory = {
   toggle(){ this._open ? this.close() : this.open(); },
 
   open(){
+    if(!gs.story || !gs.story.has_batoh){
+      addLog('Nemáš batoh. Kup si ho od Jany v Bille.', 'lw');
+      return;
+    }
     this._open = true;
     this._sel = 0;
     this._selArea = 'inv';
