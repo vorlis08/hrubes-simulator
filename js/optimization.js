@@ -368,8 +368,8 @@ function createCachedLinearGradient(x1, y1, x2, y2, stops) {
 // ─── Inicializace offscreen rendereru ────────────────────────────────
 function initOffscreenRenderer() {
   if (!offscreenRenderer) {
-    offscreenRenderer = new OffscreenRenderer(canvas.width, canvas.height);
+    offscreenRenderer = new OffscreenRenderer(CW, CH);
   } else {
-    offscreenRenderer.resize(canvas.width, canvas.height);
+    offscreenRenderer.resize(CW, CH);
   }
 }

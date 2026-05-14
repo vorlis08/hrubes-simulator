@@ -167,8 +167,8 @@ function triggerObidek(){
 
   // Zachyť pozici šamana, odeber ho z NPC – od teď ho renderujeme my
   const samanNPC = currentNPCs.find(n => n.id === 'kratom_saman');
-  const startX = samanNPC ? samanNPC.x : canvas.width * 0.80;
-  const startY = samanNPC ? samanNPC.y : canvas.height * 0.62;
+  const startX = samanNPC ? samanNPC.x : CW * 0.80;
+  const startY = samanNPC ? samanNPC.y : CH * 0.62;
   currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
 
   gs.saman_naked_anim = {
@@ -202,8 +202,8 @@ function triggerObidek(){
         gs.saman_naked_anim.phaseStart = gs.ts;
         if(ln.phase === 'undressing'){
           // Hodí kalhoty někam do rohu
-          gs.saman_naked_anim.pantsX = canvas.width * (0.10 + Math.random() * 0.08);
-          gs.saman_naked_anim.pantsY = canvas.height * 0.80;
+          gs.saman_naked_anim.pantsX = CW * (0.10 + Math.random() * 0.08);
+          gs.saman_naked_anim.pantsY = CH * 0.80;
         }
         if(ln.phase === 'running'){
           const ang = Math.random() * Math.PI * 2;
@@ -244,10 +244,10 @@ function triggerCibulkaSequence(){
 
   // Najdi šamana a krb pozice
   const samanNPC = currentNPCs.find(n => n.id === 'kratom_saman');
-  const startX = samanNPC ? samanNPC.x : canvas.width * 0.80;
-  const startY = samanNPC ? samanNPC.y : canvas.height * 0.62;
-  const krbX = canvas.width * 0.36;
-  const krbY = canvas.height * 0.74; // o trochu níže než ohniště, aby stál PŘED krbem
+  const startX = samanNPC ? samanNPC.x : CW * 0.80;
+  const startY = samanNPC ? samanNPC.y : CH * 0.62;
+  const krbX = CW * 0.36;
+  const krbY = CH * 0.74; // o trochu níže než ohniště, aby stál PŘED krbem
 
   // Odeber šamana z NPC – budeme ho vykreslovat sami
   currentNPCs = currentNPCs.filter(n => n.id !== 'kratom_saman');
@@ -303,7 +303,7 @@ function triggerCibulkaSequence(){
           gs.saman_to_krb = null;
           const samanDef = NPCS['kratom_saman'];
           if(samanDef && gs.room === 'hospoda' && !currentNPCs.find(n => n.id === 'kratom_saman')){
-            currentNPCs.push({ id:'kratom_saman', x: canvas.width * samanDef.rx, y: canvas.height * samanDef.ry, ...samanDef });
+            currentNPCs.push({ id:'kratom_saman', x: CW * samanDef.rx, y: CH * samanDef.ry, ...samanDef });
           }
         }, 2000);
       }

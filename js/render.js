@@ -1014,7 +1014,7 @@ function drawJanaPixel(x, bY, t, flip){
 
 // ─── Jana s katanou (death animace) ────────────────────────────────────────
 function drawJanaKatana(anim, t){
-  const W = canvas.width, H = canvas.height;
+  const W = CW, H = CH;
   const phase = anim.phase;
   const elapsed = (gs.ts - anim.t0) / 1000;
   let x = anim.x, y = anim.y;
@@ -1221,8 +1221,8 @@ function drawJanaAtFireplace(t){
   } else {
     // Stojí u Johnnyho u krbu (po dokončení animace)
     const fp = ROOMS.hospoda.fireplace;
-    x = fp.rx * canvas.width - 35;
-    y = fp.ry * canvas.height + canvas.height * 0.30;
+    x = fp.rx * CW - 35;
+    y = fp.ry * CH + CH * 0.30;
     flip = 1;
   }
   const bob = walking ? Math.abs(Math.sin(t * 0.012)) * 4 : Math.sin(t * 0.003) * 1.2;
@@ -4912,9 +4912,14 @@ function drawDoma(W,H,t){
 // ─── Hlavní render ─────────────────────────────────────────────────────────
 
 function render(){
-  ctx.setTransform(1,0,0,1,0,0); // reset accumulated transforms between frames
+  const rw = +canvas.getAttribute('width'), rh = +canvas.getAttribute('height');
+  const fitS = Math.min(rw / BASE_W, rh / BASE_H);
+  const offX = (rw - BASE_W * fitS) / 2, offY = (rh - BASE_H * fitS) / 2;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0, 0, rw, rh);
+  ctx.setTransform(fitS, 0, 0, fitS, offX, offY);
   const rm=ROOMS[gs.room];
-  const W=canvas.width, H=canvas.height;
+  const W=CW, H=CH;
   const t=gs.ts, p=gs.player;
 
   // Monitor FPS pro dynamickou optimalizaci
@@ -6094,7 +6099,7 @@ function drawHeavenRoom(W,H,t){
   }
 
   // Záře na vrcholu schodů (kde stojí Bůh)
-  const godY=H*0.16*canvas.height/H; // skutečná y pozice
+  const godY=H*0.16*CH/H; // skutečná y pozice
   const glowG=ctx.createRadialGradient(W*0.5,H*0.10,0,W*0.5,H*0.10,W*0.28);
   glowG.addColorStop(0,`rgba(255,220,60,${0.18+0.06*Math.sin(t*0.0015)})`);
   glowG.addColorStop(0.5,`rgba(255,230,100,${0.07+0.03*Math.sin(t*0.0015)})`);

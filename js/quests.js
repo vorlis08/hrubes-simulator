@@ -470,7 +470,7 @@ const QF = {
         const janaExists = currentNPCs.find(n => n.id === 'jana_kosova');
         if(!janaExists){
           const n = NPCS['jana_kosova'];
-          currentNPCs.push({...n, id:'jana_kosova', x:n.rx*canvas.width, y:(n.ry+0.25)*canvas.height, bob:0, bobDir:1});
+          currentNPCs.push({...n, id:'jana_kosova', x:n.rx*CW, y:(n.ry+0.25)*CH, bob:0, bobDir:1});
         }
       }
       // Tajný časovač – pokud hráč nepomůže do 60s, Johnny a Jana zmizí do vily
@@ -565,7 +565,7 @@ const QF = {
     if(jana){
       gs.jana_to_toilet_anim = {
         phase:'walking', x:jana.x, y:jana.y,
-        targetX:canvas.width*0.78, targetY:canvas.height*0.55,
+        targetX:CW*0.78, targetY:CH*0.55,
         flipX:1, t0:gs.ts,
       };
       currentNPCs = currentNPCs.filter(n => n.id !== 'jana_vila');
@@ -599,8 +599,8 @@ const QF = {
       if(!jvNPC) return;
       gs.jana_to_toilet_anim = {
         phase:'walking',
-        x:canvas.width*0.78, y:canvas.height*0.55,
-        targetX:jvNPC.rx*canvas.width, targetY:jvNPC.ry*canvas.height,
+        x:CW*0.78, y:CH*0.55,
+        targetX:jvNPC.rx*CW, targetY:jvNPC.ry*CH,
         flipX:-1, t0:gs.ts,
       };
     }, 3000);
@@ -1010,7 +1010,7 @@ const QF = {
     closeDialog();
     gs.story.johnny_stalking_entered = true;
     gs.room = 'johnny_stalking';
-    initRoom(canvas.width * 0.5, canvas.height * 0.7);
+    initRoom(CW * 0.5, CH * 0.7);
     setTimeout(() => {
       showNPCLine('johnny_vila',
         '"Vítej v mým operačním centru, Fando." *ukáže na stěnu monitorů* "Patnáct kamer. Celá Křemže. Každý ulice, každý obchod, každý barák."',
@@ -1147,7 +1147,7 @@ const QF = {
         // Hráč je právě v hospodě – přidat Páju bez re-initRoom
         if(gs.room === 'hospoda' && !currentNPCs.find(n => n.id === 'paja')){
           const pNPC = NPCS['paja'];
-          currentNPCs.push({...pNPC, id:'paja', x:pNPC.rx*canvas.width*0.55, y:pNPC.ry*canvas.height*1.4, bob:0, bobDir:1});
+          currentNPCs.push({...pNPC, id:'paja', x:pNPC.rx*CW*0.55, y:pNPC.ry*CH*1.4, bob:0, bobDir:1});
         }
       }, 15000);
     }, 35000);
@@ -1531,7 +1531,7 @@ const QF = {
     gs.story.figurova_following = false;
     const fig = currentNPCs.find(n => n.id === 'figurova');
     // Figurová stojí vedle průchodu, ne na místě regálu mléka (0.63,0.55)
-    if(fig){ fig.x = canvas.width * 0.58; fig.y = canvas.height * 0.68; }
+    if(fig){ fig.x = CW * 0.58; fig.y = CH * 0.68; }
     closeDialog();
     setTimeout(() => {
       showNPCLine('figurova',
@@ -1575,7 +1575,7 @@ const QF = {
     );
   },
   _kubatova_attack(){
-    const figX = canvas.width * 0.22, figY = canvas.height * 0.78;
+    const figX = CW * 0.22, figY = CH * 0.78;
     currentNPCs = currentNPCs.filter(n => n.id !== 'figurova');
     addLog('*Ticho. Pak – svist. Kubátová se pohnula.*', 'lw');
     gs.kubatova_bite_anim = { startTime: gs.ts, figX, figY };

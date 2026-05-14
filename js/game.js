@@ -14,14 +14,17 @@ function _getQualityScale(){
   return 1;
 }
 const BASE_W = 1280, BASE_H = 720;
+let CW = BASE_W, CH = BASE_H;
 function resize(){
   const s = _getQualityScale();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const scale = s * (s < 1 ? 1 : dpr);
-  canvas.width = Math.floor(BASE_W * scale);
-  canvas.height = Math.floor(BASE_H * scale);
-  canvas.style.width = '';
-  canvas.style.height = '';
+  canvas.width = Math.floor(innerWidth * scale);
+  canvas.height = Math.floor(innerHeight * scale);
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  CW = BASE_W;
+  CH = BASE_H;
   if(s < 1) canvas.style.imageRendering = 'auto';
   else canvas.style.imageRendering = '';
   gradientCache.clear();
@@ -96,7 +99,7 @@ function initRoom(spawnX, spawnY){
 
   currentNPCs = rm.npcs.map(id => {
     const n = NPCS[id]; if(!n) return null;
-    return { ...n, id, x:n.rx * canvas.width, y:n.ry * canvas.height, bob:0, bobDir:1 };
+    return { ...n, id, x:n.rx * CW, y:n.ry * CH, bob:0, bobDir:1 };
   }).filter(Boolean);
   // Cibulka odešel – nezobrazuj ho
   if(gs.story.cibulka_left) currentNPCs = currentNPCs.filter(n => n.id !== 'bezdak');
@@ -112,7 +115,7 @@ function initRoom(spawnX, spawnY){
   if(gs.room === 'hospoda' && gs.story.paja_in_hospoda && !gs.story.paja_quest_done){
     const pNPC = NPCS['paja'];
     if(!currentNPCs.find(n => n.id === 'paja'))
-      currentNPCs.push({...pNPC, id:'paja', x:pNPC.rx*canvas.width*0.55, y:pNPC.ry*canvas.height*1.4, bob:0, bobDir:1});
+      currentNPCs.push({...pNPC, id:'paja', x:pNPC.rx*CW*0.55, y:pNPC.ry*CH*1.4, bob:0, bobDir:1});
   }
   // Číhalová mrtvá / v pytli / spálená / po skolabování – nezobrazuj ji
   if(gs.cihalova_in_bag || gs.story.cihalova_burned)
@@ -127,7 +130,7 @@ function initRoom(spawnX, spawnY){
   if(gs.room === 'hospoda' && gs.story.milan_in_hospoda && !gs.story.milan_fled){
     const mNPC = NPCS['milan'];
     const alreadyIn = currentNPCs.find(n => n.id === 'milan');
-    if(!alreadyIn) currentNPCs.push({...mNPC, id:'milan', x:mNPC.rx*canvas.width*0.55, y:mNPC.ry*canvas.height*1.1, bob:0, bobDir:1});
+    if(!alreadyIn) currentNPCs.push({...mNPC, id:'milan', x:mNPC.rx*CW*0.55, y:mNPC.ry*CH*1.1, bob:0, bobDir:1});
   }
   // Vstup do sklepa – Milan šel sám za Kubátovou
   if(gs.room === 'sklep' && gs.story.milan_going_to_sklep && !gs.story.milan_dead_sklep){
@@ -188,7 +191,7 @@ function initRoom(spawnX, spawnY){
   // Jana v hospodě na rande
   if(gs.room === 'hospoda' && gs.story.jana_in_hospoda && !gs.story.johnny_took_jana && !gs.story.jana_at_johnny){
     const jn = NPCS['jana_kosova'];
-    currentNPCs.push({...jn, id:'jana_kosova', x:jn.rx*canvas.width, y:(jn.ry+0.28)*canvas.height, bob:0, bobDir:1});
+    currentNPCs.push({...jn, id:'jana_kosova', x:jn.rx*CW, y:(jn.ry+0.28)*CH, bob:0, bobDir:1});
   }
 
   // Spustit cutscenu v koupelně po prokopnutí dveří
@@ -203,18 +206,18 @@ function initRoom(spawnX, spawnY){
 
   currentItems = [];
   if(rm.spawns.kratom && Math.random() < rm.spawns.kratom)
-    currentItems.push({type:'kratom', x:rr(.15,.85)*canvas.width, y:rr(.18,.82)*canvas.height, p:0});
+    currentItems.push({type:'kratom', x:rr(.15,.85)*CW, y:rr(.18,.82)*CH, p:0});
   if(rm.spawns.zemle  && Math.random() < rm.spawns.zemle)
-    currentItems.push({type:'zemle',  x:rr(.15,.85)*canvas.width, y:rr(.18,.82)*canvas.height, p:0});
+    currentItems.push({type:'zemle',  x:rr(.15,.85)*CW, y:rr(.18,.82)*CH, p:0});
 
-  gs.player.x = (spawnX !== undefined) ? spawnX : canvas.width  / 2;
-  gs.player.y = (spawnY !== undefined) ? spawnY : canvas.height / 2;
+  gs.player.x = (spawnX !== undefined) ? spawnX : CW  / 2;
+  gs.player.y = (spawnY !== undefined) ? spawnY : CH / 2;
 }
 
 function changeRoom(dir){
   const isSklep  = gs.room === 'sklep';
   const p = gs.player;
-  const W = canvas.width, H = canvas.height;
+  const W = CW, H = CH;
   const EDGE = 60;
 
   // Nebe – přechod mezi schodami a bránou
@@ -228,11 +231,11 @@ function changeRoom(dir){
 
   if(dir === 'up'){
     // Doma – dveře nahoru vedou zpět do hry (Křemže)
-    if(gs.room === 'doma'){ gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.80); return; }
+    if(gs.room === 'doma'){ gs.room = 'kremze'; initRoom(CW * 0.50, CH * 0.80); return; }
     return;
   }
   if(dir === 'down'){
-    if(isSklep){ gs.room = 'billa'; initRoom(Math.floor(canvas.width*0.63), Math.floor(canvas.height*0.65)); return; }
+    if(isSklep){ gs.room = 'billa'; initRoom(Math.floor(CW*0.63), Math.floor(CH*0.65)); return; }
     return;
   }
 
@@ -259,7 +262,7 @@ function checkProx(){
   // Krb v hospodě – interakční zóna je větší a posunuta níž (krb je nahoře)
   if(gs.room === 'hospoda' && gs.cihalova_in_bag){
     const fp = ROOMS.hospoda.fireplace;
-    const fx = fp.rx*canvas.width, fy = fp.ry*canvas.height + canvas.height*0.18;
+    const fx = fp.rx*CW, fy = fp.ry*CH + CH*0.18;
     const fd = dist2(p, {x:fx, y:fy});
     if(fd < PROX_R * 1.7){ best = {isFireplace:true}; }
   }
@@ -268,14 +271,14 @@ function checkProx(){
   if(gs.room === 'kremze'){
     const villaAccessible = (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa && !gs.story.jana_drugged_villa) || gs.inv.klice_vila;
     if(villaAccessible){
-      const vx = canvas.width * 0.50, vy = canvas.height * 0.50;
+      const vx = CW * 0.50, vy = CH * 0.50;
       if(dist2(p, {x:vx, y:vy}) < PROX_R){ best = {isVilla:true}; }
     }
   }
 
   // Villa – dveře do koupelny
   if(gs.room === 'johnny_vila' && !gs.story.johnny_cuffed){
-    const bx = canvas.width * 0.92, by = canvas.height * 0.35;
+    const bx = CW * 0.92, by = CH * 0.35;
     if(dist2(p, {x:bx, y:by}) < PROX_R){
       if(gs.story.jana_in_bathroom_locked && !gs.story.bathroom_door_broken){
         best = {isVillaBathroomLocked:true};
@@ -286,65 +289,65 @@ function checkProx(){
   }
   // Koupelna – šuplík (želízka)
   if(gs.room === 'koupelna' && !gs.story.koupelna_drawer_opened){
-    const sdx = canvas.width * 0.50, sdy = canvas.height * 0.64;
+    const sdx = CW * 0.50, sdy = CH * 0.64;
     if(dist2(p, {x:sdx, y:sdy}) < PROX_R){ best = {isBathroomDrawer:true}; }
   }
   // Koupelna – hadr na topení
   if(gs.room === 'koupelna' && !gs.inv.hadr){
-    const hrx = canvas.width * 0.89, hry = canvas.height * 0.35;
+    const hrx = CW * 0.89, hry = CH * 0.35;
     if(dist2(p, {x:hrx, y:hry}) < PROX_R){ best = {isBathroomRag:true}; }
   }
   // Koupelna – umyvadlo
   if(gs.room === 'koupelna' && !gs.story.sink_used){
-    const ux = canvas.width * 0.40, uy = canvas.height * 0.38;
+    const ux = CW * 0.40, uy = CH * 0.38;
     if(dist2(p, {x:ux, y:uy}) < PROX_R){ best = {isBathroomSink:true}; }
   }
   // Villa – šuplík u pohovky (prášek)
   if(gs.room === 'johnny_vila' && !gs.story.villa_powder_taken && !gs.story.johnny_cuffed){
-    const drx = canvas.width * 0.23, dry = canvas.height * 0.75;
+    const drx = CW * 0.23, dry = CH * 0.75;
     if(dist2(p, {x:drx, y:dry}) < PROX_R){ best = {isVillaPowder:true}; }
   }
   // Johnny spoutaný – vzít klíče
   if(gs.room === 'johnny_vila' && gs.story.johnny_cuffed && !gs.inv.klice_vila){
-    const jx = canvas.width * 0.65, jy = canvas.height * 0.55;
+    const jx = CW * 0.65, jy = CH * 0.55;
     if(dist2(p, {x:jx, y:jy}) < PROX_R * 1.5){ best = {isJohnnyKeys:true}; }
   }
   // Sad Johnny on couch – interakce
   if(gs.room === 'johnny_vila' && gs.story.johnny_sad_couch && !gs.story.johnny_roulette_done && !gs.story.johnny_dead){
-    const jx = canvas.width * 0.28, jy = canvas.height * 0.60;
+    const jx = CW * 0.28, jy = CH * 0.60;
     if(dist2(p, {x:jx, y:jy}) < PROX_R * 1.5){
       best = {isNPC:true, ...NPCS.johnny_vila, id:'johnny_vila', x:jx, y:jy};
     }
   }
   // Sad Johnny – dveře z vily (trap)
   if(gs.room === 'johnny_vila' && gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
-    const exitX = canvas.width * 0.5, exitY = canvas.height * 0.92;
+    const exitX = CW * 0.5, exitY = CH * 0.92;
     if(dist2(p, {x:exitX, y:exitY}) < PROX_R * 1.5){ best = {isVillaExitTrap:true}; }
   }
   // Stalking room door (po želízka path, po roulette)
   if(gs.room === 'johnny_vila' && gs.story.johnny_roulette_played && !gs.story.johnny_stalking_revealed){
-    const sdx = canvas.width * 0.08, sdy = canvas.height * 0.55;
+    const sdx = CW * 0.08, sdy = CH * 0.55;
     if(dist2(p, {x:sdx, y:sdy}) < PROX_R * 1.2){ best = {isStalkingDoor:true}; }
   }
 
   // Regál mléka v Bille – tajný vchod
   if(gs.room === 'billa' && gs.story.sklep_unlocked && !gs.shelf_sliding){
-    const mx = canvas.width * 0.63, my = canvas.height * 0.55;
+    const mx = CW * 0.63, my = CH * 0.55;
     if(dist2(p, {x:mx, y:my}) < PROX_R * 1.5){ best = {isMilkShelf:true}; }
   }
   // Figurová sleduje – interakce u dveří sklepa
   if(gs.room === 'billa' && gs.story.figurova_following && !gs.story.figurova_at_door){
-    const dx = canvas.width * 0.63, dy = canvas.height * 0.72;
+    const dx = CW * 0.63, dy = CH * 0.72;
     if(dist2(p, {x:dx, y:dy}) < PROX_R * 2) best = {isFigurovaDoor:true};
   }
   // Figurová pochroumána v sklepě
   if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep){
-    const fx = canvas.width * 0.22, fy = canvas.height * 0.78;
+    const fx = CW * 0.22, fy = CH * 0.78;
     if(dist2(p, {x:fx, y:fy}) < PROX_R * 1.5) best = {isFigurovaSklep:true};
   }
   // Figurová leží po výboji propisky (učebna)
   if(gs.room === 'ucebna' && gs.story.figurova_propiska_kill){
-    const fx = canvas.width * 0.50, fy = canvas.height * 0.68;
+    const fx = CW * 0.50, fy = CH * 0.68;
     if(dist2(p, {x:fx, y:fy}) < PROX_R * 1.5) best = {isFigurovaPropBody:true};
   }
 
@@ -352,7 +355,7 @@ function checkProx(){
   if(gs.room === 'kremze' && (gs.inv.klice_fabie || gs.inv.klice_fabie_fig)){
     const fab = ROOMS.kremze.fabie;
     if(fab){
-      const fx = canvas.width * fab.rx, fy = canvas.height * fab.ry;
+      const fx = CW * fab.rx, fy = CH * fab.ry;
       if(dist2(p, {x:fx, y:fy}) < PROX_R * 1.3){ best = {isFabie:true}; }
     }
   }
@@ -360,41 +363,41 @@ function checkProx(){
   // Šaman elixír – sběr ingrediencí
   if(gs.story.saman_elixir_quest && !gs.story.saman_elixir_done){
     if(gs.room === 'cibulka_lab' && !gs.inv.bylina_lab){
-      const elBx = canvas.width * 0.30, elBy = canvas.height * 0.45;
+      const elBx = CW * 0.30, elBy = CH * 0.45;
       if(dist2(p, {x:elBx, y:elBy}) < PROX_R){ best = {isElixirBylina:true}; }
     }
     if(gs.room === 'koupelna' && !gs.inv.voda_koupelna){
-      const elWx = canvas.width * 0.40, elWy = canvas.height * 0.38;
+      const elWx = CW * 0.40, elWy = CH * 0.38;
       if(dist2(p, {x:elWx, y:elWy}) < PROX_R){ best = {isElixirVoda:true}; }
     }
     if(gs.room === 'sklep' && !gs.inv.prach_pentagram){
-      const elPx = canvas.width * 0.50, elPy = canvas.height * 0.72;
+      const elPx = CW * 0.50, elPy = CH * 0.72;
       if(dist2(p, {x:elPx, y:elPy}) < PROX_R * 1.3){ best = {isElixirPrach:true}; }
     }
   }
 
   // Kasička doma (na stolku vlevo)
   if(gs.room === 'doma' && !gs.kasicka_taken){
-    const kx = canvas.width * 0.06 + canvas.width * 0.055, ky = canvas.height * 0.58 - 22;
+    const kx = CW * 0.06 + CW * 0.055, ky = CH * 0.58 - 22;
     if(dist2(p, {x:kx, y:ky}) < PROX_R){ best = {isKasicka:true}; }
   }
 
   // Postel doma – masturbátor pod postelí
   if(gs.room === 'doma' && !gs.story.masturbator_found){
-    const bpx = canvas.width * 0.80, bpy = canvas.height * 0.68;
+    const bpx = CW * 0.80, bpy = CH * 0.68;
     if(dist2(p, {x:bpx, y:bpy}) < PROX_R * 1.8){ best = {isBed:true}; }
   }
 
   // Dveře doma (exit ven)
   if(gs.room === 'doma'){
-    const doorCX = canvas.width * 0.50, doorCY = canvas.height * 0.05;
+    const doorCX = CW * 0.50, doorCY = CH * 0.05;
     if(dist2(p, {x:doorCX, y:doorCY}) < PROX_R * 1.5){ best = {isDoor:true}; }
   }
 
   // Artefakty na bustách doma – zobrazuj proximity hint jen pro vzatelné
   if(gs.room === 'doma' && activeProfile){
-    const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
-    const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
+    const acx = CW * 0.42, acy = CH * 0.38;
+    const arx = Math.min(CW * 0.22, 200), ary = Math.min(CH * 0.20, 130);
     for(let i = 0; i < ART_KEYS_DISPLAY.length; i++){
       const key = ART_KEYS_DISPLAY[i];
       const unlocked = activeProfile.artifacts[key];
@@ -421,8 +424,8 @@ function checkProx(){
   // Jana u krbu (po "Johnny je v pohodě")
   if(gs.room === 'hospoda' && gs.story.jana_at_johnny && !gs.story.johnny_took_jana && !gs.jana_to_fireplace_anim){
     const fp = ROOMS.hospoda.fireplace;
-    const jx = fp.rx * canvas.width - 35;
-    const jy = fp.ry * canvas.height + canvas.height * 0.30;
+    const jx = fp.rx * CW - 35;
+    const jy = fp.ry * CH + CH * 0.30;
     if(dist2(p, {x:jx, y:jy}) < PROX_R){ best = {isJanaFireplace:true}; }
   }
 
@@ -430,27 +433,27 @@ function checkProx(){
   // Krb v hospodě – vstup do Cibulkovy laboratoře
   if(gs.room === 'hospoda' && gs.krb_open){
     const fp = ROOMS.hospoda.fireplace;
-    const kx = fp.rx * canvas.width, ky = fp.ry * canvas.height + canvas.height * 0.16;
+    const kx = fp.rx * CW, ky = fp.ry * CH + CH * 0.16;
     if(dist2(p, {x:kx, y:ky}) < PROX_R * 1.5){ best = {isKrbEntry:true}; }
   }
 
   // Cibulkova laboratoř – návrat krbem (nahoře uprostřed)
   if(gs.room === 'cibulka_lab'){
-    const krbX = canvas.width * 0.50, krbY = canvas.height * 0.45;
+    const krbX = CW * 0.50, krbY = CH * 0.45;
     if(dist2(p, {x:krbX, y:krbY}) < PROX_R * 1.3){ best = {isLabExit:true}; }
     // Šíša antidote
     if(gs.shisha_effects && !gs.shisha_cured && gs.story.shisha_antidote_quest){
-      const ampX = canvas.width * 0.60, ampY = canvas.height * 0.72;
+      const ampX = CW * 0.60, ampY = CH * 0.72;
       if(dist2(p, {x:ampX, y:ampY}) < PROX_R * 1.3){ best = {isShishaAntidote:true}; }
     }
     // Šuplík
-    const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
+    const supX = CW * 0.75 + CW * 0.05, supY = CH * 0.72 + CH * 0.03;
     if(!gs.story.kgb_detector_from_lab && dist2(p, {x:supX, y:supY}) < PROX_R * 1.2){
       best = {isCibulkaSuplik:true};
     }
     // Datapad na laboratorním stole
     if(!gs.story.datapad_taken){
-      const dpX = canvas.width * 0.35, dpY = canvas.height * 0.68;
+      const dpX = CW * 0.35, dpY = CH * 0.68;
       if(dist2(p, {x:dpX, y:dpY}) < PROX_R){ best = {isDatapad:true}; }
     }
   }
@@ -538,7 +541,7 @@ function interact(){
   // Cibulkova laboratoř – šuplík (klíček od Páji)
   // Cibulkova laboratoř – šíša protilék (zelená ampulka)
   if(gs.room === 'cibulka_lab' && gs.shisha_effects && !gs.shisha_cured && gs.story.shisha_antidote_quest){
-    const ampX = canvas.width * 0.60, ampY = canvas.height * 0.72;
+    const ampX = CW * 0.60, ampY = CH * 0.72;
     if(dist2(gs.player, {x:ampX, y:ampY}) < PROX_R * 1.3){
       gs.shisha_cured = true;
       gs.shisha_effects = false;
@@ -555,7 +558,7 @@ function interact(){
   }
   // Datapad na laboratorním stole
   if(gs.room === 'cibulka_lab' && !gs.story.datapad_taken){
-    const dpX = canvas.width * 0.35, dpY = canvas.height * 0.68;
+    const dpX = CW * 0.35, dpY = CH * 0.68;
     if(dist2(gs.player, {x:dpX, y:dpY}) < PROX_R){
       gs.story.datapad_taken = true;
       gs.inv.datapad = 1;
@@ -568,7 +571,7 @@ function interact(){
     }
   }
   if(gs.room === 'cibulka_lab' && !gs.story.kgb_detector_from_lab){
-    const supX = canvas.width * 0.75 + canvas.width * 0.05, supY = canvas.height * 0.72 + canvas.height * 0.03;
+    const supX = CW * 0.75 + CW * 0.05, supY = CH * 0.72 + CH * 0.03;
     if(dist2(gs.player, {x:supX, y:supY}) < PROX_R * 1.2){
       if(!gs.inv.klic_supliku){
         addLog('🔒 Šuplík je zamčený. Potřebuješ klíček.', 'lw');
@@ -590,7 +593,7 @@ function interact(){
   // Šaman elixír – sběr ingrediencí
   if(gs.story.saman_elixir_quest && !gs.story.saman_elixir_done){
     if(gs.room === 'cibulka_lab' && !gs.inv.bylina_lab){
-      const elBx = canvas.width * 0.30, elBy = canvas.height * 0.45;
+      const elBx = CW * 0.30, elBy = CH * 0.45;
       if(dist2(gs.player, {x:elBx, y:elBy}) < PROX_R){
         gs.inv.bylina_lab = 1; updateInv();
         addLog('*Našel jsi podivnou svítící bylinu v jedné z Cibulkových nádob. Voní po mentolu.*', 'lm');
@@ -600,7 +603,7 @@ function interact(){
       }
     }
     if(gs.room === 'koupelna' && !gs.inv.voda_koupelna){
-      const elWx = canvas.width * 0.40, elWy = canvas.height * 0.38;
+      const elWx = CW * 0.40, elWy = CH * 0.38;
       if(dist2(gs.player, {x:elWx, y:elWy}) < PROX_R){
         gs.inv.voda_koupelna = 1; updateInv();
         addLog('*Nabral jsi vodu z umyvadla. Trochu zakalená, ale Šaman chtěl přesně tuhle.*', 'lm');
@@ -610,7 +613,7 @@ function interact(){
       }
     }
     if(gs.room === 'sklep' && !gs.inv.prach_pentagram){
-      const elPx = canvas.width * 0.50, elPy = canvas.height * 0.72;
+      const elPx = CW * 0.50, elPy = CH * 0.72;
       if(dist2(gs.player, {x:elPx, y:elPy}) < PROX_R * 1.3){
         gs.inv.prach_pentagram = 1; updateInv();
         addLog('*Opatrně jsi sebral hrst prachu z okraje pentagramu. Chlad ti projel prsty.*', 'lm');
@@ -625,7 +628,7 @@ function interact(){
   if(gs.room === 'kremze'){
     const villaAccessible = (gs.story.johnny_took_jana && !gs.story.jana_rescued_villa && !gs.story.jana_drugged_villa) || gs.inv.klice_vila;
     if(villaAccessible){
-      const vx = canvas.width * 0.50, vy = canvas.height * 0.50;
+      const vx = CW * 0.50, vy = CH * 0.50;
       if(dist2(gs.player, {x:vx, y:vy}) < PROX_R){
         // Návrat po získání odměn – return visit
         if(gs.story.johnny_villa_rewards && gs.story.johnny_return_left && !gs.story.johnny_return_visit){
@@ -651,7 +654,7 @@ function interact(){
             addLog('*Vila je tichá. Všude díry od zbraně. Johnny sedí sám na gauči.*', 'lw');
           }
         }
-        gs.room = 'johnny_vila'; initRoom(canvas.width * 0.5, canvas.height * 0.7);
+        gs.room = 'johnny_vila'; initRoom(CW * 0.5, CH * 0.7);
         // Šíša – povinná při prvním vstupu
         if(!gs.story.shisha_smoked && !gs.story.jana_escaped_success && !gs.story.johnny_dead){
           gs.story.shisha_smoked = true;
@@ -682,7 +685,7 @@ function interact(){
   }
   // Villa – dveře do koupelny
   if(gs.room === 'johnny_vila' && !gs.story.johnny_cuffed){
-    const bx = canvas.width * 0.92, by = canvas.height * 0.35;
+    const bx = CW * 0.92, by = CH * 0.35;
     if(dist2(gs.player, {x:bx, y:by}) < PROX_R){
       if(gs.story.jana_in_bathroom_locked && !gs.story.bathroom_door_broken){
         addLog('🔒 Koupelna zamčená zevnitř. Jana je tam.', 'lw');
@@ -690,16 +693,16 @@ function interact(){
       }
       // Pokud Johnny právě vtrhl do koupelny – spustit gun scene
       if(gs.story.johnny_in_bathroom && !gs.story.gun_scene_done){
-        gs.room = 'koupelna'; initRoom(canvas.width * 0.5, canvas.height * 0.7);
+        gs.room = 'koupelna'; initRoom(CW * 0.5, CH * 0.7);
         setTimeout(() => triggerJohnnyGunScene(), 600);
         return;
       }
-      gs.room = 'koupelna'; initRoom(canvas.width * 0.5, canvas.height * 0.7); return;
+      gs.room = 'koupelna'; initRoom(CW * 0.5, CH * 0.7); return;
     }
   }
   // Villa – šuplík u pohovky (prášek pro Janin drink)
   if(gs.room === 'johnny_vila' && !gs.story.villa_powder_taken && !gs.story.johnny_cuffed){
-    const drx = canvas.width * 0.23, dry = canvas.height * 0.75;
+    const drx = CW * 0.23, dry = CH * 0.75;
     if(dist2(gs.player, {x:drx, y:dry}) < PROX_R){
       gs.story.villa_powder_taken = true;
       gs.inv.prasek = 1; updateInv();
@@ -709,7 +712,7 @@ function interact(){
   }
   // Koupelna – hadr na topení
   if(gs.room === 'koupelna' && !gs.inv.hadr){
-    const hrx = canvas.width * 0.89, hry = canvas.height * 0.35;
+    const hrx = CW * 0.89, hry = CH * 0.35;
     if(dist2(gs.player, {x:hrx, y:hry}) < PROX_R){
       gs.inv.hadr = 1; updateInv();
       showPlayerLine('*Stáhneš mokrý hadr z topení.* Ještě teplý. K něčemu se hodí.');
@@ -718,17 +721,17 @@ function interact(){
   }
   // Koupelna – šuplík
   if(gs.room === 'koupelna' && !gs.story.koupelna_drawer_opened){
-    const sdx = canvas.width * 0.50, sdy = canvas.height * 0.64;
+    const sdx = CW * 0.50, sdy = CH * 0.64;
     if(dist2(gs.player, {x:sdx, y:sdy}) < PROX_R){ runQF('q_koupelna_drawer'); return; }
   }
   // Koupelna – umyvadlo
   if(gs.room === 'koupelna' && !gs.story.sink_used){
-    const ux = canvas.width * 0.40, uy = canvas.height * 0.38;
+    const ux = CW * 0.40, uy = CH * 0.38;
     if(dist2(gs.player, {x:ux, y:uy}) < PROX_R){ runQF('q_koupelna_sink'); return; }
   }
   // Johnny spoutaný – vzít klíče pomocí E
   if(gs.room === 'johnny_vila' && gs.story.johnny_cuffed && !gs.inv.klice_vila){
-    const jx = canvas.width * 0.65, jy = canvas.height * 0.55;
+    const jx = CW * 0.65, jy = CH * 0.55;
     if(dist2(gs.player, {x:jx, y:jy}) < PROX_R * 1.5){
       gs.inv.klice_vila = 1; updateInv();
       addLog('Vzal jsi Johnnymu klíče od baráku. Nemůže se bránit.', 'lw');
@@ -738,14 +741,14 @@ function interact(){
 
   // Villa exit trap – Johnny střílí do kolene
   if(gs.room === 'johnny_vila' && gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
-    const exitX = canvas.width * 0.5, exitY = canvas.height * 0.92;
+    const exitX = CW * 0.5, exitY = CH * 0.92;
     if(dist2(gs.player, {x:exitX, y:exitY}) < PROX_R * 1.5){
       runQF('q_johnny_knee_shot'); return;
     }
   }
   // Stalking door
   if(gs.room === 'johnny_vila' && gs.story.johnny_roulette_played && !gs.story.johnny_stalking_revealed){
-    const sdx = canvas.width * 0.08, sdy = canvas.height * 0.55;
+    const sdx = CW * 0.08, sdy = CH * 0.55;
     if(dist2(gs.player, {x:sdx, y:sdy}) < PROX_R * 1.2){
       gs.story.johnny_stalking_revealed = true;
       addLog('*Otevřeš dveře, které tu předtím nebyly...*', 'lw');
@@ -759,7 +762,7 @@ function interact(){
 
   // Figurová sleduje – zastavit u dveří sklepa
   if(gs.room === 'billa' && gs.story.figurova_following && !gs.story.figurova_at_door){
-    const dx = canvas.width * 0.63, dy = canvas.height * 0.72;
+    const dx = CW * 0.63, dy = CH * 0.72;
     if(dist2(gs.player, {x:dx, y:dy}) < PROX_R * 2){ runQF('q_figurova_arrive_door'); return; }
   }
   // Figurová váhá u průchodu – znovu zobrazit volbu (i po "Nechat ji, ať se rozmyslí")
@@ -772,7 +775,7 @@ function interact(){
   }
   // Figurová leží v učebně – výboj propisky
   if(gs.room === 'ucebna' && gs.story.figurova_propiska_kill){
-    const fx = canvas.width * 0.50, fy = canvas.height * 0.68;
+    const fx = CW * 0.50, fy = CH * 0.68;
     if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.5){
       addLog('⚡ *bzzzt*', 'lw');
       setTimeout(() => addLog('...', 'ls'), 500);
@@ -781,16 +784,16 @@ function interact(){
   }
   // Figurová pochroumána v sklepě – promluvit
   if(gs.room === 'sklep' && gs.story.figurova_kicked && !gs.story.figurova_dead_sklep && !gs.story.figurova_plea_done){
-    const fx = canvas.width * 0.22, fy = canvas.height * 0.78;
+    const fx = CW * 0.22, fy = CH * 0.78;
     if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.5){ runQF('q_figurova_sklep_plea'); return; }
   }
 
   // Regál mléka – tajný vchod do sklepa (zablokováno pokud Figurová sleduje)
   if(gs.room === 'billa' && gs.story.sklep_unlocked && !gs.shelf_sliding && !gs.story.figurova_following){
-    const mx = canvas.width * 0.63, my = canvas.height * 0.55;
+    const mx = CW * 0.63, my = CH * 0.55;
     if(dist2(gs.player, {x:mx, y:my}) < PROX_R * 1.5){
       if(gs.story.shelf_open){
-        gs.room = 'sklep'; initRoom(canvas.width * 0.5, canvas.height * 0.12); return;
+        gs.room = 'sklep'; initRoom(CW * 0.5, CH * 0.12); return;
       } else {
         gs.shelf_sliding = true; gs.shelf_anim = 0;
         addLog('Regál se pomalu šoupá doprava...', 'ls'); return;
@@ -801,7 +804,7 @@ function interact(){
   // Krb – interakční zóna níž a větší
   if(gs.room === 'hospoda' && gs.cihalova_in_bag){
     const fp = ROOMS.hospoda.fireplace;
-    const fx = fp.rx*canvas.width, fy = fp.ry*canvas.height + canvas.height*0.18;
+    const fx = fp.rx*CW, fy = fp.ry*CH + CH*0.18;
     if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.7){
       burnCihalova(); return;
     }
@@ -811,7 +814,7 @@ function interact(){
   if(gs.room === 'kremze' && (gs.inv.klice_fabie || gs.inv.klice_fabie_fig)){
     const fab = ROOMS.kremze.fabie;
     if(fab){
-      const fx = canvas.width * fab.rx, fy = canvas.height * fab.ry;
+      const fx = CW * fab.rx, fy = CH * fab.ry;
       if(dist2(gs.player, {x:fx, y:fy}) < PROX_R * 1.3){
         runQF('q_fabie_drive'); return;
       }
@@ -820,7 +823,7 @@ function interact(){
 
   // Kasička doma (na stolku vlevo)
   if(gs.room === 'doma' && !gs.kasicka_taken){
-    const kx = canvas.width * 0.06 + canvas.width * 0.055, ky = canvas.height * 0.58 - 22;
+    const kx = CW * 0.06 + CW * 0.055, ky = CH * 0.58 - 22;
     if(dist2(gs.player, {x:kx, y:ky}) < PROX_R){
       runQF('q_kasicka'); return;
     }
@@ -828,7 +831,7 @@ function interact(){
 
   // Postel doma – masturbátor pod postelí
   if(gs.room === 'doma' && !gs.story.masturbator_found){
-    const bpx = canvas.width * 0.80, bpy = canvas.height * 0.68;
+    const bpx = CW * 0.80, bpy = CH * 0.68;
     if(dist2(gs.player, {x:bpx, y:bpy}) < PROX_R * 1.8){
       gs.story.masturbator_found = true;
       gs.inv.masturbator = 1;
@@ -842,7 +845,7 @@ function interact(){
 
   // Dveře doma – potvrzovací dialog
   if(gs.room === 'doma'){
-    const doorCX = canvas.width * 0.50, doorCY = canvas.height * 0.05;
+    const doorCX = CW * 0.50, doorCY = CH * 0.05;
     if(dist2(gs.player, {x:doorCX, y:doorCY}) < PROX_R * 1.5){
       document.getElementById('dav').textContent   = '🚪';
       document.getElementById('dname').textContent = 'DVEŘE';
@@ -858,8 +861,8 @@ function interact(){
 
   // Artefakty na bustách doma – pouze vzatelné lze přenést do hry
   if(gs.room === 'doma' && activeProfile){
-    const acx = canvas.width * 0.42, acy = canvas.height * 0.38;
-    const arx = Math.min(canvas.width * 0.22, 200), ary = Math.min(canvas.height * 0.20, 130);
+    const acx = CW * 0.42, acy = CH * 0.38;
+    const arx = Math.min(CW * 0.22, 200), ary = Math.min(CH * 0.20, 130);
     for(let i = 0; i < ART_KEYS_DISPLAY.length; i++){
       const key = ART_KEYS_DISPLAY[i];
       const unlocked = activeProfile.artifacts[key];
@@ -893,10 +896,10 @@ function interact(){
   // Vstup do Cibulkovy laboratoře (krb v hospodě, otevřený)
   if(gs.room === 'hospoda' && gs.krb_open){
     const fp = ROOMS.hospoda.fireplace;
-    const kx = fp.rx * canvas.width, ky = fp.ry * canvas.height + canvas.height * 0.16;
+    const kx = fp.rx * CW, ky = fp.ry * CH + CH * 0.16;
     if(dist2(gs.player, {x:kx, y:ky}) < PROX_R * 1.5){
       gs.room = 'cibulka_lab';
-      initRoom(canvas.width * 0.50, canvas.height * 0.55);
+      initRoom(CW * 0.50, CH * 0.55);
       addLog('*Projdeš plameny. Cítíš jen chlad. Vstoupil jsi do tajné laboratoře.*', 'lm');
       return;
     }
@@ -904,11 +907,11 @@ function interact(){
 
   // Návrat z laboratoře krbem
   if(gs.room === 'cibulka_lab'){
-    const krbX = canvas.width * 0.50, krbY = canvas.height * 0.45;
+    const krbX = CW * 0.50, krbY = CH * 0.45;
     if(dist2(gs.player, {x:krbX, y:krbY}) < PROX_R * 1.3){
       gs.room = 'hospoda';
       const fp = ROOMS.hospoda.fireplace;
-      initRoom(fp.rx * canvas.width, fp.ry * canvas.height + canvas.height * 0.30);
+      initRoom(fp.rx * CW, fp.ry * CH + CH * 0.30);
       return;
     }
   }
@@ -916,8 +919,8 @@ function interact(){
   // Jana u krbu (po "Johnny je v pohodě") – mluvit s ní
   if(gs.room === 'hospoda' && gs.story.jana_at_johnny && !gs.story.johnny_took_jana && !gs.jana_to_fireplace_anim){
     const fp = ROOMS.hospoda.fireplace;
-    const jx = fp.rx * canvas.width - 35;
-    const jy = fp.ry * canvas.height + canvas.height * 0.30;
+    const jx = fp.rx * CW - 35;
+    const jy = fp.ry * CH + CH * 0.30;
     if(dist2(gs.player, {x:jx, y:jy}) < PROX_R){
       const janaNPC = NPCS['jana_kosova'];
       if(janaNPC) showDialog({...janaNPC, id:'jana_kosova'});
@@ -927,7 +930,7 @@ function interact(){
 
   // Sklenice na stole ve villce – vrátit
   if(gs.room === 'johnny_vila' && gs.inv.sklenice_jana && gs.story.jana_at_toilet){
-    const tx = canvas.width * 0.50, ty = canvas.height * 0.62;
+    const tx = CW * 0.50, ty = CH * 0.62;
     if(dist2(gs.player, {x:tx, y:ty}) < PROX_R * 1.2){
       runQF('q_return_glass_to_table');
       return;
@@ -1049,8 +1052,8 @@ function update(dt){
     }
     if(a.phase === 'in_toilet' && gs.ts >= a.returnAt){
       a.phase = 'returning';
-      a.targetX = canvas.width * 0.55;
-      a.targetY = canvas.height * 0.60;
+      a.targetX = CW * 0.55;
+      a.targetY = CH * 0.60;
       a.startDist = 0;
     }
     if(a.phase === 'returning'){
@@ -1089,8 +1092,8 @@ function update(dt){
         for(let i=0;i<30;i++){
           const big = i < 4;
           splinters.push({
-            t0: gs.ts, x: canvas.width*0.5 + (Math.random()-0.5)*canvas.width*0.12,
-            y: canvas.height*0.84 + Math.random()*canvas.height*0.02,
+            t0: gs.ts, x: CW*0.5 + (Math.random()-0.5)*CW*0.12,
+            y: CH*0.84 + Math.random()*CH*0.02,
             vx: (Math.random()-0.5)*(big ? 300 : 180),
             vy: -60 - Math.random()*(big ? 250 : 160),
             rot: Math.random()*Math.PI*2, rotV: (Math.random()-0.5)*10,
@@ -1112,7 +1115,7 @@ function update(dt){
   // Johnny chase – sleduje hráče ve vile během útěku
   if(gs.jana_escape_deadline && gs.room === 'johnny_vila' && !gs.story.jana_escape_failed){
     if(!gs.johnny_chase_pos){
-      gs.johnny_chase_pos = { x: canvas.width*0.88, y: canvas.height*0.42 };
+      gs.johnny_chase_pos = { x: CW*0.88, y: CH*0.42 };
     }
     const jc = gs.johnny_chase_pos;
     const dx2 = gs.player.x - jc.x, dy2 = gs.player.y - jc.y;
@@ -1171,7 +1174,7 @@ function update(dt){
   // Šaman OBÍDEK – pobíhá nahý po hospodě
   if(gs.saman_naked_anim && gs.room === 'hospoda' && gs.saman_naked_anim.phase === 'running'){
     const a = gs.saman_naked_anim;
-    const W = canvas.width, H = canvas.height;
+    const W = CW, H = CH;
     const k = dt / FRAME_MS;
     a.x += a.vx * k;
     a.y += a.vy * k;
@@ -1255,7 +1258,7 @@ function update(dt){
   }
 
   if(gs.room === 'johnny_vila'){
-    const W2 = canvas.width, H2 = canvas.height;
+    const W2 = CW, H2 = CH;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
     if(gs.story.johnny_sad_tried_leave && !gs.story.johnny_knee_shot && !gs.story.johnny_monologue_over){
@@ -1291,29 +1294,29 @@ function update(dt){
           setTimeout(() => { addLog('*Žaludek se ti obrací. Vidíš dvojitě.* Toto není normální šíša. Milan to vzal bůhvíkde...', 'lw'); fnotif('⚠ OTRAVA ŠÍŠOU – najdi protilék!', 'rep'); }, 1500);
         }, 800);
       }
-      gs.room = 'kremze'; initRoom(canvas.width * 0.50, canvas.height * 0.60); return;
+      gs.room = 'kremze'; initRoom(CW * 0.50, CH * 0.60); return;
     }
   } else if(gs.room === 'koupelna'){
-    const W2 = canvas.width, H2 = canvas.height;
+    const W2 = CW, H2 = CH;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
-    if(p.y > H2){ gs.room = 'johnny_vila'; initRoom(canvas.width * 0.90, canvas.height * 0.40); return; }
+    if(p.y > H2){ gs.room = 'johnny_vila'; initRoom(CW * 0.90, CH * 0.40); return; }
   } else if(gs.room === 'sklep'){
-    const W2 = canvas.width, H2 = canvas.height;
+    const W2 = CW, H2 = CH;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
     if(p.y > H2) { changeRoom('down'); return; }
   } else if(gs.room === 'johnny_stalking'){
-    const W2 = canvas.width, H2 = canvas.height;
+    const W2 = CW, H2 = CH;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(H2 * 0.35, Math.min(H2 - 30, p.y));
-    if(p.y >= H2 - 35){ gs.room = 'johnny_vila'; initRoom(canvas.width * 0.10, canvas.height * 0.55); return; }
+    if(p.y >= H2 - 35){ gs.room = 'johnny_vila'; initRoom(CW * 0.10, CH * 0.55); return; }
   } else if(gs.room === 'cibulka_lab'){
-    const W2 = canvas.width, H2 = canvas.height;
+    const W2 = CW, H2 = CH;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
-    p.y = Math.max(canvas.height * 0.52, Math.min(H2 - 30, p.y));
+    p.y = Math.max(CH * 0.52, Math.min(H2 - 30, p.y));
   } else if(gs.room === 'doma'){
-    const W2 = canvas.width, H2 = canvas.height;
+    const W2 = CW, H2 = CH;
     p.x = Math.max(30, Math.min(W2 - 30, p.x));
     p.y = Math.max(30, p.y);
     if(p.y < 0){ changeRoom('up'); return; }
@@ -1322,17 +1325,17 @@ function update(dt){
     // RORDER rooms: left/right edge = room change, top/bottom blocked
     // Intro quest: can't leave učebna until talking to teacher
     if(!gs.story.intro_done && gs.room === 'ucebna'){
-      p.x = Math.max(30, Math.min(canvas.width - 30, p.x));
-      p.y = Math.max(30, Math.min(canvas.height - 30, p.y));
+      p.x = Math.max(30, Math.min(CW - 30, p.x));
+      p.y = Math.max(30, Math.min(CH - 30, p.y));
     } else {
       if(p.x < 0)             { changeRoom('prev'); return; }
-      if(p.x > canvas.width)  { changeRoom('next'); return; }
-      p.y = Math.max(30, Math.min(canvas.height - 30, p.y));
+      if(p.x > CW)  { changeRoom('next'); return; }
+      p.y = Math.max(30, Math.min(CH - 30, p.y));
     }
   } else {
-    p.x = Math.max(0, Math.min(canvas.width, p.x));
+    p.x = Math.max(0, Math.min(CW, p.x));
     if(p.y < 0)             { changeRoom('up');   return; }
-    if(p.y > canvas.height) { changeRoom('down'); return; }
+    if(p.y > CH) { changeRoom('down'); return; }
   }
 
   // Milan – Mates přijede a odjede s Milanem
@@ -1410,7 +1413,7 @@ function update(dt){
     if(gs.room === 'ucebna'){
       const plNPC = NPCS['platenikova'];
       if(plNPC && !currentNPCs.find(n => n.id === 'platenikova'))
-        currentNPCs.push({...plNPC, id:'platenikova', x:plNPC.rx*canvas.width, y:plNPC.ry*canvas.height, bob:0, bobDir:1});
+        currentNPCs.push({...plNPC, id:'platenikova', x:plNPC.rx*CW, y:plNPC.ry*CH, bob:0, bobDir:1});
     }
   }
 
@@ -1435,7 +1438,7 @@ function update(dt){
 
 function updateCihalovaCA(dt){
   const ca = gs.ca;
-  const W = canvas.width, H = canvas.height;
+  const W = CW, H = CH;
   ca.phaseT += dt;
 
   if(ca.phase === 1){
@@ -1482,7 +1485,7 @@ function useNuz(){
   const milan = currentNPCs.find(n => n.id === 'milan');
   if(!milan){ addLog('Milan v Křemži není.', 'lw'); return; }
   gs.inv.voodoo = 0; gs.inv.nuz = 0; updateInv();
-  const W = canvas.width, H = canvas.height;
+  const W = CW, H = CH;
   gs.vm = {
     x: milan.x, y: milan.y,
     startX: milan.x, startY: milan.y,

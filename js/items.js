@@ -239,7 +239,7 @@ function triggerCihalovaAttack(){
   // gs.ca = stav animace útoku
   gs.ca = {
     phase: 1,
-    x: canvas.width + 60,
+    x: CW + 60,
     y: gs.player.y,
     phaseT: 0,
     flash: 0,
@@ -288,7 +288,7 @@ function useGlassDrug(){
 function triggerJanaToFireplace(){
   const jana = currentNPCs.find(n => n.id === 'jana_kosova');
   const fp = ROOMS.hospoda.fireplace;
-  const krbX = fp.rx * canvas.width, krbY = fp.ry * canvas.height + canvas.height * 0.30;
+  const krbX = fp.rx * CW, krbY = fp.ry * CH + CH * 0.30;
   if(jana){
     gs.jana_to_fireplace_anim = {
       phase: 'walking',
@@ -304,7 +304,7 @@ function triggerJanaToFireplace(){
 
 function triggerJanaToBathroom(){
   // Jana odejde do koupelny s hadrem, zamkne se
-  const W = canvas.width, H = canvas.height;
+  const W = CW, H = CH;
   const jana = currentNPCs.find(n => n.id === 'jana_vila');
   const startX = jana ? jana.x : W * 0.35, startY = jana ? jana.y : H * 0.55;
   gs.jana_to_bathroom_anim = {
@@ -810,12 +810,12 @@ function _mazeFinish(success){
       setTimeout(() => {
         gs.bandage_anim = null;
         gs.room = 'kremze';
-        initRoom(canvas.width*0.50, canvas.height*0.60);
+        initRoom(CW*0.50, CH*0.60);
         _mazeFinishCommon();
       }, 7000);
     } else {
       gs.room = 'kremze';
-      initRoom(canvas.width*0.50, canvas.height*0.60);
+      initRoom(CW*0.50, CH*0.60);
       setTimeout(() => {
         addLog('*Vyběhls z vily. Jana stojí opodál, oddychuje.* "Díky... díky ti, Hrubeši."', 'lm');
         _mazeFinishCommon();
@@ -1128,7 +1128,7 @@ function triggerJanaHandcuffs(){
     setTimeout(() => {
       const jvNPC = NPCS['jana_vila'];
       if(jvNPC){
-        const j = {...jvNPC, id:'jana_vila', x:canvas.width*0.5, y:canvas.height*0.65, bob:0, bobDir:1};
+        const j = {...jvNPC, id:'jana_vila', x:CW*0.5, y:CH*0.65, bob:0, bobDir:1};
         currentNPCs.push(j);
         showDialog(j);
       }
@@ -1143,10 +1143,10 @@ function triggerCharmGauc(){
   gs.charm_gauc_anim = {
     phase: 'flirt',
     t0: gs.ts,
-    jana_x: canvas.width * 0.55,
-    jana_y: canvas.height * 0.60,
-    johnny_x: canvas.width * 0.62,
-    johnny_y: canvas.height * 0.60,
+    jana_x: CW * 0.55,
+    jana_y: CH * 0.60,
+    johnny_x: CW * 0.62,
+    johnny_y: CH * 0.60,
   };
   // Schovat normální NPCy
   currentNPCs = currentNPCs.filter(n => n.id !== 'johnny_vila' && n.id !== 'jana_vila');
@@ -1165,7 +1165,7 @@ function triggerCharmGauc(){
       // Konec – obnovit Johnnyho jako NPC s novým dialogem
       gs.story.jana_asleep_gauc = true;
       const jhNPC = NPCS['johnny_vila'];
-      if(jhNPC) currentNPCs.push({...jhNPC, id:'johnny_vila', x:canvas.width*0.62, y:canvas.height*0.60, bob:0, bobDir:1});
+      if(jhNPC) currentNPCs.push({...jhNPC, id:'johnny_vila', x:CW*0.62, y:CH*0.60, bob:0, bobDir:1});
       gs.charm_gauc_anim = null;
       // Spustit q_johnny_help_done po krátké pauze
       setTimeout(() => {
@@ -1765,7 +1765,7 @@ function startHeavenScene(){
   gs.story.god_line = 0;
   gs.room = 'heaven';
   gs.running = true;
-  initRoom(canvas.width * 0.5, canvas.height * 0.82);
+  initRoom(CW * 0.5, CH * 0.82);
   lastTime = performance.now();
   requestAnimationFrame(gameLoop);
   addLog('*bílé světlo... jsi v nebi*', 'ls');

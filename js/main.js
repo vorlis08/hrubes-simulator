@@ -76,7 +76,7 @@ function startGame(){
   gs.story.map_unlocked = false;
   gs.story.intro_done = false;
   Inventory.initPocket();
-  initObj(); initRoom(canvas.width * 0.5, canvas.height * 0.7); updateHUD(); updateInv();
+  initObj(); initRoom(CW * 0.5, CH * 0.7); updateHUD(); updateInv();
   addStoryEntry('prolog', 'Další den v Křemži. Vstávám z postele a musím se dostat do školy...', '🏡');
   // Hide minimap and map key until intro is done
   const mapCard = document.getElementById('map-card');
