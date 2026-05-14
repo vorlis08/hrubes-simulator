@@ -13,17 +13,15 @@ function _getQualityScale(){
   if(q === 0) return 0.55;
   return 1;
 }
+const BASE_W = 1280, BASE_H = 720;
 function resize(){
   const s = _getQualityScale();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const scale = s * (s < 1 ? 1 : dpr);
-  const gc = document.getElementById('gc');
-  const w = gc.clientWidth || innerWidth;
-  const h = gc.clientHeight || innerHeight;
-  canvas.width = Math.floor(w * scale);
-  canvas.height = Math.floor(h * scale);
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
+  canvas.width = Math.floor(BASE_W * scale);
+  canvas.height = Math.floor(BASE_H * scale);
+  canvas.style.width = '';
+  canvas.style.height = '';
   if(s < 1) canvas.style.imageRendering = 'auto';
   else canvas.style.imageRendering = '';
   gradientCache.clear();
