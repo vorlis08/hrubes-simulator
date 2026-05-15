@@ -372,6 +372,10 @@ function getStage(id){
       if(s.saman_stage >= 1) return 1;
       return 0;
     case 'bezdak':
+      if(s.gru_quest_done) return 7;
+      if(s.gru_agent_found) return 6;
+      if(s.gru_scanning) return 5;
+      if(s.gru_quest_accepted) return 4;
       if(s.kgb_won) return 3;
       if(s.bezdak_cibulka) return 2;
       if((s.bezdak || 0) >= 1) return 1;
@@ -464,6 +468,17 @@ function showDialog(npc){
     return;
   }
   if(gs.stats) gs.stats.npcTalks++;
+
+  // Affinity check – NPC odmítne mluvit při velmi nízké afinitě
+  if (typeof Affinity !== 'undefined') {
+    Affinity.init();
+    if (!Affinity.willTalk(npc.id)) {
+      addLog(`${npc.name} se od tebe otočil/a. Nechce s tebou mluvit.`, 'lw');
+      fnotif(`${npc.name} tě ignoruje`, 'lw');
+      return;
+    }
+    Affinity.change(npc.id, 1);
+  }
 
   // Intro quest – talking to any teacher unlocks movement
   if(!gs.story.intro_done && gs.room === 'ucebna' &&
@@ -657,6 +672,10 @@ function showDialog(npc){
   // Bezďák – ukázat průkazku Krejčí
   if(npc.id === 'bezdak' && gs.inv.kgb_prukaz > 0 && !gs.story.kgb_prukaz_shown)
     choices.push({label:'🪪 "Krejčí mi dala tohle."', cls:'prim', fn:'q_cibulka_prukaz'});
+
+  // GRU quest – přiznat se po ignorování (záchranná cesta)
+  if(npc.id === 'bezdak' && gs.story.gru_sabotage_active && !gs.story.gru_sabotage_done)
+    choices.push({label:'😰 "Cibulko, lhal jsem. Agent je tu."', cls:'danger', fn:'q_gru_confess'});
 
   // Šíša otrava – žádost o pomoc
   if(npc.id === 'bezdak' && gs.shisha_effects && !gs.shisha_cured){

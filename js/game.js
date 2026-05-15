@@ -1424,6 +1424,66 @@ function update(dt){
     fnotif('Figurová tě volá! 🧐', 'rep');
   }
 
+  // Achievement check (jednou za ~2s)
+  if (typeof Achievements !== 'undefined' && Math.floor(gs.ts / 2000) !== Math.floor((gs.ts - dt) / 2000)) {
+    Achievements.check();
+  }
+
+  // GRU Blackmail – honička po 3 minutách
+  if(gs.story.gru_blackmail_active && gs.story.gru_blackmail_timer > 0 && gs.ts >= gs.story.gru_blackmail_timer){
+    gs.story.gru_blackmail_timer = 0;
+    gs.story.gru_blackmail_active = false;
+    addLog('🚗 *Slyšíš výstřel a vizg pneumatik! Agent GRU tě pronásleduje!*', 'lw');
+    fnotif('🚗 HONIČKA!', 'lw');
+    screenShake(300);
+    setTimeout(() => {
+      Chase.start(
+        (score) => {
+          gs.story.gru_quest_done = true;
+          addLog('Unikl jsi agentovi GRU! Ale Cibulka ti už nevěří...', 'lm');
+          gainRep(5, 'Přežil honičku s GRU agentem');
+          fnotif('🚗 Unikl jsi!', 'pos');
+        },
+        () => {
+          triggerDeath(
+            'Agent GRU tě dostihl na silnici z Křemže. Poslední co jsi slyšel byl výstřel z Makarova.',
+            'ELIMINOVÁN GRU', 'KONEC HRY · NEMĚL JSI VYDÍRAT', 'death_gru'
+          );
+        }
+      );
+    }, 1500);
+  }
+
+  // GRU Sabotage – random eventy po ignorování
+  if(gs.story.gru_sabotage_active && !gs.story.gru_sabotage_done){
+    const elapsed = gs.ts - (gs.story.gru_sabotage_start || 0);
+    const count = gs.story.gru_sabotage_count || 0;
+    // Sabotage event every 40s
+    if(elapsed > (count + 1) * 40000){
+      gs.story.gru_sabotage_count = count + 1;
+      const events = [
+        () => { addLog('⚠️ NPC na ulici vypadají nervózně. Něco se děje...', 'lw'); },
+        () => { addLog('⚠️ Ceny v Bille narostly! Inflace z ničeho nic.', 'lw'); fnotif('📈 Ceny +50%!', 'lw'); gs.story.gru_inflation = true; },
+        () => { Phone.addSms('Neznámé číslo', '☎️', 'Ты следующий. (Jsi další.)', 'sms_gru_sab_' + count); },
+        () => { addLog('⚠️ Školní rozhlas chrastí. Ruská statická frekvence...', 'lw'); screenShake(200); },
+      ];
+      if(count < events.length) events[count]();
+      // After 5 min = assassination
+      if(elapsed > 300000){
+        gs.story.gru_sabotage_done = true;
+        gs.story.gru_sabotage_active = false;
+        addLog('💀 *Za rohem tě čeká muž v černém kabátě. Říká něco rusky. Pak vytáhne pistoli.*', 'lw');
+        screenShake(500);
+        setTimeout(() => {
+          triggerDeath(
+            'Agent GRU tě eliminoval. Měl jsi ho nahlásit Cibulkovi, když jsi měl šanci.',
+            'ELIMINOVÁN GRU', 'KONEC HRY · LŽI SE NEVYPLATÍ', 'death_gru'
+          );
+        }, 2000);
+      }
+    }
+  }
+
   currentNPCs.forEach(n => {
     n.bobT = (n.bobT || 0) + dt * 0.002;
     n.bob = Math.sin(n.bobT) * 0.08;

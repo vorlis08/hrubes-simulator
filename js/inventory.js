@@ -49,7 +49,7 @@ const INV_USABLE = {
   c2_cert: () => { if(typeof showC2Cert === 'function') showC2Cert(); },
   cibulka_papirek: () => { if(typeof showCibulkaPapirek === 'function') showCibulkaPapirek(); },
   sklenice_jana: () => { if(typeof useGlassDrug === 'function') useGlassDrug(); },
-  datapad: () => { if(typeof useDatapad === 'function') useDatapad(); },
+  datapad: () => { if(gs.story.gru_scanning && typeof useDatapadGRU === 'function') useDatapadGRU(); else if(typeof useDatapad === 'function') useDatapad(); },
 };
 
 const COMBO_FOODS = ['zemle','pivo','kratom_kava'];

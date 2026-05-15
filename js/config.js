@@ -352,6 +352,39 @@ const NPCS = {
         choices:[
           {label:'(Odejít)', fn:'close'},
         ]
+      },
+      // Stage 4 – GRU quest nabídka
+      {
+        text:'"Hrubeši..." *Cibulka zavře dveře lab* "Mám pro tebe ještě jednu věc. Něco, co nemůžu svěřit nikomu jinému. Jeden z učitelů na téhle škole není ten, za koho se vydává. Je to agent GRU — ruská vojenská rozvědka. Potřebuju, abys ho identifikoval."',
+        choices:[
+          {label:'🕵️ Přijmout misi', cls:'prim', fn:'q_gru_accept'},
+          {label:'To je moc nebezpečný...', cls:'danger', fn:'q_gru_refuse'},
+        ]
+      },
+      // Stage 5 – GRU quest probíhá (skenování)
+      {
+        textFn(){ return '"Skenoval jsi už všechny podezřelé?" *Cibulka kontroluje monitor* "Učebna, hospoda, ulice. Tři lokace, všechny NPC. Datapad ti ukáže kdo z nich vysílá na GRU frekvenci."'; },
+        choices:[
+          {label:'📊 Ukázat výsledky', cls:'prim', fn:'q_gru_show_results', condFlag:'gru_scan_complete'},
+          {label:'Ještě skenuju...', fn:'close'},
+        ]
+      },
+      // Stage 6 – GRU agent identifikován, volba
+      {
+        textFn(){
+          const agent = gs.story.gru_agent_name || 'agent';
+          return `"${agent}." *Cibulka přikývne pomalu* "Tak jak jsem tušil. Ten hajzl tu operoval celou dobu přímo pod nosem." *otočí se k tobě* "Co s ním uděláme, Hrubeši?"`;
+        },
+        choices:[
+          {label:'🔴 Nech to na sobě, Cibulko', cls:'prim', fn:'q_gru_report'},
+          {label:'💰 Radši ho vydírám sám', cls:'danger', fn:'q_gru_blackmail'},
+          {label:'🤷 Nic jsem nenašel (lhát)', cls:'danger', fn:'q_gru_ignore'},
+        ]
+      },
+      // Stage 7 – po dokončení GRU questu
+      {
+        text:'"Operace ГРОМ je uzavřena. Křemže je čistá." *Cibulka si zapálí* "Kdybys něco potřeboval, víš kde mě najít. A Hrubeši — nikdy jsem tě nepotkal."',
+        choices:[{label:'(Odejít)', fn:'close'}]
       }
     ]
   },
@@ -848,6 +881,8 @@ const ITEM_DESCS = {
   elixir:       'Křemežský elixír. Ultimátní blend. 60s trip – svět se otočí vzhůru nohama.',
   receptura:    'Šamanova tajná receptura. Popsaný ubrousek s podivnými symboly a dávkováním.',
   vysvedceni:   'Maturitní vysvědčení. Známky: ČJ – 3, AJ – 1, EKO – 4, Chování – pochvalné. Podpis: Novák (nečitelné).',
+  datapad:      'Cibulkův modifikovaný skener. Detekuje GRU frekvence v blízkosti NPC. Použij v učebně, hospodě a na ulici.',
+  cibulka_medaile: 'Medaile od Petra Cibulky. "Za služby Křemži a vlasti." Těžká, mosazná, s vyraženým orlicí.',
 };
 
 // ─── Definice úkolů ──────────────────────────────────────────────────────────
@@ -883,4 +918,8 @@ const OBJ_DEFS = [
   {id:'quest_saman_bylina',      tag:'Sběr',      text:'Bylina z Cibulkovy laboratoře'},
   {id:'quest_saman_voda',        tag:'Sběr',      text:'Voda z Johnnyho koupelny'},
   {id:'quest_saman_prach',       tag:'Sběr',      text:'Prach z pentagramu v sklepě'},
+  {id:'quest_gru_mise',          tag:'KGB',       text:'Identifikuj agenta GRU pro Cibulku'},
+  {id:'quest_gru_scan_ucebna',   tag:'Sken',      text:'Skenovat NPC v učebně'},
+  {id:'quest_gru_scan_hospoda',  tag:'Sken',      text:'Skenovat NPC v hospodě'},
+  {id:'quest_gru_scan_ulice',    tag:'Sken',      text:'Skenovat NPC na ulici'},
 ];

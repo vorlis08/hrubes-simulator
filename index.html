@@ -1032,6 +1032,54 @@
   <button class="wbtn" onclick="returnToHomescreen()">ZPĚT NA PROFIL</button>
 </div>
 
+<!-- Honička ve Fábii overlay -->
+<div id="chase-ov">
+  <canvas id="chase-canvas"></canvas>
+</div>
+
+<!-- Exorcismus overlay -->
+<div id="exorcism-ov">
+  <canvas id="exorcism-canvas"></canvas>
+</div>
+
+<!-- Ending overlay -->
+<div id="ending-ov">
+  <div class="ending-card">
+    <div class="ending-label">KONEC</div>
+    <div class="ending-title" id="ending-title"></div>
+    <div class="ending-desc" id="ending-desc"></div>
+    <div class="ending-stats" id="ending-stats"></div>
+    <button class="ending-btn" onclick="document.getElementById('ending-ov').classList.remove('on','visible'); location.reload();">HRÁT ZNOVU</button>
+  </div>
+</div>
+
+<!-- Fast Travel overlay -->
+<div id="fasttravel-ov">
+  <div class="ft-card">
+    <div class="ft-header">🗺️ RYCHLÉ CESTOVÁNÍ</div>
+    <div class="ft-list" id="ft-list"></div>
+    <button class="ft-close" onclick="FastTravel.close()">✕ ZAVŘÍT</button>
+  </div>
+</div>
+
+<!-- Stats overlay -->
+<div id="stats-ov">
+  <div class="stats-card">
+    <div class="stats-header">📊 STATISTIKY</div>
+    <div class="stats-body" id="stats-body"></div>
+    <button class="stats-close" onclick="GameStats.close()">✕ ZAVŘÍT</button>
+  </div>
+</div>
+
+<!-- Achievements overlay -->
+<div id="ach-ov">
+  <div class="ach-card">
+    <div class="ach-header">🏆 ACHIEVEMENTS <span id="ach-count"></span></div>
+    <div class="ach-body" id="ach-body"></div>
+    <button class="ach-close" onclick="Achievements.close()">✕ ZAVŘÍT</button>
+  </div>
+</div>
+
 <!-- KGB Minihra overlay -->
 <div id="kgb-ov">
   <div id="kgb-head">
@@ -1056,6 +1104,9 @@
         <div class="crow"><span class="ck">WASD</span> Pohyb</div>
         <div class="crow"><span class="ck">E</span> Interagovat</div>
         <div class="crow"><span class="ck">Q</span> Úkoly</div>
+        <div class="crow"><span class="ck">F</span> Fast travel</div>
+        <div class="crow"><span class="ck">H</span> Achievementy</div>
+        <div class="crow"><span class="ck">Tab</span> Statistiky</div>
         <div class="crow"><span class="ck">1</span> Kratom</div>
         <div class="crow"><span class="ck">2</span> Žemle</div>
       </div>
@@ -1283,6 +1334,7 @@
 <script src="js/settings.js"></script>
 <script src="js/config.js"></script>
 <script src="js/state.js?v=2"></script>
+<script src="js/affinity.js"></script>
 <script src="js/objectives.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/inventory.js"></script>
@@ -1294,6 +1346,10 @@
 <script src="js/effects.js"></script>
 <script src="js/render.js"></script>
 <script src="js/kremzogram.js"></script>
+<script src="js/chase.js"></script>
+<script src="js/exorcism.js"></script>
+<script src="js/endings.js"></script>
+<script src="js/qol.js"></script>
 <script src="js/game.js"></script>
 <script src="js/main.js"></script>
 <script src="js/admin.js?v=4"></script>

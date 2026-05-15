@@ -120,6 +120,72 @@ function endElixir(){
   fnotif('🧪 Elixír vyprchal', 'info');
 }
 
+// ─── Datapad – GRU skenování ─────────────────────────────────────────────
+function useDatapadGRU(){
+  if(!gs.inv.datapad){ addLog('Nemáš datapad!','lw'); return; }
+  if(!gs.story.gru_scanning){ addLog('Datapad nemá aktivní misi.','lw'); return; }
+
+  const room = gs.room;
+  const scanRooms = { ucebna: 'quest_gru_scan_ucebna', hospoda: 'quest_gru_scan_hospoda', ulice: 'quest_gru_scan_ulice' };
+
+  if(!scanRooms[room]){
+    addLog('📡 Datapad: Tady není nikdo podezřelý. Skenuj v učebně, hospodě nebo na ulici.', 'ls');
+    return;
+  }
+
+  const objId = scanRooms[room];
+  if(gs.story['gru_scanned_' + room]){
+    addLog('📡 Tuto lokaci jsi už skenoval.', 'ls');
+    return;
+  }
+
+  gs.story['gru_scanned_' + room] = true;
+  screenShake(150);
+  fnotif('📡 Skenování...', 'itm');
+
+  // Determine GRU agent (Novák if exists, otherwise Krejčí)
+  if(!gs.story.gru_agent_id){
+    gs.story.gru_agent_id = gs.cihalova_collapsed ? 'novak' : 'krejci';
+    gs.story.gru_agent_name = gs.cihalova_collapsed ? 'Novák' : 'Krejčí';
+  }
+
+  const agentRoom = gs.story.gru_agent_id === 'novak' ? 'ucebna' : 'ucebna';
+  const npcsInRoom = currentNPCs.filter(n => n.room === room || gs.room === room);
+
+  setTimeout(() => {
+    if(room === 'ucebna'){
+      const isAgentHere = true;
+      if(isAgentHere && gs.story.gru_agent_id){
+        addLog(`📡 DATAPAD: ⚠️ SILNÝ SIGNÁL detekován! Frekvence ГРУ-447. Zdroj: ${gs.story.gru_agent_name}!`, 'lw');
+        fnotif(`⚠️ GRU SIGNÁL: ${gs.story.gru_agent_name}!`, 'lw');
+      }
+      const others = gs.cihalova_collapsed ? ['Figurová'] : ['Krejčí', 'Figurová'];
+      for(const name of others){
+        if(name !== gs.story.gru_agent_name)
+          addLog(`📡 ${name}: signál čistý ✅`, 'ls');
+      }
+    } else if(room === 'hospoda'){
+      addLog('📡 Šaman: slabý šum, neprůkazný ⚪', 'ls');
+      addLog('📡 Mates: signál čistý ✅', 'ls');
+      addLog('📡 Johnny: signál čistý ✅', 'ls');
+    } else if(room === 'ulice'){
+      addLog('📡 Pája: signál čistý ✅', 'ls');
+      addLog('📡 Bezďák/Cibulka: identifikován jako spojenec 🔵', 'ls');
+    }
+
+    doneObj(objId);
+
+    // Check if all 3 scanned
+    if(gs.story.gru_scanned_ucebna && gs.story.gru_scanned_hospoda && gs.story.gru_scanned_ulice){
+      gs.story.gru_scan_complete = true;
+      gs.story.gru_agent_found = true;
+      addLog('📡 DATAPAD: Skenování kompletní. Agent GRU identifikován. Vrať se k Cibulkovi!', 'lm');
+      fnotif('🕵️ Agent nalezen! → Cibulka', 'pos');
+      doneObj('quest_gru_mise');
+    }
+  }, 1500);
+}
+
 function usePikoSelf(){
   if(!gs.inv.piko){ addLog('Nemáš piko!','lw'); return; }
   closeDialog();
@@ -251,6 +317,14 @@ function triggerCihalovaAttack(){
 
 function showWin(){
   gs.running = false;
+  gs.won = true;
+
+  // Zkusit nový ending systém
+  if (typeof Endings !== 'undefined') {
+    Endings.triggerEnding();
+    profileSaveWin();
+    return;
+  }
 
   const repLevel = getRepLevel(gs.rep);
   document.getElementById('win-body').innerHTML =

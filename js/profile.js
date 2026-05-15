@@ -89,6 +89,15 @@ function createBlankProfile(username){
       death_johnny_gun:           false,
       death_maze_escape:          false,
       death_shisha:               false,
+      death_gru:                  false,
+      kral_kremze:                false,
+      stin:                       false,
+      utek:                       false,
+      vezeni:                     false,
+      transcendence:              false,
+      double_agent:               false,
+      laska:                      false,
+      true_ending:                false,
     },
 
     questsCompleted: {

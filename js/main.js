@@ -57,7 +57,7 @@ function startGame(){
   document.getElementById('start').style.display = 'none';
   document.getElementById('lpanel').style.display = '';
   // Zavři overlaye z předchozí hry
-  ['death','win','stab-death','dov','riddle-ov','kgb-ov'].forEach(id => {
+  ['death','win','stab-death','dov','riddle-ov','kgb-ov','chase-ov','exorcism-ov','ending-ov','fasttravel-ov','stats-ov','ach-ov'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.classList.remove('on'); el.classList.remove('visible'); }
   });
@@ -76,6 +76,7 @@ function startGame(){
   gs.story.map_unlocked = false;
   gs.story.intro_done = false;
   Inventory.initPocket();
+  if (typeof Affinity !== 'undefined') Affinity.init();
   initObj(); initRoom(CW * 0.5, CH * 0.7); updateHUD(); updateInv();
   addStoryEntry('prolog', 'Další den v Křemži. Vstávám z postele a musím se dostat do školy...', '🏡');
   // Hide minimap and map key until intro is done
@@ -161,7 +162,8 @@ window.addEventListener('keydown', e => {
     if(Phone.isOpen()){ closePhone(); return; }
     // Check if any overlay is open
     const anyOpen = ['dov','riddle-ov','note-ov','screenshot-ov','foto-kubatova-ov',
-      'c2-cert-ov','phone-ov','kremzogram-ov','quest-ov','settings-ov','map-ov','stats-ov']
+      'c2-cert-ov','phone-ov','kremzogram-ov','quest-ov','settings-ov','map-ov','stats-ov',
+      'fasttravel-ov','ach-ov','ending-ov']
       .some(id => document.getElementById(id)?.classList.contains('on'))
       || (typeof Inventory !== 'undefined' && Inventory.isOpen())
 ;
@@ -199,6 +201,9 @@ window.addEventListener('keydown', e => {
     }
   }
   if(nk === 'i'){ Inventory.toggle(); }
+  if(nk === 'f'){ FastTravel.open(); }
+  if(nk === 'h'){ Achievements.open(); }
+  if(nk === 'Tab'){ e.preventDefault(); GameStats.open(); }
   if(nk === '1' && !Phone.isOpen()) useKratom();
   if(nk === '2' && !Phone.isOpen()) useZemle();
   if(nk === 'Enter' && document.getElementById('riddle-ov').classList.contains('on'))
@@ -621,6 +626,10 @@ function closeAllOverlays(){
   document.getElementById('settings-ov').classList.remove('on');
   const statsOv = document.getElementById('stats-ov');
   if(statsOv) statsOv.classList.remove('on');
+  const ftOv = document.getElementById('fasttravel-ov');
+  if(ftOv) ftOv.classList.remove('on');
+  const achOv = document.getElementById('ach-ov');
+  if(achOv) achOv.classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
 }

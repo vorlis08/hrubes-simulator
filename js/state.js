@@ -9,7 +9,7 @@ const gs = {
   money: 150,
   energy: 100,
   rep: 0,
-  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0, propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0, kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0, hadr:0, sklenice_jana:0, tahaky:0, bylina_lab:0, voda_koupelna:0, prach_pentagram:0, elixir:0, receptura:0, vysvedceni:0, datapad:0 },
+  inv: { kratom:0, blend:0, zemle:1, piko:0, pivo:0, note:0, cert:0, pytel:0, cibule:0, jana_cislo:0, kratom_kava:0, voodoo:0, nuz:0, screenshot:0, hlasovka:0, c2_cert:0, fig_nuz:0, fig_gun:0, milan_phone:0, zelizka:0, prasek:0, klice_vila:0, podprsenka:0, klice_fabie:0, klice_fabie_fig:0, saman_hlava:0, membership_vaza:0, maturita:0, propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0, kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0, hadr:0, sklenice_jana:0, tahaky:0, bylina_lab:0, voda_koupelna:0, prach_pentagram:0, elixir:0, receptura:0, vysvedceni:0, datapad:0, cibulka_medaile:0 },
 
   kratom_on:      false,
   kratom_t:       0,
@@ -123,6 +123,9 @@ const gs = {
   elixir_active: false,   // true = trip běží
   elixir_end: 0,          // gs.ts kdy trip skončí
 
+  // NPC affinity systém
+  affinity: {},
+
   // Statistiky aktuální hry
   stats: {
     steps: 0,
@@ -163,6 +166,7 @@ function resetGameState(){
     propiska:0, foto_figurova:0, masturbator:0, kgb_detector:0, pytel_penez:0,
     kgb_prukaz:0, klic_supliku:0, cibulka_papirek:0, hadr:0, sklenice_jana:0,
     tahaky:0, bylina_lab:0, voda_koupelna:0, prach_pentagram:0, elixir:0, receptura:0, vysvedceni:0,
+    datapad:0, cibulka_medaile:0,
   });
 
   gs.kratom_on        = false;
@@ -246,6 +250,9 @@ function resetGameState(){
   gs.shisha_cured           = false;
   gs.elixir_active          = false;
   gs.elixir_end             = 0;
+  gs.affinity               = {};
+  if (typeof Affinity !== 'undefined') Affinity.reset();
+  if (typeof Achievements !== 'undefined') Achievements.reset();
   gs.stats = {
     steps:0, moneyEarned:0, moneySpent:0, kratomUses:0, blendUses:0, pikoUses:0,
     zemleEaten:0, pivosDrunk:0, npcTalks:0, questsDone:0, itemsCollected:0,

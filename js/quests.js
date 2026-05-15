@@ -3,6 +3,10 @@
 //  QUEST HANDLERY
 // ═══════════════════════════════════════════
 
+function _aff(npc, delta) {
+  if (typeof Affinity !== 'undefined') Affinity.change(npc, delta, true);
+}
+
 const QF = {
   close(){ closeDialog(); },
 
@@ -69,6 +73,7 @@ const QF = {
     gs.cihalova_collapsed = true;
     gs.cihalova_deadline  = 0;
     document.getElementById('piko-badge').classList.remove('on');
+    _aff('cihalova', 10);
     addLog('Číhalová si vzala zásilku... a zkolabovala. +800 Kč 💰', 'lm');
     fnotif('+800 Kč','pos');
     doneObj('main_cihalova');
@@ -175,8 +180,10 @@ const QF = {
     }, 400);
   },
   q_figurova_dark_accept(){
+    _aff('figurova', 15); _aff('mates', -20); _aff('milan', -20);
     gs.inv.fig_nuz = 1; updateInv();
     gs.story.figurova_dark_contract = true;
+    gs.story.figurova_dark_accepted = true;
     addLog('Figurová ti podala nůž. Vykuchej tu svini.', 'lw');
     addLog('Mates je v hospodě. Milan na náměstí. Figurová čeká.', 'lw');
     fnotif('🗡️ Nůž†  +1','itm');
@@ -287,6 +294,7 @@ const QF = {
   },
   q_jana_deliver(){
     if(gs.inv.kratom < 20){ addLog('Nemáš dost kratomu! (20g)','lw'); closeDialog(); return; }
+    _aff('jana', 15);
     gs.inv.kratom -= 20; earnMoney(200); gs.story.jana = 2;
     updateInv(); updateHUD();
     gainRep(10, 'Zachránil jsi Janu z únavy');
@@ -347,8 +355,9 @@ const QF = {
   // ─── Mates ────────────────────────────────────────────────────────────────
   q_mates_kill(){
     if(!gs.inv.fig_nuz){ addLog('Nemáš nůž!','lw'); closeDialog(); return; }
+    _aff('mates', -100); _aff('honza', -30); _aff('figurova', 20);
     gs.inv.fig_nuz = 0; updateInv();
-    gs.story.mates_dead = true;
+    gs.story.mates_dead = true; gs.story.mates_killed = true;
     gs.story.murder_mates = true;
     // Mates padne k zemi – spustit animaci krvácení
     const matesNPC = currentNPCs.find(n => n.id === 'mates');
@@ -378,6 +387,7 @@ const QF = {
   q_mates_pivo(){
     const _ppivo = getPrice(100);
     if(gs.money < _ppivo){ addLog(`Nemáš ${_ppivo} Kč!`,'lw'); closeDialog(); return; }
+    _aff('mates', 8);
     payMoney(100); gs.story.mates = (gs.story.mates || 0) + 1;
     gainRep(2, 'Koupil Matesovi démona');
     addLog('Koupil jsi Matesovi démona. 🍺', 'ls');
@@ -418,6 +428,7 @@ const QF = {
   },
   q_honza_ukol_reward(){
     if(!gs.story.honza_ukol_done){ closeDialog(); return; }
+    _aff('honza', 15);
     const _rh = earnMoney(200);
     gainRep(6, 'Honzův domácí úkol zařízený');
     addLog(`Honza: "Ty jsi borec, Fanda. Upřímně." +${_rh} Kč 💰`, 'lm');
@@ -778,6 +789,173 @@ const QF = {
     document.getElementById('piko-badge').classList.add('on');
     addLog('Vyměnil jsi 2 žemle za piko. 💊','ls');
     fnotif('+1 💊','itm'); closeDialog();
+  },
+
+  // ─── Bezďákova poslední mise (GRU quest) ────────────────────────────────────
+
+  q_gru_accept(){
+    _aff('bezdak', 15);
+    gs.story.gru_quest_accepted = true;
+    gs.story.gru_scanning = true;
+    gs.inv.datapad = 1; updateInv();
+    addLog('Cibulka ti předal datapad – modifikovaný GRU skener.', 'lm');
+    addLog('Skenuj NPC v učebně, hospodě a na ulici. Klikni na datapad v inventáři.', 'ls');
+    fnotif('📡 Datapad +1', 'itm');
+    addObj('quest_gru_mise');
+    addObj('quest_gru_scan_ucebna');
+    addObj('quest_gru_scan_hospoda');
+    addObj('quest_gru_scan_ulice');
+    closeDialog();
+    const _gg = gs._gen;
+    Phone.scheduleSms(10000, () => {
+      if(gs._gen !== _gg) return;
+      Phone.addSms('Cibulka', '🧥', 'Skenuj opatrně. Datapad funguje jen v blízkosti NPC. Učebna, hospoda, ulice – všechny tři.', 'sms_gru_hint', [
+        {label:'Rozumím ✅', text:'Rozumím, Cibulko ✅', cls:'sms-r-good'},
+      ]);
+    });
+  },
+
+  q_gru_refuse(){
+    addLog('Odmítl jsi Cibulkovu misi. Možná příště.', 'ls');
+    closeDialog();
+  },
+
+  q_gru_show_results(){
+    if(!gs.story.gru_scan_complete){ addLog('Ještě jsi nedokončil skenování!','lw'); closeDialog(); return; }
+    gs.story.gru_agent_found = true;
+    closeDialog();
+    setTimeout(() => {
+      const n = currentNPCs.find(x => x.id === 'bezdak');
+      if(n) showDialog(n);
+    }, 300);
+  },
+
+  // Větev A – Nahlásit Cibulkovi (loajální)
+  q_gru_report(){
+    _aff('bezdak', 30);
+    closeDialog();
+    const agentName = gs.story.gru_agent_name || 'agent';
+    showNPCLine('bezdak',
+      `"${agentName}. Věděl jsem to." *Cibulka vytáhne telefon, zmáčkne dvě tlačítka* "Hotovo. Za hodinu tu bude tým z Prahy." *otočí se k tobě* "Teď potřebuju ještě jedno... rituální čistku. Symbolickou. Jsi připravený?"`,
+      () => {
+        gs.story.gru_route = 'report';
+        earnMoney(500);
+        gainRep(25, 'Identifikoval agenta GRU pro Cibulku');
+        addLog('+500 Kč od Cibulky. Agent bude odstraněn.', 'lm');
+        fnotif('+500 Kč 🕵️', 'pos');
+
+        // Odstraň agenta ze hry
+        const agentId = gs.story.gru_agent_id;
+        gs.story[agentId + '_gru_removed'] = true;
+        currentNPCs = currentNPCs.filter(n => n.id !== agentId);
+
+        // Spustit exorcismus minigame
+        setTimeout(() => {
+          addLog('🔥 Cibulka připravuje rituál v laboratoři...', 'lm');
+          fnotif('🔥 EXORCISMUS!', 'itm');
+          Exorcism.start(
+            (score, perfects, maxCombo) => {
+              // Win
+              gs.story.gru_exorcism_won = true;
+              gs.story.gru_quest_done = true;
+              gs.inv.cibulka_medaile = 1; updateInv();
+              gainRep(15, 'Rituální čistka – GRU vyhnán z Křemže');
+              addLog('🏅 Cibulka ti předal mosaznou medaili. "Za služby Křemži a vlasti."', 'lm');
+              fnotif('🏅 Cibulkova medaile!', 'pos');
+              _aff('bezdak', 20);
+              Phone.addSms('Cibulka', '🧥', 'Operace ГРОМ uzavřena. Křemže je čistá. Děkuji, Hrubeši.', 'sms_gru_done');
+            },
+            () => {
+              // Lose – quest still done, just no medal
+              gs.story.gru_quest_done = true;
+              addLog('Rituál se nezdařil úplně... ale agent je pryč.', 'ls');
+              gainRep(8, 'GRU agent odstraněn (rituál neúspěšný)');
+              Phone.addSms('Cibulka', '🧥', 'Rituál nebyl perfektní, ale agent je pryč. Stačí.', 'sms_gru_done_partial');
+            }
+          );
+        }, 2000);
+      }
+    );
+  },
+
+  // Větev B – Vydírat agenta
+  q_gru_blackmail(){
+    _aff('bezdak', -40);
+    closeDialog();
+    gs.story.gru_route = 'blackmail';
+    const agentName = gs.story.gru_agent_name || 'agent';
+    const agentId = gs.story.gru_agent_id;
+
+    showNPCLine('bezdak',
+      '"Vydírat?!" *Cibulka zbledne* "Hrubeši, to není hra. Ten člověk zabíjí lidi. Ale jestli chceš... je to tvůj pohřeb."',
+      () => {
+        addLog(`Jdeš vydírat ${agentName}. Cibulka ti nedůvěřuje.`, 'lw');
+        gs.story.gru_blackmail_timer = gs.ts + 180000; // 3 minuty do honičky
+        gs.story.gru_blackmail_active = true;
+
+        // Agent ti zaplatí
+        earnMoney(2000);
+        gainRep(-30, 'Vydírání agenta GRU');
+        addLog(`${agentName} ti zaplatil 2000 Kč za mlčení. Ale vypadal nebezpečně...`, 'lw');
+        fnotif('+2000 Kč 💰', 'pos');
+        fnotif('-30 REP 😒', 'lw');
+
+        // Výhružné SMS
+        const _gb = gs._gen;
+        Phone.scheduleSms(30000, () => {
+          if(gs._gen !== _gb || !gs.story.gru_blackmail_active) return;
+          Phone.addSms('Neznámé číslo', '☎️', 'Знаю где ты живёшь. (Vím, kde bydlíš.)', 'sms_gru_threat1');
+        });
+        Phone.scheduleSms(90000, () => {
+          if(gs._gen !== _gb || !gs.story.gru_blackmail_active) return;
+          Phone.addSms('Neznámé číslo', '☎️', 'Последний шанс. Верни деньги. (Poslední šance. Vrať peníze.)', 'sms_gru_threat2');
+        });
+      }
+    );
+  },
+
+  // Větev C – Ignorovat / lhát
+  q_gru_ignore(){
+    _aff('bezdak', -15);
+    closeDialog();
+    gs.story.gru_route = 'ignore';
+    gs.story.gru_sabotage_active = true;
+    gs.story.gru_sabotage_start = gs.ts;
+    gs.story.gru_sabotage_count = 0;
+
+    showNPCLine('bezdak',
+      '"Nic?" *Cibulka přimhouří oči* "...Dobře. Možná jsem se spletl." *ale nevěří ti*',
+      () => {
+        addLog('Lhal jsi Cibulkovi. Agent GRU zůstává ve hře...', 'lw');
+        fnotif('⚠️ Agent GRU aktivní', 'lw');
+
+        // Sabotage starts
+        const _gi = gs._gen;
+        Phone.scheduleSms(20000, () => {
+          if(gs._gen !== _gi || !gs.story.gru_sabotage_active) return;
+          Phone.addSms('Neznámé číslo', '☎️', 'Мы знаем. (Víme.)', 'sms_gru_sabotage_warn');
+        });
+      }
+    );
+  },
+
+  // Větev C záchrana – přiznat se Cibulkovi
+  q_gru_confess(){
+    _aff('bezdak', -10);
+    gs.story.gru_sabotage_active = false;
+    closeDialog();
+    showNPCLine('bezdak',
+      '"Lhal jsi mi." *Cibulka se odvrátí* "...Ale aspoň jsi přišel." *dlouhé ticho* "Penalizace bude. Ale agenta vyřídíme. Spolu."',
+      () => {
+        gainRep(-15, 'Přiznal ses Cibulkovi – ztráta důvěry');
+        fnotif('-15 REP 😔', 'lw');
+        addLog('Cibulka ti nedůvěřuje, ale quest pokračuje větví A.', 'ls');
+        gs.story.gru_route = 'confess_then_report';
+        gs.story.gru_agent_found = true;
+        // Redirect to report branch
+        setTimeout(() => QF.q_gru_report(), 1500);
+      }
+    );
   },
 
   // ─── Šíša otrava ──────────────────────────────────────────────────────────
