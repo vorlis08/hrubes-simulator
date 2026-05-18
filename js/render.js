@@ -4913,11 +4913,10 @@ function drawDoma(W,H,t){
 
 function render(){
   const rw = +canvas.getAttribute('width'), rh = +canvas.getAttribute('height');
-  const fitS = Math.min(rw / BASE_W, rh / BASE_H);
-  const offX = (rw - BASE_W * fitS) / 2, offY = (rh - BASE_H * fitS) / 2;
+  const sx = rw / BASE_W, sy = rh / BASE_H;
   ctx.setTransform(1,0,0,1,0,0);
   ctx.clearRect(0, 0, rw, rh);
-  ctx.setTransform(fitS, 0, 0, fitS, offX, offY);
+  ctx.setTransform(sx, 0, 0, sy, 0, 0);
   const rm=ROOMS[gs.room];
   const W=CW, H=CH;
   const t=gs.ts, p=gs.player;
