@@ -67,14 +67,19 @@ const Inventory = {
   isOpen(){ return this._open; },
   toggle(){ this._open ? this.close() : this.open(); },
 
+  hasBatoh(){ return !!(gs.story && gs.story.has_batoh); },
+
   open(){
     this._open = true;
     this._sel = 0;
-    this._selArea = 'inv';
+    this._selArea = this.hasBatoh() ? 'inv' : 'pocket';
     this._pocketSel = 0;
     this._held = null;
     this._rebuildAll();
-    document.getElementById('inv-ov').classList.add('on');
+    const ov = document.getElementById('inv-ov');
+    ov.classList.add('on');
+    ov.classList.toggle('pocket-only', !this.hasBatoh());
+    document.getElementById('inv-ov-title').textContent = this.hasBatoh() ? '🎒 BATOH' : '👖 KAPSA';
   },
 
   close(){
@@ -331,15 +336,17 @@ const Inventory = {
 
     const COLS = 5;
 
-    // Tab switches between inv and pocket (keeps held item)
+    // Tab switches between inv and pocket (only with batoh)
     if(k === 'Tab'){
-      if(this._selArea === 'inv'){
-        this._selArea = 'pocket';
-        this._pocketSel = 0;
-      } else {
-        this._selArea = 'inv';
+      if(this.hasBatoh()){
+        if(this._selArea === 'inv'){
+          this._selArea = 'pocket';
+          this._pocketSel = 0;
+        } else {
+          this._selArea = 'inv';
+        }
+        this._rebuildAll();
       }
-      this._rebuildAll();
       return true;
     }
 
