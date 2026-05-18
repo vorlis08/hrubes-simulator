@@ -160,7 +160,16 @@ window.addEventListener('keydown', e => {
   if(nk === 'Escape'){
     e.preventDefault();
     if(Phone.isOpen()){ closePhone(); return; }
-    // Check if any overlay is open
+
+    // Během miniher (KGB, honička, exorcismus) Escape nedělá nic
+    const inMinigame = document.getElementById('kgb-ov')?.classList.contains('on')
+      || document.getElementById('chase-ov')?.classList.contains('on')
+      || document.getElementById('exorcism-ov')?.classList.contains('on');
+    if(inMinigame) return;
+
+    // Během cutscény (dodge, voodoo, animace) Escape nedělá nic
+    if(gs.cutscene_active || gs.dodge || gs.voodoo_anim || gs.johnny_kill_anim || gs.ca_active) return;
+
     const anyOpen = ['dov','riddle-ov','note-ov','screenshot-ov','foto-kubatova-ov',
       'c2-cert-ov','phone-ov','kremzogram-ov','quest-ov','settings-ov','map-ov','stats-ov',
       'fasttravel-ov','ach-ov','ending-ov']
@@ -630,8 +639,12 @@ function closeAllOverlays(){
   if(ftOv) ftOv.classList.remove('on');
   const achOv = document.getElementById('ach-ov');
   if(achOv) achOv.classList.remove('on');
+  const pauseOv = document.getElementById('pause-ov');
+  if(pauseOv) pauseOv.classList.remove('on');
   for(const k in keys) keys[k] = false;
   gs.player.mv = false;
+  gs._paused = false;
+  if(!gs.dead) gs.running = true;
 }
 
 // ─── Tooltipy inventáře ──────────────────────────────────────────────────
